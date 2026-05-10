@@ -12,7 +12,7 @@ const envSchema = z.object({
   MONGODB_URI: z.string().min(1),
 
   // Redis
-  REDIS_URL: z.string().min(1).default("redis://localhost:6379"),
+  REDIS_URL: z.string().min(1).default("redis://localhost:16379"),
 
   // Auth
   JWT_SECRET: z.string().min(32),
@@ -24,8 +24,8 @@ const envSchema = z.object({
   AGENT_TOKEN: z.string().min(1),
 
   // API
-  PORT: z.coerce.number().int().min(1).max(65535).default(3000),
-  API_URL: z.string().min(1).default("http://localhost:3000"),
+  PORT: z.coerce.number().int().min(1).max(65535).default(3010),
+  API_URL: z.string().min(1).default("http://localhost:3010"),
 
   // Node
   NODE_ENV: z
