@@ -34,12 +34,12 @@ describe("getEnv", () => {
     const env = getEnv();
 
     expect(env.MONGODB_URI).toBe(REQUIRED_ENV.MONGODB_URI);
-    expect(env.REDIS_URL).toBe("redis://localhost:6379");
+    expect(env.REDIS_URL).toBe("redis://localhost:16379");
     expect(env.JWT_SECRET).toBe(REQUIRED_ENV.JWT_SECRET);
     expect(env.GITHUB_WEBHOOK_SECRET).toBe(REQUIRED_ENV.GITHUB_WEBHOOK_SECRET);
     expect(env.AGENT_TOKEN).toBe(REQUIRED_ENV.AGENT_TOKEN);
     expect(env.PORT).toBe(4321);
-    expect(env.API_URL).toBe("http://localhost:3000");
+    expect(env.API_URL).toBe("http://localhost:3010");
     expect(env.NODE_ENV).toBe("development");
   });
 
@@ -71,7 +71,9 @@ describe("getEnv", () => {
     }) as typeof process.exit;
 
     expect(() => getEnv()).toThrow("EXIT_1");
-    expect(logged.some((line) => line.includes("Invalid environment variables"))).toBe(true);
+    expect(
+      logged.some((line) => line.includes("Invalid environment variables")),
+    ).toBe(true);
     expect(logged.some((line) => line.includes("MONGODB_URI"))).toBe(true);
   });
 });
