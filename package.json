@@ -1,0 +1,19 @@
+{
+  "name": "fleet",
+  "type": "module",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:api": "cd apps/api && bun run dev",
+    "dev:agent": "cd apps/agent && bun run dev",
+    "dev:dashboard": "cd apps/dashboard && bun run dev",
+    "dev:cli": "cd apps/cli && bun run dev"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}
