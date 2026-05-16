@@ -13,6 +13,9 @@ const ping: RequestHandler = (_, res) => {
 };
 
 app.use(express.json());
+app.get("/health", (_, res) => {
+  res.json({ message: "OK" });
+});
 app.get("/ping", ping);
 app.use("/api/v1", router);
 app.use(notFoundHandler);

@@ -1,6 +1,10 @@
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const dbUrl = process.env.MONGODB_URI;
+
 if (!dbUrl) {
   throw new Error("MONGODB_URI is not set");
 }

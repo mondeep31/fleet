@@ -1,6 +1,11 @@
 {
   "name": "@fleet/api",
   "version": "0.0.1",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "build": "bun build src/index.ts",
+    "start": "bun run dist/index.js"
+  },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.76.6",
