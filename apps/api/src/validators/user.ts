@@ -1,5 +1,10 @@
 import { z } from "zod";
 
+export const createProjectBodySchema = z.object({
+  name: z.string().trim().min(1, "Name is required"),
+  repoUrl: z.string().trim().url("Invalid repository URL"),
+});
+
 export const createUserBodySchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().trim().email("Invalid email address"),
@@ -17,3 +22,4 @@ export const userIdParamsSchema = z.object({
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type UserIdParams = z.infer<typeof userIdParamsSchema>;
+export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;

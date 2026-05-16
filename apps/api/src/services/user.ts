@@ -24,7 +24,11 @@ export const createUser = async ({
 }: CreateUserParams) => {
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await User.create({ name, email, password: hashedPassword });
-  return user;
+  return {
+    id: user.userId,
+    name: user.name,
+    email: user.email,
+  };
 };
 
 export const getUserById = async ({ id }: GetUserByIdParams) => {
@@ -32,7 +36,11 @@ export const getUserById = async ({ id }: GetUserByIdParams) => {
   if (!user) {
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
-  return user;
+  return {
+    id: user.userId,
+    name: user.name,
+    email: user.email,
+  };
 };
 
 export const updateUser = async ({ id, password }: UpdateUserParams) => {
@@ -45,5 +53,9 @@ export const updateUser = async ({ id, password }: UpdateUserParams) => {
   if (!user) {
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
-  return user;
+  return {
+    id: user.userId,
+    name: user.name,
+    email: user.email,
+  };
 };
