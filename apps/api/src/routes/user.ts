@@ -13,16 +13,13 @@ import {
 
 const router = Router();
 
+// TODO : add authentication middleware
 router.post(
   "/",
   validate({ body: createUserBodySchema }),
   createUserController,
 );
-router.get(
-  "/:id",
-  validate({ params: userIdParamsSchema }),
-  getUserController,
-);
+router.get("/:id", validate({ params: userIdParamsSchema }), getUserController);
 router.put(
   "/:id",
   validate({ params: userIdParamsSchema, body: updateUserBodySchema }),

@@ -1,5 +1,10 @@
 import { describe, expect, expectTypeOf, test } from "vitest";
-import type { DeploymentStatus, RuntimeType, ServerStatus } from "./enums";
+import type {
+  DeploymentStatus,
+  EnvironmentType,
+  RuntimeType,
+  ServerStatus,
+} from "./enums";
 
 describe("types/enums", () => {
   test("DeploymentStatus allows expected values", () => {
@@ -28,5 +33,13 @@ describe("types/enums", () => {
     const statuses: ServerStatus[] = ["connected", "disconnected"];
     expect(statuses).toContain("connected");
     expect(statuses).toContain("disconnected");
+  });
+
+  test("EnvironmentType allows expected values", () => {
+    const types: EnvironmentType[] = ["prod", "staging", "dev"];
+    expect(types).toHaveLength(3);
+    expectTypeOf<EnvironmentType>().toEqualTypeOf<
+      "prod" | "staging" | "dev"
+    >();
   });
 });

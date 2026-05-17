@@ -3,68 +3,115 @@ import type {
   AgentToApiMessage,
   ApiToAgentMessage,
   Deployment,
+  Environment,
   Project,
   Server,
   User,
 } from "./index";
 
 describe("types/models", () => {
-  test("User shape composes correctly", () => {
+  test("User shape matches DB model", () => {
     const user: User = {
-      id: "user_1",
+      name: "Ada",
+      userId: "user_1",
       email: "user@example.com",
+      password: "hashed",
       createdAt: "2026-05-11T00:00:00.000Z",
+      updatedAt: "2026-05-11T00:00:00.000Z",
     };
 
     expect(user.email).toContain("@");
+    expectTypeOf(user.userId).toBeString();
     expectTypeOf(user).toMatchTypeOf<User>();
   });
 
-  test("Server and Project shapes accept valid runtime/status fields", () => {
-    const server: Server = {
-      id: "srv_1",
+  test("Project shape matches DB model", () => {
+    const project: Project = {
+      projectId: "proj_1",
       userId: "user_1",
+      name: "fleet-api",
+      repoUrl: "https://github.com/example/fleet",
+      runtime: "bun",
+    };
+
+    const minimal: Project = {
+      projectId: "proj_2",
+      userId: "user_1",
+      name: "fleet-api",
+      repoUrl: "https://github.com/example/fleet",
+    };
+
+    expect(project.runtime).toBe("bun");
+    expect(minimal.runtime).toBeUndefined();
+    expectTypeOf(project).toMatchTypeOf<Project>();
+  });
+
+  test("Environment shape matches DB model", () => {
+    const environment: Environment = {
+      environmentId: "env_1",
+      projectId: "proj_1",
+      type: "prod",
+      branch: "main",
+      subdomain: "fleet-api",
+      autoDeploy: true,
+      createdAt: "2026-05-11T00:00:00.000Z",
+      updatedAt: "2026-05-11T00:00:00.000Z",
+    };
+
+    expect(environment.branch).toBe("main");
+    expectTypeOf(environment.type).toEqualTypeOf<"prod" | "staging" | "dev">();
+    expectTypeOf(environment).toMatchTypeOf<Environment>();
+  });
+
+  test("Server shape matches DB model", () => {
+    const server: Server = {
+      serverId: "srv_1",
       name: "prod-server",
       ip: "10.0.0.12",
       status: "connected",
       totalRam: 16384,
       totalCpu: 8,
+      agentToken: "secret-token",
       createdAt: "2026-05-11T00:00:00.000Z",
+      updatedAt: "2026-05-11T00:00:00.000Z",
     };
 
-    const project: Project = {
-      id: "proj_1",
-      userId: "user_1",
-      serverId: server.id,
-      name: "fleet-api",
-      repoUrl: "https://github.com/example/fleet",
-      branch: "main",
-      subdomain: "fleet-api",
-      runtime: "bun",
-      createdAt: "2026-05-11T00:00:00.000Z",
-    };
-
-    expect(project.serverId).toBe(server.id);
     expectTypeOf(server.status).toEqualTypeOf<"connected" | "disconnected">();
+    expectTypeOf(server).toMatchTypeOf<Server>();
   });
 
-  test("Deployment supports optional error field", () => {
+  test("Deployment shape matches DB model with optional fields", () => {
     const deployment: Deployment = {
-      id: "dep_1",
+      deploymentId: "dep_1",
       projectId: "proj_1",
-      status: "failed",
+      environmentId: "env_1",
       commitSha: "abc123",
       commitMessage: "fix: deploy issue",
+      branch: "main",
+      serverId: "srv_1",
+      status: "failed",
       imageTag: "fleet-api:abc123",
+      url: "https://fleet-api.example.com",
       error: "container failed health check",
-      queuedAt: "2026-05-11T00:00:00.000Z",
-      buildingAt: "2026-05-11T00:01:00.000Z",
-      deployingAt: "2026-05-11T00:02:00.000Z",
-      liveAt: "2026-05-11T00:00:00.000Z",
-      failedAt: "2026-05-11T00:03:00.000Z",
+      createdAt: "2026-05-11T00:00:00.000Z",
+      updatedAt: "2026-05-11T00:03:00.000Z",
+    };
+
+    const queued: Deployment = {
+      deploymentId: "dep_2",
+      projectId: "proj_1",
+      environmentId: "env_1",
+      commitSha: "def456",
+      commitMessage: "feat: initial deploy",
+      branch: "develop",
+      serverId: "srv_1",
+      status: "queued",
+      createdAt: "2026-05-11T01:00:00.000Z",
+      updatedAt: "2026-05-11T01:00:00.000Z",
     };
 
     expect(deployment.error).toBeTruthy();
+    expect(queued.imageTag).toBeUndefined();
     expectTypeOf(deployment.status).toEqualTypeOf<
       "queued" | "building" | "deploying" | "live" | "failed" | "rolled_back"
     >();

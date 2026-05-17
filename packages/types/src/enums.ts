@@ -17,3 +17,6 @@ export type RuntimeType =
   | "unknown";
 
 export type ServerStatus = "connected" | "disconnected";
+
+/** Matches Environment.type in the API DB model (prod, staging, dev). */
+export type EnvironmentType = "prod" | "staging" | "dev";

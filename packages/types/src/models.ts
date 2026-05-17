@@ -1,47 +1,61 @@
-import type { DeploymentStatus, RuntimeType, ServerStatus } from "./enums";
+import type {
+  DeploymentStatus,
+  EnvironmentType,
+  ServerStatus,
+} from "./enums";
 
 export interface User {
-  id: string;
+  name: string;
+  userId: string;
   email: string;
   password: string;
   createdAt: string;
   updatedAt: string;
 }
 
-export interface Server {
-  id: string;
+export interface Project {
+  name: string;
+  projectId: string;
+  repoUrl: string;
   userId: string;
+  runtime?: string;
+}
+
+export interface Environment {
+  environmentId: string;
+  projectId: string;
+  type: EnvironmentType;
+  branch: string;
+  subdomain: string;
+  autoDeploy: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Server {
+  serverId: string;
   name: string;
   ip: string;
   status: ServerStatus;
   totalRam: number;
   totalCpu: number;
+  agentToken: string;
   createdAt: string;
-}
-
-export interface Project {
-  id: string;
-  userId: string;
-  serverId: string;
-  name: string;
-  repoUrl: string;
-  branch: string;
-  subdomain: string;
-  runtime: RuntimeType;
-  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Deployment {
-  id: string;
+  deploymentId: string;
   projectId: string;
-  status: DeploymentStatus;
+  environmentId: string;
   commitSha: string;
   commitMessage: string;
-  imageTag: string;
+  branch: string;
+  serverId: string;
+  status: DeploymentStatus;
+  imageTag?: string;
+  url?: string;
   error?: string;
-  queuedAt: string;
-  buildingAt: string;
-  deployingAt: string;
-  liveAt: string;
-  failedAt: string;
+  createdAt: string;
+  updatedAt: string;
 }
