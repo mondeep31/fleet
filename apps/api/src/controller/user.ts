@@ -10,7 +10,6 @@ import type {
   CreateUserBody,
   LoginBody,
   UpdateUserBody,
-  UserIdParams,
 } from "../validators/user";
 
 const createUserController: RequestHandler = async (req, res) => {
@@ -20,15 +19,15 @@ const createUserController: RequestHandler = async (req, res) => {
 };
 
 const getUserController: RequestHandler = async (req, res) => {
-  const { id } = req.params as UserIdParams;
-  const user = await getUserById({ id });
+  const userId = req.user!.userId;
+  const user = await getUserById({ id: userId });
   res.status(200).json(user);
 };
 
 const updateUserController: RequestHandler = async (req, res) => {
-  const { id } = req.params as UserIdParams;
+  const userId = req.user!.userId;
   const { password } = req.body as UpdateUserBody;
-  const user = await updateUser({ id, password });
+  const user = await updateUser({ id: userId, password });
   res.status(200).json(user);
 };
 

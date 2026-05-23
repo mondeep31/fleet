@@ -1,10 +1,16 @@
 import { Router } from "express";
 import { validate } from "../middleware/validate";
 import { loginBodySchema } from "../validators/user";
-import { loginController } from "../controller/user";
+import { loginController, createUserController } from "../controller/user";
+import { createUserBodySchema } from "../validators/user";
 
 const router = Router();
 
 router.post("/login", validate({ body: loginBodySchema }), loginController);
+router.post(
+  "/signup",
+  validate({ body: createUserBodySchema }),
+  createUserController,
+);
 
 export default router;

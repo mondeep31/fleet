@@ -1,4 +1,5 @@
 import Project from "../db/models/project";
+import { AppError } from "../errors/app-error";
 
 interface CreateProjectParams {
   name: string;
@@ -35,6 +36,9 @@ export const getAllProjectsForAUser = async ({
   userId,
 }: GetAllProjectsForAUserParams) => {
   const projects = await Project.find({ userId });
+  if (!projects) {
+    throw new AppError(404, "No projects found", "NO_PROJECTS_FOUND");
+  }
   return {
     projects: projects.map(
       (project): ProjectResponse => ({

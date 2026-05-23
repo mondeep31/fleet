@@ -1,9 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middleware/validate";
-import {
-  createProjectBodySchema,
-  getAllProjectsQuerySchema,
-} from "../validators/user";
+import { createProjectBodySchema } from "../validators/user";
 import {
   createProjectController,
   getAllProjectsController,
@@ -17,10 +14,6 @@ router.post(
   createProjectController,
 );
 
-router.get(
-  "/",
-  validate({ query: getAllProjectsQuerySchema }),
-  getAllProjectsController,
-);
+router.get("/", getAllProjectsController);
 
 export default router;

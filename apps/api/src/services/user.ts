@@ -29,11 +29,17 @@ export const createUser = async ({
   password,
 }: CreateUserParams) => {
   const hashedPassword = await bcrypt.hash(password, 10);
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    throw new AppError(400, "User already exists", "USER_ALREADY_EXISTS");
+  }
   const user = await User.create({ name, email, password: hashedPassword });
+  const token = signJWT(user.userId);
   return {
     id: user.userId,
     name: user.name,
     email: user.email,
+    token,
   };
 };
 
