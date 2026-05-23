@@ -2,9 +2,12 @@ import { Router } from "express";
 import { validate } from "../middleware/validate";
 import {
   createProjectBodySchema,
-  type CreateProjectBody,
+  getAllProjectsQuerySchema,
 } from "../validators/user";
-import { createProjectController } from "../controller/project";
+import {
+  createProjectController,
+  getAllProjectsController,
+} from "../controller/project";
 
 const router = Router();
 
@@ -12,6 +15,12 @@ router.post(
   "/",
   validate({ body: createProjectBodySchema }),
   createProjectController,
+);
+
+router.get(
+  "/",
+  validate({ query: getAllProjectsQuerySchema }),
+  getAllProjectsController,
 );
 
 export default router;

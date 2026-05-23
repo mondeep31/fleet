@@ -1,12 +1,20 @@
 import type { RequestHandler } from "express";
-import { createProject } from "../services/project";
-import type { CreateProjectBody } from "../validators/user";
+import { createProject, getAllProjectsForAUser } from "../services/project";
+import type {
+  CreateProjectBody,
+  GetAllProjectsQuery,
+} from "../validators/user";
 
 const createProjectController: RequestHandler = async (req, res) => {
-  const { name, repoUrl } = req.body as CreateProjectBody;
-  const userId = req.params.userId as string;
+  const { name, repoUrl, userId } = req.body as CreateProjectBody;
   const project = await createProject({ name, repoUrl, userId });
   res.status(201).json(project);
 };
 
-export { createProjectController };
+const getAllProjectsController: RequestHandler = async (req, res) => {
+  const { userId } = req.query as GetAllProjectsQuery;
+  const projects = await getAllProjectsForAUser({ userId });
+  return res.status(200).json(projects);
+};
+
+export { createProjectController, getAllProjectsController };

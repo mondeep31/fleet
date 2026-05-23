@@ -1,7 +1,14 @@
 import type { RequestHandler } from "express";
-import { createUser, getUserById, updateUser } from "../services/user";
+import {
+  createUser,
+  getUserById,
+  updateUser,
+  loginUserByEmailAndPassword,
+} from "../services/user";
+
 import type {
   CreateUserBody,
+  LoginBody,
   UpdateUserBody,
   UserIdParams,
 } from "../validators/user";
@@ -25,4 +32,15 @@ const updateUserController: RequestHandler = async (req, res) => {
   res.status(200).json(user);
 };
 
-export { createUserController, getUserController, updateUserController };
+const loginController: RequestHandler = async (req, res) => {
+  const { email, password } = req.body as LoginBody;
+  const user = await loginUserByEmailAndPassword({ email, password });
+  res.status(200).json(user);
+};
+
+export {
+  createUserController,
+  getUserController,
+  updateUserController,
+  loginController,
+};

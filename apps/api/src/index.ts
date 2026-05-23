@@ -4,7 +4,8 @@ import router from "./routes";
 import { errorHandler } from "./middleware/error-handler";
 import { notFoundHandler } from "./middleware/not-found-handler";
 import { connectDB, disconnectDB } from "./db/config";
-
+import unauthRoutes from "./routes/unauth";
+import authMiddleware from "./middleware/auth";
 const app = express();
 const port = process.env.PORT || 3001;
 
@@ -17,7 +18,8 @@ app.get("/health", (_, res) => {
   res.json({ message: "OK" });
 });
 app.get("/ping", ping);
-app.use("/api/v1", router);
+app.use("/v1", unauthRoutes);
+app.use("/api/v1", authMiddleware, router);
 app.use(notFoundHandler);
 app.use(errorHandler);
 

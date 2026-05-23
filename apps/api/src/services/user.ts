@@ -1,6 +1,7 @@
 import User from "../db/models/user";
 import bcrypt from "bcryptjs";
 import { AppError } from "../errors/app-error";
+import { signJWT } from "../utils/jwt";
 
 interface CreateUserParams {
   name: string;
@@ -14,6 +15,11 @@ interface GetUserByIdParams {
 
 interface UpdateUserParams {
   id: string;
+  password: string;
+}
+
+interface LoginUserByEmailAndPasswordParams {
+  email: string;
   password: string;
 }
 
@@ -57,5 +63,26 @@ export const updateUser = async ({ id, password }: UpdateUserParams) => {
     id: user.userId,
     name: user.name,
     email: user.email,
+  };
+};
+
+export const loginUserByEmailAndPassword = async ({
+  email,
+  password,
+}: LoginUserByEmailAndPasswordParams) => {
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new AppError(404, "User not found", "USER_NOT_FOUND");
+  }
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new AppError(401, "Invalid password", "INVALID_PASSWORD");
+  }
+  const token = signJWT(user.userId);
+  return {
+    id: user.userId,
+    name: user.name,
+    email: user.email,
+    token,
   };
 };

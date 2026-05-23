@@ -6,6 +6,17 @@ interface CreateProjectParams {
   userId: string;
 }
 
+interface GetAllProjectsForAUserParams {
+  userId: string;
+}
+
+interface ProjectResponse {
+  projectId: string;
+  name: string;
+  repoUrl: string;
+  userId: string;
+}
+
 export const createProject = async ({
   name,
   repoUrl,
@@ -17,5 +28,21 @@ export const createProject = async ({
     name: project.name,
     repoUrl: project.repoUrl,
     userId: project.userId,
+  };
+};
+
+export const getAllProjectsForAUser = async ({
+  userId,
+}: GetAllProjectsForAUserParams) => {
+  const projects = await Project.find({ userId });
+  return {
+    projects: projects.map(
+      (project): ProjectResponse => ({
+        projectId: project.projectId,
+        name: project.name,
+        repoUrl: project.repoUrl,
+        userId: project.userId,
+      }),
+    ),
   };
 };
