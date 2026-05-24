@@ -6,6 +6,7 @@ const createProjectController: RequestHandler = async (req, res) => {
   const { name, repoUrl } = req.body as CreateProjectBody;
   const userId = req.user!.userId;
   const project = await createProject({ name, repoUrl, userId });
+  // TODO: enqueue a deployment job here
   res.status(201).json({
     message: "Project created successfully",
     success: true,
