@@ -19,3 +19,15 @@
 11. Redeploy = new Deployment; rollback = deploy previous imageTag
 
 12. use our managed server for deployment(always this)
+
+api mostly done.
+auth jwt done.
+next step: deployment
+on create project, enqueue a deployment job.
+for now:
+lets work on simple things first.
+
+1. clone a repo - v1, clone locally in an out dir, only contain safe ones for now, no worries, later we will sandbox it each repo.
+2. auto build docker image service.
+
+no idea, how will i do this and what happens after this. lets go.
