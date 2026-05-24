@@ -17,3 +17,5 @@
 9. Worker runs pipeline: clone → build image → push registry → deploy container
 10. Agent reports status + logs; API updates Deployment; user gets URL when live
 11. Redeploy = new Deployment; rollback = deploy previous imageTag
+
+12. use our managed server for deployment(always this)

@@ -10,6 +10,10 @@ import { updateUserBodySchema } from "../validators/user";
 const router = Router();
 
 router.get("/:id", getUserController);
-router.put("/", validate({ body: updateUserBodySchema }), updateUserController);
+router.patch(
+  "/",
+  validate({ body: updateUserBodySchema }),
+  updateUserController,
+);
 
 export default router;

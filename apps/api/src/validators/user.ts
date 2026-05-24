@@ -16,7 +16,8 @@ export const createUserBodySchema = z.object({
 });
 
 export const updateUserBodySchema = z.object({
-  password: z.string().min(8, "Password must be at least 8 characters"),
+  currentPassword: z.string().min(8, "Password must be at least 8 characters"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export const loginBodySchema = z.object({

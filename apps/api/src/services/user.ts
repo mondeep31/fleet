@@ -13,14 +13,25 @@ interface GetUserByIdParams {
   id: string;
 }
 
-interface UpdateUserParams {
+interface GetUserPasswordParams {
   id: string;
-  password: string;
+}
+
+interface UpdateUserParams {
+  userId: string;
+  currentPassword: string;
+  newPassword: string;
 }
 
 interface LoginUserByEmailAndPasswordParams {
   email: string;
   password: string;
+}
+
+interface ValidatePasswordForUpdateParams {
+  currentPassword: string;
+  newPassword: string;
+  checkUser: string;
 }
 
 export const createUser = async ({
@@ -36,7 +47,7 @@ export const createUser = async ({
   const user = await User.create({ name, email, password: hashedPassword });
   const token = signJWT(user.userId);
   return {
-    id: user.userId,
+    userId: user.userId,
     name: user.name,
     email: user.email,
     token,
@@ -49,24 +60,46 @@ export const getUserById = async ({ id }: GetUserByIdParams) => {
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
   return {
-    id: user.userId,
+    userId: user.userId,
     name: user.name,
     email: user.email,
   };
 };
 
-export const updateUser = async ({ id, password }: UpdateUserParams) => {
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.findOneAndUpdate(
-    { userId: id },
-    { password: hashedPassword },
-    { new: true },
-  );
+export const updateUser = async ({
+  userId,
+  currentPassword,
+  newPassword,
+}: UpdateUserParams) => {
+  const user = await User.findOne({ userId });
   if (!user) {
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
+
+  if (currentPassword === newPassword) {
+    throw new AppError(
+      400,
+      "New password cannot be the same as the current password",
+      "INVALID_PASSWORD",
+    );
+  }
+  const isCurrentPasswordValid = await bcrypt.compare(
+    currentPassword,
+    user.password,
+  );
+  if (!isCurrentPasswordValid) {
+    throw new AppError(
+      401,
+      "Invalid current password",
+      "INVALID_CURRENT_PASSWORD",
+    );
+  }
+  user.password = await bcrypt.hash(newPassword, 10);
+
+  await user.save();
+
   return {
-    id: user.userId,
+    userId: user.userId,
     name: user.name,
     email: user.email,
   };
@@ -86,7 +119,7 @@ export const loginUserByEmailAndPassword = async ({
   }
   const token = signJWT(user.userId);
   return {
-    id: user.userId,
+    userId: user.userId,
     name: user.name,
     email: user.email,
     token,
