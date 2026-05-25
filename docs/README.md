@@ -31,3 +31,5 @@ lets work on simple things first.
 2. auto build docker image service.
 
 no idea, how will i do this and what happens after this. lets go.
+
+next steps:
