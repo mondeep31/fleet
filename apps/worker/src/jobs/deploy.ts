@@ -1,5 +1,6 @@
 import { getErrorMessage } from "@fleet/errors";
 import type { DeployJobPayload } from "@fleet/queue";
+import { detectDockerfile } from "@fleet/runtime-detector";
 import { DeploymentStoppedError } from "../errors/deployment-stopped";
 import {
   appendDeploymentLogs,
@@ -48,10 +49,25 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     await exitIfStopped(deploymentId);
 
+    const dockerfile = await detectDockerfile(cloneDir);
+    if (!dockerfile.found) {
+      throw new Error(
+        "No Dockerfile found at repository root. Add a Dockerfile or dockerfile to deploy.",
+      );
+    }
+    await appendDeploymentLogs(deploymentId, [
+      `Dockerfile found: ${dockerfile.relativePath}`,
+    ]);
+
     await updateDeployment(deploymentId, { status: "building" });
     await appendDeploymentLogs(deploymentId, ["Building Docker image..."]);
     const imageTag = `fleet/${deployment.projectId}:${deploymentId}`;
-    await buildImage({ cloneDir, imageTag, deploymentId });
+    await buildImage({
+      cloneDir,
+      imageTag,
+      deploymentId,
+      dockerfile: dockerfile.relativePath,
+    });
     await updateDeployment(deploymentId, { imageTag });
     await appendDeploymentLogs(deploymentId, [`Build complete: ${imageTag}`]);
     console.log(`built ${deploymentId} → ${imageTag}`);

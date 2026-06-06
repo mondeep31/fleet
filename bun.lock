@@ -101,6 +101,7 @@
         "@fleet/db": "workspace:*",
         "@fleet/errors": "workspace:*",
         "@fleet/queue": "workspace:*",
+        "@fleet/runtime-detector": "workspace:*",
         "bullmq": "^5.76.6",
         "dockerode": "^5.0.0",
         "fs-extra": "^11.3.5",

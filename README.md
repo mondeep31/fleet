@@ -44,7 +44,7 @@ Containers are named `fleet-{deploymentId}` so you can identify them locally. Ro
 | [`packages/api-middleware`](packages/api-middleware) | Request validation, error handling | **Active** |
 | [`packages/errors`](packages/errors) | `AppError`, error response helpers | **Active** |
 | [`packages/types`](packages/types) | Shared TypeScript types and enums | **Active** |
-| [`packages/runtime-detector`](packages/runtime-detector) | Auto-detect runtime / generate Dockerfile | Planned (package shell) |
+| [`packages/runtime-detector`](packages/runtime-detector) | Detect `Dockerfile` at repo root | **Active** (auto-generate Dockerfile planned) |
 
 ## Prerequisites
 
@@ -91,7 +91,7 @@ API listens on port **3010** by default (`PORT` in `.env`).
 
 ### 4. Deploy a test repo
 
-Use a repo with a **Dockerfile** that exposes a port. The worker auto-detects the exposed port from the image (the test repo uses **3001**):
+Use a repo with **`Dockerfile` or `dockerfile` at the repository root**. After clone, the worker checks for this file before building; missing Dockerfile fails with a clear error (not an opaque Docker build failure). The worker auto-detects the exposed port from the built image (the test repo uses **3001**):
 
 **Test repo:** [github.com/mondeep31/fleet-test-repo-1](https://github.com/mondeep31/fleet-test-repo-1)
 
@@ -170,7 +170,7 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 | `stopped` | Stopped or cancelled via `DELETE`; container removed, `url` cleared |
 | `rolled_back` | Reserved for rollback (not implemented) |
 
-Happy path: `queued` → `cloning` → `cloned` → `building` → `deploying` → `live`.
+Happy path: `queued` → `cloning` → `cloned` → (Dockerfile detect) → `building` → `deploying` → `live`.
 
 `DELETE /deployments/:id` works for **live**, **failed**, and **queued** deployments. Queued jobs are removed from BullMQ; in-flight jobs are cooperatively cancelled when the worker checks status between steps.
 

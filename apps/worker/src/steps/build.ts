@@ -6,16 +6,21 @@ interface BuildImageParams {
   cloneDir: string;
   imageTag: string;
   deploymentId: string;
+  dockerfile?: string;
 }
 
 export async function buildImage({
   cloneDir,
   imageTag,
   deploymentId,
+  dockerfile = "Dockerfile",
 }: BuildImageParams): Promise<string> {
   const docker = getDocker();
   const tarStream = tar.pack(cloneDir);
-  const stream = await docker.buildImage(tarStream, { t: imageTag });
+  const stream = await docker.buildImage(tarStream, {
+    t: imageTag,
+    dockerfile,
+  });
 
   await new Promise<void>((resolve, reject) => {
     let failed = false;
