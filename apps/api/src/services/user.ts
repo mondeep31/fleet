@@ -1,7 +1,7 @@
-import User from "../db/models/user";
+import { User } from "@fleet/db";
 import bcrypt from "bcryptjs";
-import { AppError } from "../errors/app-error";
-import { signJWT } from "../utils/jwt";
+import { signJWT } from "@fleet/auth";
+import { AppError } from "@fleet/errors";
 
 interface CreateUserParams {
   name: string;

@@ -1,13 +1,16 @@
+/// <reference path="../../../packages/auth/src/express.d.ts" />
+import { getEnv } from "@fleet/config";
 import express from "express";
 import type { RequestHandler } from "express";
+import { connectDB, disconnectDB } from "@fleet/db";
+import { errorHandler, notFoundHandler } from "@fleet/api-middleware";
+import { authMiddleware } from "@fleet/auth";
 import router from "./routes";
-import { errorHandler } from "./middleware/error-handler";
-import { notFoundHandler } from "./middleware/not-found-handler";
-import { connectDB, disconnectDB } from "./db/config";
 import unauthRoutes from "./routes/unauth";
-import authMiddleware from "./middleware/auth";
+
+const { PORT } = getEnv();
+
 const app = express();
-const port = process.env.PORT || 3001;
 
 const ping: RequestHandler = (_, res) => {
   res.json({ message: "pong" });
@@ -25,8 +28,8 @@ app.use(errorHandler);
 
 async function main() {
   await connectDB();
-  const server = app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
   });
 
   const shutdown = async () => {

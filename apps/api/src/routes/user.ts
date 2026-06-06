@@ -1,10 +1,6 @@
 import { Router } from "express";
-import {
-  createUserController,
-  getUserController,
-  updateUserController,
-} from "../controller/user";
-import { validate } from "../middleware/validate";
+import { getUserController, updateUserController } from "../controller/user";
+import { validate } from "@fleet/api-middleware";
 import { updateUserBodySchema } from "../validators/user";
 
 const router = Router();

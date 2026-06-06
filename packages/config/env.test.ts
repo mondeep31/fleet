@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "vitest";
-import { getEnv, resetEnvCache } from "./env";
+import { getEnv, getSharedEnv, resetEnvCache } from "./env";
 
 const REQUIRED_ENV = {
   MONGODB_URI: "mongodb://localhost:27017/fleet",
@@ -75,5 +75,29 @@ describe("getEnv", () => {
       logged.some((line) => line.includes("Invalid environment variables")),
     ).toBe(true);
     expect(logged.some((line) => line.includes("MONGODB_URI"))).toBe(true);
+  });
+});
+
+describe("getSharedEnv", () => {
+  test("returns shared vars without API-only fields", () => {
+    resetProcessEnv();
+    Reflect.deleteProperty(process.env, "NODE_ENV");
+    Object.assign(process.env, { MONGODB_URI: REQUIRED_ENV.MONGODB_URI });
+    const env = getSharedEnv();
+
+    expect(env.MONGODB_URI).toBe(REQUIRED_ENV.MONGODB_URI);
+    expect(env.REDIS_URL).toBe("redis://localhost:16379");
+    expect(env.NODE_ENV).toBe("development");
+  });
+
+  test("exits when MONGODB_URI is missing", () => {
+    resetProcessEnv();
+    delete process.env.MONGODB_URI;
+
+    process.exit = ((code?: number) => {
+      throw new Error(`EXIT_${code ?? 0}`);
+    }) as typeof process.exit;
+
+    expect(() => getSharedEnv()).toThrow("EXIT_1");
   });
 });

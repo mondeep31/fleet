@@ -1,14 +1,11 @@
+import { getEnv } from "@fleet/config";
 import jwt from "jsonwebtoken";
-import { AppError } from "../errors/app-error";
+import { AppError } from "@fleet/errors";
 
 const JWT_EXPIRES = "7d";
 
 function getJWTSecret(): string {
-  const secret = process.env.JWT_SECRET;
-  if (!secret) {
-    throw new Error("JWT_SECRET is not set");
-  }
-  return secret;
+  return getEnv().JWT_SECRET;
 }
 
 export function signJWT(userId: string): string {
@@ -21,7 +18,7 @@ export function verifyJWT(token: string): { userId: string } {
   try {
     const payload = jwt.verify(token, getJWTSecret()) as { sub: string };
     return { userId: payload.sub };
-  } catch (error) {
+  } catch {
     throw new AppError(401, "Invalid token", "INVALID_TOKEN");
   }
 }

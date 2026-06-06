@@ -1,8 +1,9 @@
-import { AppError } from "../errors/app-error";
+/// <reference path="./express.d.ts" />
 import type { RequestHandler } from "express";
-import { verifyJWT } from "../utils/jwt";
+import { AppError } from "@fleet/errors";
+import { verifyJWT } from "./jwt";
 
-const authMiddleware: RequestHandler = async (req, res, next) => {
+export const authMiddleware: RequestHandler = async (req, _res, next) => {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) {
     throw new AppError(401, "Missing or invalid token", "UNAUTHORIZED");
@@ -11,5 +12,3 @@ const authMiddleware: RequestHandler = async (req, res, next) => {
   req.user = verifyJWT(token);
   next();
 };
-
-export default authMiddleware;

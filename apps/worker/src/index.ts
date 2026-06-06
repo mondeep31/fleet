@@ -1,22 +1,23 @@
-import { config as loadDotenv } from "dotenv";
-import { dirname, resolve } from "node:path";
-import { fileURLToPath } from "node:url";
+import { getSharedEnv } from "@fleet/config";
 import { Worker } from "bullmq";
+import { connectDB, disconnectDB } from "@fleet/db";
 import {
   createRedisConnection,
   DEPLOY_QUEUE,
   type DeployJobPayload,
 } from "@fleet/queue";
+import { handleDeployJob } from "./jobs/deploy";
 
-const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
-loadDotenv({ path: resolve(repoRoot, ".env") });
+getSharedEnv();
 
 const connection = createRedisConnection();
+
+await connectDB();
 
 const worker = new Worker<DeployJobPayload>(
   DEPLOY_QUEUE,
   async (job) => {
-    console.log("got job", job.data);
+    await handleDeployJob(job.data);
   },
   { connection },
 );
@@ -29,6 +30,7 @@ const shutdown = async () => {
   console.log("shutting down worker...");
   await worker.close();
   await connection.quit();
+  await disconnectDB();
   process.exit(0);
 };
 

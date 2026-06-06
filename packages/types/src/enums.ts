@@ -1,5 +1,7 @@
 export type DeploymentStatus =
   | "queued"
+  | "cloning"
+  | "cloned"
   | "building"
   | "deploying"
   | "live"

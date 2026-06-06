@@ -1,5 +1,5 @@
-import Project from "../db/models/project";
-import { AppError } from "../errors/app-error";
+import { Project } from "@fleet/db";
+import { AppError } from "@fleet/errors";
 
 interface CreateProjectParams {
   name: string;

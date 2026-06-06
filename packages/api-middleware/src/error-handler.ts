@@ -1,23 +1,7 @@
 import type { ErrorRequestHandler } from "express";
 import { ZodError } from "zod";
-import { AppError } from "../errors/app-error";
-import { isDuplicateKeyError } from "../utils/mongo";
-
-type ErrorResponseBody = {
-  message: string;
-  success: false;
-  code: string;
-  data: null;
-};
-
-function buildErrorResponse(message: string, code: string): ErrorResponseBody {
-  return {
-    message,
-    success: false,
-    code,
-    data: null,
-  };
-}
+import { isDuplicateKeyError } from "@fleet/db";
+import { AppError, buildErrorResponse } from "@fleet/errors";
 
 /**
  * Express error handling middleware.

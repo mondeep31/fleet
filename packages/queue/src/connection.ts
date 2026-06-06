@@ -1,9 +1,9 @@
+import { getSharedEnv } from "@fleet/config";
 import IORedis from "ioredis";
 
-const redisUrl = process.env.REDIS_URL ?? "redis://localhost:16379";
-
 export function createRedisConnection() {
-  return new IORedis(redisUrl, {
+  const { REDIS_URL } = getSharedEnv();
+  return new IORedis(REDIS_URL, {
     maxRetriesPerRequest: null,
   });
 }

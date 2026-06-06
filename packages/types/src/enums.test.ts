@@ -10,6 +10,8 @@ describe("types/enums", () => {
   test("DeploymentStatus allows expected values", () => {
     const values: DeploymentStatus[] = [
       "queued",
+      "cloning",
+      "cloned",
       "building",
       "deploying",
       "live",
@@ -17,7 +19,7 @@ describe("types/enums", () => {
       "rolled_back",
     ];
 
-    expect(values).toHaveLength(6);
+    expect(values).toHaveLength(8);
     expect(values).toContain("live");
   });
 

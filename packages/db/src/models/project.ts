@@ -24,6 +24,13 @@ const projectSchema = new mongoose.Schema({
   },
 });
 
+projectSchema.set("toJSON", {
+  transform(_doc, ret) {
+    const { __v: _version, ...safe } = ret;
+    return safe;
+  },
+});
+
 const Project = mongoose.model("Project", projectSchema);
 
-export default Project;
+export { Project };

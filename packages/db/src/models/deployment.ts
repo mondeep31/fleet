@@ -37,12 +37,17 @@ const deploymentSchema = new mongoose.Schema(
       required: true,
       enum: [
         "queued",
+        "cloning",
+        "cloned",
         "building",
         "deploying",
         "live",
         "failed",
         "rolled_back",
       ],
+    },
+    clonePath: {
+      type: String,
     },
     imageTag: {
       type: String,

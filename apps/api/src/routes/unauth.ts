@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { validate } from "../middleware/validate";
+import { validate } from "@fleet/api-middleware";
 import { loginBodySchema } from "../validators/user";
 import { loginController, createUserController } from "../controller/user";
 import { createUserBodySchema } from "../validators/user";

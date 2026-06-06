@@ -1,5 +1,5 @@
 import { enqueueDeploy } from "@fleet/queue";
-import { Deployment } from "../db/models/deployment";
+import { Deployment } from "@fleet/db";
 
 const MVP_BRANCH = "main";
 const MVP_COMMIT_SHA = "pending";

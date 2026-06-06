@@ -53,6 +53,7 @@ export interface Deployment {
   branch: string;
   serverId: string;
   status: DeploymentStatus;
+  clonePath?: string;
   imageTag?: string;
   url?: string;
   error?: string;

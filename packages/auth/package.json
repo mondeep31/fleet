@@ -1,0 +1,19 @@
+{
+  "name": "@fleet/auth",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@fleet/config": "workspace:*",
+    "@fleet/errors": "workspace:*",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^25.6.2",
+    "typescript": "^6.0.3"
+  }
+}

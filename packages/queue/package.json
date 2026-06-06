@@ -5,6 +5,7 @@
   "main": "./src/index.ts",
   "types": "./src/index.ts",
   "dependencies": {
+    "@fleet/config": "workspace:*",
     "bullmq": "^5.76.6",
     "ioredis": "^5.10.1"
   },

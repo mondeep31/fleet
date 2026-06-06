@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "setup:hooks": "git config core.hooksPath .githooks && chmod +x .githooks/pre-commit .githooks/pre-push",
+    "migrate:env": "bun run scripts/migrate-env.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --coverage.exclude='apps/dashboard/**' --coverage.exclude='vitest.config.ts' --coverage.exclude='index.ts'",
     "test:ui": "bun run --cwd apps/dashboard lint && bun run --cwd apps/dashboard build",

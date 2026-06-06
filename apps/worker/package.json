@@ -7,11 +7,16 @@
     "start": "bun run src/index.ts"
   },
   "dependencies": {
+    "@fleet/config": "workspace:*",
+    "@fleet/errors": "workspace:*",
+    "@fleet/db": "workspace:*",
     "@fleet/queue": "workspace:*",
     "bullmq": "^5.76.6",
-    "dotenv": "^17.4.2"
+    "fs-extra": "^11.3.5",
+    "simple-git": "^3.36.0"
   },
   "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
     "@types/node": "^25.6.2",
     "typescript": "^6.0.3"
   }
