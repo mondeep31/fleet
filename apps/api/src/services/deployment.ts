@@ -1,6 +1,7 @@
-import { enqueueDeploy } from "@fleet/queue";
-import { Deployment } from "@fleet/db";
+import { cancelDeployJob, enqueueDeploy } from "@fleet/queue";
+import { Deployment, Project } from "@fleet/db";
 import { AppError } from "@fleet/errors";
+import { removeDeploymentContainer } from "../lib/containers";
 
 const MVP_BRANCH = "main";
 const MVP_COMMIT_SHA = "pending";
@@ -91,4 +92,49 @@ export async function getDeploymentsByProjectId(projectId: string) {
     createdAt: -1,
   });
   return deployments.map(toDeploymentResponse);
+}
+
+async function assertDeploymentOwnership(deploymentId: string, userId: string) {
+  const deployment = await Deployment.findOne({ deploymentId });
+  if (!deployment) {
+    throw new AppError(404, "Deployment not found", "DEPLOYMENT_NOT_FOUND");
+  }
+
+  const project = await Project.findOne({ projectId: deployment.projectId });
+  if (!project || project.userId !== userId) {
+    throw new AppError(403, "Forbidden", "FORBIDDEN");
+  }
+
+  return deployment;
+}
+
+export async function getDeploymentLogs(deploymentId: string, userId: string) {
+  const deployment = await assertDeploymentOwnership(deploymentId, userId);
+  return {
+    deploymentId: deployment.deploymentId,
+    logs: deployment.logs ?? [],
+  };
+}
+
+export async function stopDeployment(deploymentId: string, userId: string) {
+  const deployment = await assertDeploymentOwnership(deploymentId, userId);
+
+  if (deployment.status === "stopped") {
+    return toDeploymentResponse(deployment);
+  }
+
+  await cancelDeployJob(deploymentId);
+  await removeDeploymentContainer(deploymentId);
+
+  const updated = await Deployment.findOneAndUpdate(
+    { deploymentId },
+    { status: "stopped", $unset: { url: 1 } },
+    { new: true },
+  );
+
+  if (!updated) {
+    throw new AppError(404, "Deployment not found", "DEPLOYMENT_NOT_FOUND");
+  }
+
+  return toDeploymentResponse(updated);
 }

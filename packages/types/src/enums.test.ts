@@ -17,9 +17,10 @@ describe("types/enums", () => {
       "live",
       "failed",
       "rolled_back",
+      "stopped",
     ];
 
-    expect(values).toHaveLength(8);
+    expect(values).toHaveLength(9);
     expect(values).toContain("live");
   });
 

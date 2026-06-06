@@ -20,3 +20,16 @@ export async function enqueueDeploy(payload: DeployJobPayload) {
     jobId: payload.deploymentId,
   });
 }
+
+export async function cancelDeployJob(deploymentId: string): Promise<boolean> {
+  const job = await createDeployQueue().getJob(deploymentId);
+  if (!job) return false;
+
+  const state = await job.getState();
+  if (state === "waiting" || state === "delayed") {
+    await job.remove();
+    return true;
+  }
+
+  return false;
+}

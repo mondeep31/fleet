@@ -44,7 +44,12 @@ const deploymentSchema = new mongoose.Schema(
         "live",
         "failed",
         "rolled_back",
+        "stopped",
       ],
+    },
+    logs: {
+      type: [String],
+      default: [],
     },
     clonePath: {
       type: String,

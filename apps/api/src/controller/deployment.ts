@@ -1,7 +1,9 @@
 import type { RequestHandler } from "express";
 import {
   getDeploymentById,
+  getDeploymentLogs,
   getDeploymentsByProjectId,
+  stopDeployment,
 } from "../services/deployment";
 
 const getDeploymentController: RequestHandler = async (req, res) => {
@@ -39,8 +41,33 @@ const getDeploymentsByProjectController: RequestHandler = async (req, res) => {
   });
 };
 
+// TODO: stream logs in real time (SSE/WebSocket) — currently returns full array from DB
+const getDeploymentLogsController: RequestHandler = async (req, res) => {
+  const { deploymentId } = req.params;
+  const userId = req.user!.userId;
+  const logs = await getDeploymentLogs(deploymentId, userId);
+  res.status(200).json({
+    message: "Deployment logs fetched successfully",
+    success: true,
+    data: logs,
+  });
+};
+
+const stopDeploymentController: RequestHandler = async (req, res) => {
+  const { deploymentId } = req.params;
+  const userId = req.user!.userId;
+  const deployment = await stopDeployment(deploymentId, userId);
+  res.status(200).json({
+    message: "Deployment stopped successfully",
+    success: true,
+    data: deployment,
+  });
+};
+
 export {
   getDeploymentController,
+  getDeploymentLogsController,
   getDeploymentStatusController,
   getDeploymentsByProjectController,
+  stopDeploymentController,
 };

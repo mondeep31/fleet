@@ -1,14 +1,17 @@
 import tar from "tar-fs";
 import { getDocker } from "../lib/docker";
+import { appendDeploymentLogs } from "../services/deployment";
 
 interface BuildImageParams {
   cloneDir: string;
   imageTag: string;
+  deploymentId: string;
 }
 
 export async function buildImage({
   cloneDir,
   imageTag,
+  deploymentId,
 }: BuildImageParams): Promise<string> {
   const docker = getDocker();
   const tarStream = tar.pack(cloneDir);
@@ -29,6 +32,11 @@ export async function buildImage({
       (event) => {
         if (event.stream) {
           process.stdout.write(event.stream);
+          // TODO: stream logs via SSE/WebSocket instead of polling MongoDB
+          void appendDeploymentLogs(
+            deploymentId,
+            event.stream.split("\n"),
+          );
         }
         if (event.error) {
           failed = true;

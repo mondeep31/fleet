@@ -57,6 +57,7 @@ export interface Deployment {
   imageTag?: string;
   url?: string;
   error?: string;
+  logs?: string[];
   createdAt: string;
   updatedAt: string;
 }

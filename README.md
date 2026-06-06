@@ -153,8 +153,8 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 | `GET` | `/api/v1/deployments/:deploymentId` | Full deployment record |
 | `GET` | `/api/v1/deployments/:deploymentId/status` | Status, url, error only |
 | `GET` | `/api/v1/deployments/project/:projectId` | All deployments for a project |
-| `GET` | `/api/v1/deployments/:deploymentId/logs` | **Not implemented** (stub) |
-| `DELETE` | `/api/v1/deployments/:deploymentId` | **Not implemented** (stub) |
+| `GET` | `/api/v1/deployments/:deploymentId/logs` | Build + pipeline logs from DB |
+| `DELETE` | `/api/v1/deployments/:deploymentId` | Stop/cancel deployment (removes container, cancels queued jobs) |
 
 ## Deployment lifecycle
 
@@ -167,9 +167,12 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 | `deploying` | Starting container |
 | `live` | Container running; `url` set |
 | `failed` | Pipeline error; see `error` field |
+| `stopped` | Stopped or cancelled via `DELETE`; container removed, `url` cleared |
 | `rolled_back` | Reserved for rollback (not implemented) |
 
 Happy path: `queued` → `cloning` → `cloned` → `building` → `deploying` → `live`.
+
+`DELETE /deployments/:id` works for **live**, **failed**, and **queued** deployments. Queued jobs are removed from BullMQ; in-flight jobs are cooperatively cancelled when the worker checks status between steps.
 
 ## Local dev conventions
 
@@ -180,27 +183,24 @@ Happy path: `queued` → `cloning` → `cloned` → `building` → `deploying` �
 | Container name | `fleet-{deploymentId}` |
 | URL format | `http://localhost:{randomHostPort}` |
 
-Build output streams to the **worker terminal** only — not persisted to the database yet.
+Build output and pipeline milestones are appended to `Deployment.logs[]` in MongoDB. Fetch via `GET /deployments/:id/logs`. Real-time log streaming (SSE/WebSocket) is planned — today you poll the full log array.
 
-### Manual cleanup
-
-Until `DELETE /deployments/:id` is implemented:
+### Stop a deployment
 
 ```bash
-# List fleet containers
-docker ps --filter name=fleet-
+curl -s -X DELETE http://localhost:3010/api/v1/deployments/DEPLOYMENT_ID \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
 
-# Stop a deployment's container
-docker rm -f fleet-DEPLOYMENT_ID
+### Optional manual cleanup
 
+```bash
 # Remove built image (optional)
 docker rmi fleet/PROJECT_ID:DEPLOYMENT_ID
 
 # Remove clone directory (optional)
 rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 ```
-
-Stopping the worker (`Ctrl+C`) does not cancel in-flight jobs; BullMQ may retry when the worker restarts.
 
 ## Scripts
 
