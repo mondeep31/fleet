@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
-import { SquaresFour } from "@phosphor-icons/react";
+import { AirplaneTiltIcon } from "@phosphor-icons/react";
 
 export function AuthShell({
   title,
@@ -35,9 +35,9 @@ export function AuthShell({
       >
         <div className="mb-8 flex items-center justify-center gap-2">
           <div className="flex size-8 items-center justify-center rounded-md bg-white/10">
-            <SquaresFour className="size-4 text-white" weight="duotone" />
+            <AirplaneTiltIcon className="size-6 text-white" weight="bold" />
           </div>
-          <span className="text-sm font-medium tracking-tight text-[var(--text-primary)]">
+          <span className="text-2xl font-medium tracking-tight text-[var(--text-primary)]">
             fleet
           </span>
         </div>
@@ -46,7 +46,9 @@ export function AuthShell({
           <h1 className="text-2xl font-semibold tracking-tight text-balance text-[var(--text-primary)]">
             {title}
           </h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">{subtitle}</p>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            {subtitle}
+          </p>
         </div>
 
         {children}
