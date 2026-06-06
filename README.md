@@ -221,9 +221,10 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 
 | Task | Notes |
 |------|-------|
-| **Stop deployment** | Wire `DELETE /deployments/:id` → `docker rm -f fleet-{id}`, update status |
-| **Build logs in DB** | Persist build stream; implement `GET /deployments/:id/logs` |
-| **Redeploy** | New deployment for same project without recreating it |
+| ~~Stop deployment~~ | Done — `DELETE /deployments/:id` stops live, cancels queued, cooperative cancel in-flight |
+| ~~Build logs in DB~~ | Done — `GET /deployments/:id/logs`; streaming (SSE/WebSocket) planned |
+| ~~Dockerfile detector~~ | Done — root `Dockerfile` / `dockerfile` check before build |
+| **Redeploy** | New production deployment for same project without recreating it |
 
 ### Phase 2 — Routing and polish
 
@@ -231,6 +232,7 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 |------|-------|
 | **Traefik integration** | Label containers for subdomain routing via existing Traefik service |
 | **Environment model** | Use `Environment` (branch, subdomain) instead of MVP placeholders (`main`, `default`) |
+| **Preview deployments** | Per-branch/PR preview: another `Deployment` + queue job (same pipeline as prod), unique preview URL (e.g. `pr-42.{project}.localhost` via Traefik). Ephemeral — stop/delete when done or when PR closes |
 
 ### Phase 3 — Platform expansion
 
