@@ -1,0 +1,38 @@
+import { create } from "zustand";
+import {
+  clearAuth,
+  getStoredUser,
+  getToken,
+  setAuth,
+  type StoredUser,
+} from "@/lib/auth";
+
+interface AuthState {
+  token: string | null;
+  user: StoredUser | null;
+  hydrated: boolean;
+  hydrate: () => void;
+  setSession: (token: string, user: StoredUser) => void;
+  logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  token: null,
+  user: null,
+  hydrated: false,
+  hydrate: () => {
+    const token = getToken();
+    const user = getStoredUser();
+    set({ token, user, hydrated: true });
+  },
+  setSession: (token, user) => {
+    setAuth(token, user);
+    set({ token, user, hydrated: true });
+  },
+  logout: () => {
+    clearAuth();
+    set({ token: null, user: null });
+  },
+}));
+
+export const selectIsAuthenticated = (state: AuthState) => Boolean(state.token);
