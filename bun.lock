@@ -38,12 +38,11 @@
       "name": "@fleet/api",
       "version": "0.0.1",
       "dependencies": {
+        "@fleet/queue": "workspace:*",
         "bcryptjs": "^3.0.3",
-        "bullmq": "^5.76.6",
         "dockerode": "^5.0.0",
         "dotenv": "^17.4.2",
         "express": "^5.2.1",
-        "ioredis": "^5.10.1",
         "jsonwebtoken": "^9.0.3",
         "mongoose": "^9.6.2",
         "simple-git": "^3.36.0",
@@ -97,6 +96,31 @@
         "eslint-config-next": "16.2.6",
         "tailwindcss": "^4",
         "typescript": "^5",
+      },
+    },
+    "apps/worker": {
+      "name": "@fleet/worker",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fleet/queue": "workspace:*",
+        "bullmq": "^5.76.6",
+        "dotenv": "^17.4.2",
+      },
+      "devDependencies": {
+        "@types/node": "^25.6.2",
+        "typescript": "^6.0.3",
+      },
+    },
+    "packages/queue": {
+      "name": "@fleet/queue",
+      "version": "0.0.1",
+      "dependencies": {
+        "bullmq": "^5.76.6",
+        "ioredis": "^5.10.1",
+      },
+      "devDependencies": {
+        "@types/node": "^25.6.2",
+        "typescript": "^6.0.3",
       },
     },
     "packages/runtime-detector": {
@@ -243,9 +267,13 @@
 
     "@fleet/cli": ["@fleet/cli@workspace:apps/cli"],
 
+    "@fleet/queue": ["@fleet/queue@workspace:packages/queue"],
+
     "@fleet/runtime-detector": ["@fleet/runtime-detector@workspace:packages/runtime-detector"],
 
     "@fleet/types": ["@fleet/types@workspace:packages/types"],
+
+    "@fleet/worker": ["@fleet/worker@workspace:apps/worker"],
 
     "@grpc/grpc-js": ["@grpc/grpc-js@1.14.3", "", { "dependencies": { "@grpc/proto-loader": "^0.8.0", "@js-sdsl/ordered-map": "^4.4.2" } }, "sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA=="],
 
@@ -1671,7 +1699,11 @@
 
     "@fleet/cli/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
+    "@fleet/queue/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
     "@fleet/runtime-detector/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "@fleet/worker/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@grpc/grpc-js/@grpc/proto-loader": ["@grpc/proto-loader@0.8.1", "", { "dependencies": { "lodash.camelcase": "^4.3.0", "long": "^5.0.0", "protobufjs": "^7.5.5", "yargs": "^17.7.2" }, "bin": { "proto-loader-gen-types": "build/bin/proto-loader-gen-types.js" } }, "sha512-wtF6h+DY6M3YaDBPAmvuuA6jV8Sif9MjtOI5euKFWRgCDl5PeDpPsHR9u2l6St5ceY8AZgoNDww5+HvEsXFsGg=="],
 

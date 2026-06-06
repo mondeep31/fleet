@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { startDeploy } from "../services/deployment";
 import { createProject, getAllProjectsForAUser } from "../services/project";
 import type { CreateProjectBody } from "../validators/user";
 
@@ -6,11 +7,18 @@ const createProjectController: RequestHandler = async (req, res) => {
   const { name, repoUrl } = req.body as CreateProjectBody;
   const userId = req.user!.userId;
   const project = await createProject({ name, repoUrl, userId });
-  // TODO: enqueue a deployment job here
+  const deployment = await startDeploy({
+    projectId: project.id,
+    repoUrl: project.repoUrl,
+  });
   res.status(201).json({
     message: "Project created successfully",
     success: true,
-    data: project,
+    data: {
+      ...project,
+      deploymentId: deployment.deploymentId,
+      deploymentStatus: deployment.status,
+    },
   });
 };
 

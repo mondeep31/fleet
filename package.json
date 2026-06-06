@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage --coverage.exclude='apps/dashboard/**' --coverage.exclude='vitest.config.ts' --coverage.exclude='index.ts'",
     "test:ui": "bun run --cwd apps/dashboard lint && bun run --cwd apps/dashboard build",
     "dev:api": "cd apps/api && bun run dev",
+    "dev:worker": "cd apps/worker && bun run dev",
     "dev:agent": "cd apps/agent && bun run dev",
     "dev:dashboard": "cd apps/dashboard && bun run dev",
     "dev:cli": "cd apps/cli && bun run dev"
