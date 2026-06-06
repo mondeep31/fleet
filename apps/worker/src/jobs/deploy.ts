@@ -5,7 +5,9 @@ import {
   markDeploymentFailed,
   updateDeployment,
 } from "../services/deployment";
+import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
+import { runContainer } from "../steps/run";
 
 export async function handleDeployJob(payload: DeployJobPayload) {
   const { deploymentId, repoUrl } = payload;
@@ -28,6 +30,17 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     });
 
     console.log(`cloned ${deploymentId} → ${cloneDir}`);
+
+    await updateDeployment(deploymentId, { status: "building" });
+    const imageTag = `fleet/${deployment.projectId}:${deploymentId}`;
+    await buildImage({ cloneDir, imageTag });
+    await updateDeployment(deploymentId, { imageTag });
+    console.log(`built ${deploymentId} → ${imageTag}`);
+
+    await updateDeployment(deploymentId, { status: "deploying" });
+    const { url } = await runContainer({ imageTag, deploymentId });
+    await updateDeployment(deploymentId, { status: "live", url });
+    console.log(`live ${deploymentId} → ${url}`);
   } catch (err) {
     const message = getErrorMessage(err);
     await markDeploymentFailed(deploymentId, message).catch((updateErr) => {

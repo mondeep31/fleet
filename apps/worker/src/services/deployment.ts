@@ -4,6 +4,8 @@ interface DeploymentUpdate {
   status?: string;
   commitSha?: string;
   clonePath?: string;
+  imageTag?: string;
+  url?: string;
   error?: string;
 }
 
