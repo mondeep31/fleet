@@ -1,3 +1,7 @@
+See [../README.md](../README.md) for the canonical project documentation.
+
+---
+
 1. User signs up
 2. User creates Project (repo, branch, server, subdomain) — API only writes DB
 3. User triggers deploy (or auto on create)
