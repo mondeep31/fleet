@@ -54,7 +54,7 @@ export default function LoginPage() {
 
   return (
     <AuthShell
-      title="Login"
+      title="Login to fleet"
       subtitle="Sign in to continue to your dashboard"
       footer={
         <AuthFooterLink
@@ -109,11 +109,7 @@ export default function LoginPage() {
           </p>
         )}
 
-        <Button
-          type="submit"
-          disabled={isSubmitting}
-          className="h-10 w-full"
-        >
+        <Button type="submit" disabled={isSubmitting} className="h-10 w-full">
           {isSubmitting ? "Signing in…" : "Sign in"}
         </Button>
       </form>

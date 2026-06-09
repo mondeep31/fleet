@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  CaretDown,
   CaretRight,
   Folder,
   Gear,
@@ -18,6 +19,54 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
 const navItems = [{ href: "/projects", label: "Projects", icon: Folder }];
+
+function AccountMenu({
+  user,
+  onSignOut,
+}: {
+  user: { name: string; email: string } | null;
+  onSignOut: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative">
+      {open && (
+        <div className="absolute inset-x-0 bottom-[calc(100%+0.5rem)] rounded-lg border border-border bg-[var(--bg-elevated)] shadow-[0_18px_48px_-24px_rgba(0,0,0,0.8)]">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-12 w-full justify-start gap-2 bg-transparent px-3 text-muted-foreground shadow-none hover:bg-transparent hover:text-foreground"
+            onClick={onSignOut}
+          >
+            <SignOut className="size-4" />
+            Sign out
+          </Button>
+        </div>
+      )}
+
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+        className="flex w-full items-center gap-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2 text-left transition-colors hover:bg-[#3a3a37]"
+      >
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{user?.name ?? "User"}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {user?.email ?? ""}
+          </p>
+        </div>
+        <CaretDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+    </div>
+  );
+}
 
 export function MobileSidebarTrigger() {
   const [open, setOpen] = useState(false);
@@ -135,24 +184,7 @@ function MobileSidebarOverlay({
 
           <Separator className="my-3" />
 
-          <div className="mb-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2">
-            <p className="truncate text-sm font-medium">
-              {user?.name ?? "User"}
-            </p>
-            <p className="truncate text-xs text-muted-foreground">
-              {user?.email ?? ""}
-            </p>
-          </div>
-
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 text-muted-foreground"
-            onClick={handleLogout}
-          >
-            <SignOut className="size-4" />
-            Sign out
-          </Button>
+          <AccountMenu user={user} onSignOut={handleLogout} />
         </div>
       </aside>
     </div>
@@ -215,22 +247,7 @@ export function Sidebar() {
 
         <Separator className="my-3" />
 
-        <div className="mb-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2">
-          <p className="truncate text-sm font-medium">{user?.name ?? "User"}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {user?.email ?? ""}
-          </p>
-        </div>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2 text-muted-foreground"
-          onClick={handleLogout}
-        >
-          <SignOut className="size-4" />
-          Sign out
-        </Button>
+        <AccountMenu user={user} onSignOut={handleLogout} />
       </div>
     </aside>
   );

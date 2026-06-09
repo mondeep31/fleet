@@ -32,37 +32,27 @@ export function AuthShell({
         initial={reduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[370px]"
+        className="relative w-full max-w-[370px] rounded-xl border border-white/[0.08] bg-card/90 p-8 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.08),0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur"
       >
-        <div className="mb-6 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <div className="flex size-11 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_16px_40px_-28px_rgba(255,255,255,0.7)]">
-              <FleetLogo className="size-5" />
-            </div>
-            <p className="text-2xl font-semibold leading-none tracking-tight text-[var(--text-primary)]">
-              fleet
-            </p>
+        <div className="mb-6 flex justify-center">
+          <div className="flex size-11 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_16px_40px_-28px_rgba(255,255,255,0.7)]">
+            <FleetLogo className="size-5" />
           </div>
-          <p className="mt-3 text-sm text-[var(--text-secondary)]">
-            Deploy anywhere.
+        </div>
+
+        <div className="mb-6 text-center">
+          <h1 className="text-2xl font-semibold tracking-tight text-balance text-[var(--text-primary)]">
+            {title}
+          </h1>
+          <p className="mt-2 text-sm text-[var(--text-secondary)]">
+            {subtitle}
           </p>
         </div>
 
-        <div className="rounded-xl border border-white/[0.08] bg-card/90 p-8 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.08),0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur">
-          <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold tracking-tight text-balance text-[var(--text-primary)]">
-              {title}
-            </h1>
-            <p className="mt-2 text-sm text-[var(--text-secondary)]">
-              {subtitle}
-            </p>
-          </div>
+        {children}
 
-          {children}
-
-          <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-            {footer}
-          </div>
+        <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
+          {footer}
         </div>
       </motion.div>
     </div>
