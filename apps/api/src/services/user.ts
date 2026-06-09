@@ -85,7 +85,7 @@ export const updateUser = async ({
   }
   const isCurrentPasswordValid = await bcrypt.compare(
     currentPassword,
-    user.password,
+    user.password!,
   );
   if (!isCurrentPasswordValid) {
     throw new AppError(
