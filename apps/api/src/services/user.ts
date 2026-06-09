@@ -113,6 +113,13 @@ export const loginUserByEmailAndPassword = async ({
   if (!user) {
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
+  if (!user.password) {
+    throw new AppError(
+      401,
+      "This account uses GitHub sign in",
+      "GITHUB_AUTH_REQUIRED",
+    );
+  }
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new AppError(401, "Invalid password", "INVALID_PASSWORD");

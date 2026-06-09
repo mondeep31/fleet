@@ -8,7 +8,11 @@ export interface User {
   name: string;
   userId: string;
   email: string;
-  password: string;
+  password?: string;
+  authProvider?: "email" | "github";
+  githubId?: string;
+  githubLogin?: string;
+  githubAvatarUrl?: string;
   createdAt: string;
   updatedAt: string;
 }

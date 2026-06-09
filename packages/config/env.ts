@@ -18,9 +18,17 @@ const sharedEnvSchema = z.object({
 const apiEnvSchema = sharedEnvSchema.extend({
   JWT_SECRET: z.string().min(32),
   GITHUB_WEBHOOK_SECRET: z.string().min(1),
+  GITHUB_CLIENT_ID: z.string().min(1).optional(),
+  GITHUB_CLIENT_SECRET: z.string().min(1).optional(),
+  GITHUB_OAUTH_CALLBACK_URL: z
+    .string()
+    .url()
+    .default("http://localhost:3010/v1/auth/github/callback"),
+  GITHUB_OAUTH_SCOPES: z.string().default("read:user user:email repo"),
   AGENT_TOKEN: z.string().min(1),
   PORT: z.coerce.number().int().min(1).max(65535).default(3010),
   API_URL: z.string().min(1).default("http://localhost:3010"),
+  DASHBOARD_URL: z.string().min(1).default("http://localhost:3000"),
 });
 
 export type SharedEnv = z.infer<typeof sharedEnvSchema>;

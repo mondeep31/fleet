@@ -23,6 +23,23 @@ export interface Project {
   userId: string;
 }
 
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  fullName: string;
+  private: boolean;
+  htmlUrl: string;
+  cloneUrl: string;
+  sshUrl: string;
+  defaultBranch: string;
+  updatedAt: string;
+  owner: {
+    login: string;
+    avatarUrl?: string;
+    avatar_url?: string;
+  };
+}
+
 export interface Deployment {
   deploymentId: string;
   projectId: string;

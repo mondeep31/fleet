@@ -19,7 +19,26 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
+    },
+    authProvider: {
+      type: String,
+      enum: ["email", "github"],
+      default: "email",
+    },
+    githubId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
+    githubLogin: {
+      type: String,
+    },
+    githubAvatarUrl: {
+      type: String,
+    },
+    githubAccessToken: {
+      type: String,
     },
   },
   {
@@ -29,7 +48,12 @@ const userSchema = new mongoose.Schema(
 
 userSchema.set("toJSON", {
   transform(_doc, ret) {
-    const { password: _password, __v: _version, ...safe } = ret;
+    const {
+      password: _password,
+      githubAccessToken: _githubAccessToken,
+      __v: _version,
+      ...safe
+    } = ret;
     return safe;
   },
 });

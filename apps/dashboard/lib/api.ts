@@ -3,12 +3,15 @@ import type {
   ApiResponse,
   AuthUser,
   Deployment,
+  GitHubRepo,
   Project,
   ProjectWithLatestDeploy,
 } from "@/lib/types";
 
 const API_BASE =
   process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") ?? "/api-proxy";
+
+export const GITHUB_AUTH_URL = `${API_BASE}/v1/auth/github`;
 
 export class ApiError extends Error {
   constructor(
@@ -91,6 +94,9 @@ export const api = {
 
   getProjects: () =>
     request<{ projects: Project[] }>("/api/v1/projects"),
+
+  getGitHubRepos: () =>
+    request<{ repos: GitHubRepo[] }>("/api/v1/github/repos"),
 
   createProject: (name: string, repoUrl: string) =>
     request<Project & { deploymentId: string; deploymentStatus: string }>(
