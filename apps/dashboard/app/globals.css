@@ -1,6 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
+@plugin "tailwind-scrollbar";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -49,79 +50,80 @@
 }
 
 :root {
-  --bg-base: #0a0a0a;
-  --bg-surface: #111111;
-  --bg-elevated: #1a1a1a;
-  --border-custom: rgba(255, 255, 255, 0.08);
-  --text-primary: #ededed;
-  --text-secondary: #888888;
+  --bg-base: #1a1a18;
+  --bg-surface: #252525;
+  --bg-elevated: #30302e;
+  --bg-inset: #1f1f1d;
+  --border-custom: rgba(255, 255, 255, 0.1);
+  --text-primary: #f3f1eb;
+  --text-secondary: #a7a39a;
   --accent-custom: #ffffff;
   --status-live: #22c55e;
   --status-failed: #ef4444;
   --status-building: #f59e0b;
   --status-queued: #6b7280;
 
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #111111;
-  --card-foreground: #ededed;
-  --popover: #111111;
-  --popover-foreground: #ededed;
-  --primary: #ededed;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ededed;
-  --muted: #1a1a1a;
-  --muted-foreground: #888888;
-  --accent: #1a1a1a;
-  --accent-foreground: #ededed;
+  --background: #1a1a18;
+  --foreground: #f3f1eb;
+  --card: #252525;
+  --card-foreground: #f3f1eb;
+  --popover: #252525;
+  --popover-foreground: #f3f1eb;
+  --primary: #f7f5ee;
+  --primary-foreground: #1a1a18;
+  --secondary: #30302e;
+  --secondary-foreground: #f3f1eb;
+  --muted: #30302e;
+  --muted-foreground: #a7a39a;
+  --accent: #353532;
+  --accent-foreground: #f3f1eb;
   --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: rgba(255, 255, 255, 0.2);
-  --chart-1: #ededed;
-  --chart-2: #888888;
+  --ring: rgba(255, 255, 255, 0.28);
+  --chart-1: #f3f1eb;
+  --chart-2: #a7a39a;
   --chart-3: #6b7280;
   --chart-4: #4b5563;
   --chart-5: #374151;
   --radius: 0.625rem;
-  --sidebar: #111111;
-  --sidebar-foreground: #ededed;
-  --sidebar-primary: #ededed;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ededed;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(255, 255, 255, 0.2);
+  --sidebar: #252525;
+  --sidebar-foreground: #f3f1eb;
+  --sidebar-primary: #f7f5ee;
+  --sidebar-primary-foreground: #1a1a18;
+  --sidebar-accent: #f7f5ee;
+  --sidebar-accent-foreground: #1a1a18;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: rgba(255, 255, 255, 0.28);
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
-  --card: #111111;
-  --card-foreground: #ededed;
-  --popover: #111111;
-  --popover-foreground: #ededed;
-  --primary: #ededed;
-  --primary-foreground: #0a0a0a;
-  --secondary: #1a1a1a;
-  --secondary-foreground: #ededed;
-  --muted: #1a1a1a;
-  --muted-foreground: #888888;
-  --accent: #1a1a1a;
-  --accent-foreground: #ededed;
+  --background: #1a1a18;
+  --foreground: #f3f1eb;
+  --card: #252525;
+  --card-foreground: #f3f1eb;
+  --popover: #252525;
+  --popover-foreground: #f3f1eb;
+  --primary: #f7f5ee;
+  --primary-foreground: #1a1a18;
+  --secondary: #30302e;
+  --secondary-foreground: #f3f1eb;
+  --muted: #30302e;
+  --muted-foreground: #a7a39a;
+  --accent: #353532;
+  --accent-foreground: #f3f1eb;
   --destructive: #ef4444;
-  --border: rgba(255, 255, 255, 0.08);
+  --border: rgba(255, 255, 255, 0.1);
   --input: rgba(255, 255, 255, 0.12);
-  --ring: rgba(255, 255, 255, 0.2);
-  --sidebar: #111111;
-  --sidebar-foreground: #ededed;
-  --sidebar-primary: #ededed;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #ededed;
-  --sidebar-border: rgba(255, 255, 255, 0.08);
-  --sidebar-ring: rgba(255, 255, 255, 0.2);
+  --ring: rgba(255, 255, 255, 0.28);
+  --sidebar: #252525;
+  --sidebar-foreground: #f3f1eb;
+  --sidebar-primary: #f7f5ee;
+  --sidebar-primary-foreground: #1a1a18;
+  --sidebar-accent: #f7f5ee;
+  --sidebar-accent-foreground: #1a1a18;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --sidebar-ring: rgba(255, 255, 255, 0.28);
 }
 
 @layer base {
@@ -130,6 +132,10 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  html,
+  body {
+    min-height: 100%;
   }
   html {
     @apply font-sans;

@@ -106,7 +106,7 @@ export function DeploymentRow({
           >
             <Link
               href={`/deployments/${deployment.deploymentId}`}
-              className="inline-flex h-7 items-center rounded-lg px-2.5 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="inline-flex h-7 items-center rounded-lg bg-[var(--bg-elevated)] px-2.5 text-sm text-muted-foreground transition-colors hover:bg-primary hover:text-primary-foreground"
             >
               Logs
             </Link>
@@ -125,7 +125,7 @@ export function DeploymentRow({
       </TableRow>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="border-border bg-[var(--bg-surface)] sm:max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Stop Deployment</DialogTitle>
             <DialogDescription>

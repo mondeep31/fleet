@@ -63,7 +63,7 @@ export function DeploymentLogs({
   return (
     <div
       ref={parentRef}
-      className="h-[420px] overflow-auto bg-[#0d0d0d] p-4 font-mono text-xs leading-relaxed text-[#d4d4d4]"
+      className="h-[420px] overflow-auto bg-[var(--bg-inset)] p-4 font-mono text-xs leading-relaxed text-[#e4e0d8]"
     >
       <div
         style={{

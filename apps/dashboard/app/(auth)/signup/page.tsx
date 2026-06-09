@@ -76,7 +76,7 @@ export default function SignupPage() {
             placeholder="Mira Okonkwo"
             autoComplete="name"
             aria-invalid={Boolean(errors.name)}
-            className="h-10 border-[var(--border-custom)] bg-[var(--bg-elevated)]"
+            className="h-10"
             {...register("name")}
           />
           {errors.name && (
@@ -94,7 +94,7 @@ export default function SignupPage() {
             placeholder="you@example.com"
             autoComplete="email"
             aria-invalid={Boolean(errors.email)}
-            className="h-10 border-[var(--border-custom)] bg-[var(--bg-elevated)]"
+            className="h-10"
             {...register("email")}
           />
           {errors.email && (
@@ -112,7 +112,7 @@ export default function SignupPage() {
             placeholder="••••••••"
             autoComplete="new-password"
             aria-invalid={Boolean(errors.password)}
-            className="h-10 border-[var(--border-custom)] bg-[var(--bg-elevated)]"
+            className="h-10"
             {...register("password")}
           />
           {errors.password && (
@@ -131,7 +131,7 @@ export default function SignupPage() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-10 w-full bg-[var(--accent-custom)] text-[#0a0a0a] hover:bg-white/90"
+          className="h-10 w-full"
         >
           {isSubmitting ? "Creating account…" : "Create Account"}
         </Button>

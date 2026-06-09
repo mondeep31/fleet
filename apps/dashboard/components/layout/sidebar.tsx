@@ -1,21 +1,163 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  CaretRight,
   Folder,
   Gear,
   SignOut,
-  SquaresFour,
+  Sidebar as SidebarIcon,
+  X,
 } from "@phosphor-icons/react";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { FleetLogo } from "@/components/brand/fleet-logo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const navItems = [
-  { href: "/projects", label: "Projects", icon: Folder },
-];
+const navItems = [{ href: "/projects", label: "Projects", icon: Folder }];
+
+export function MobileSidebarTrigger() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button
+        type="button"
+        aria-label="Open navigation"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="flex size-9 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+      >
+        <SidebarIcon className="size-5" />
+      </button>
+
+      <MobileSidebarOverlay open={open} onOpenChange={setOpen} />
+    </>
+  );
+}
+
+function MobileSidebarOverlay({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+
+  function handleLogout() {
+    logout();
+    onOpenChange(false);
+    router.replace("/login");
+  }
+
+  return (
+    <div
+      className={cn(
+        "fixed inset-0 z-50 md:hidden",
+        open ? "pointer-events-auto" : "pointer-events-none",
+      )}
+      aria-hidden={!open}
+    >
+      <button
+        type="button"
+        aria-label="Close navigation"
+        className={cn(
+          "absolute inset-0 bg-black/65 transition-opacity",
+          open ? "opacity-100" : "opacity-0",
+        )}
+        onClick={() => onOpenChange(false)}
+      />
+      <aside
+        className={cn(
+          "absolute inset-y-0 left-0 flex w-[min(300px,calc(100vw-4rem))] flex-col border-r border-border bg-[var(--bg-surface)] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,0.95)] transition-transform duration-200",
+          open ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        <div className="flex h-16 items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_10px_24px_-16px_rgba(255,255,255,0.6)]">
+            <FleetLogo className="size-4" />
+          </div>
+          <span className="text-sm font-semibold tracking-tight">fleet</span>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Close navigation"
+            className="ml-auto"
+            onClick={() => onOpenChange(false)}
+          >
+            <X className="size-4" />
+          </Button>
+        </div>
+
+        <Separator className="-mx-4 mb-3" />
+
+        <nav className="flex-1 space-y-1 py-3">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active =
+              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={() => onOpenChange(false)}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
+                    : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="pb-3">
+          <Link
+            href="/projects"
+            onClick={() => onOpenChange(false)}
+            className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+          >
+            <Gear className="size-4" />
+            Settings
+            <CaretRight className="ml-auto size-4" />
+          </Link>
+
+          <Separator className="my-3" />
+
+          <div className="mb-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2">
+            <p className="truncate text-sm font-medium">
+              {user?.name ?? "User"}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">
+              {user?.email ?? ""}
+            </p>
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 text-muted-foreground"
+            onClick={handleLogout}
+          >
+            <SignOut className="size-4" />
+            Sign out
+          </Button>
+        </div>
+      </aside>
+    </div>
+  );
+}
 
 export function Sidebar() {
   const pathname = usePathname();
@@ -29,10 +171,10 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="flex h-full w-60 shrink-0 flex-col border-r border-border bg-[var(--bg-surface)]">
-      <div className="flex h-14 items-center gap-2 px-4">
-        <div className="flex size-7 items-center justify-center rounded-md bg-white/10">
-          <SquaresFour className="size-3.5 text-white" weight="duotone" />
+    <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-border bg-[var(--bg-surface)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)] md:flex">
+      <div className="flex h-16 items-center gap-2 px-4">
+        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_10px_24px_-16px_rgba(255,255,255,0.6)]">
+          <FleetLogo className="size-4" />
         </div>
         <span className="text-sm font-semibold tracking-tight">fleet</span>
       </div>
@@ -49,9 +191,9 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
                 active
-                  ? "bg-[var(--bg-elevated)] text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
                   : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
               )}
             >
@@ -73,7 +215,7 @@ export function Sidebar() {
 
         <Separator className="my-3" />
 
-        <div className="mb-3 px-3">
+        <div className="mb-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2">
           <p className="truncate text-sm font-medium">{user?.name ?? "User"}</p>
           <p className="truncate text-xs text-muted-foreground">
             {user?.email ?? ""}

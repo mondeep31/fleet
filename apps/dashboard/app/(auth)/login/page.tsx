@@ -75,7 +75,7 @@ export default function LoginPage() {
             placeholder="you@example.com"
             autoComplete="email"
             aria-invalid={Boolean(errors.email)}
-            className="h-10 border-[var(--border-custom)] bg-[var(--bg-elevated)]"
+            className="h-10"
             {...register("email")}
           />
           {errors.email && (
@@ -93,7 +93,7 @@ export default function LoginPage() {
             placeholder="••••••••"
             autoComplete="current-password"
             aria-invalid={Boolean(errors.password)}
-            className="h-10 border-[var(--border-custom)] bg-[var(--bg-elevated)]"
+            className="h-10"
             {...register("password")}
           />
           {errors.password && (
@@ -112,7 +112,7 @@ export default function LoginPage() {
         <Button
           type="submit"
           disabled={isSubmitting}
-          className="h-10 w-full bg-[var(--accent-custom)] text-[#0a0a0a] hover:bg-white/90"
+          className="h-10 w-full"
         >
           {isSubmitting ? "Signing in…" : "Sign in"}
         </Button>

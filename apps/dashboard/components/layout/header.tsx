@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { CaretRight } from "@phosphor-icons/react";
+import { MobileSidebarTrigger } from "@/components/layout/sidebar";
 
 export interface BreadcrumbItem {
   label: string;
@@ -18,36 +19,42 @@ export function Header({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="border-b border-border bg-background">
-      <div className="flex min-h-14 items-center justify-between gap-4 px-6 py-3">
-        <div className="min-w-0">
-          {breadcrumbs.length > 0 && (
-            <nav
-              aria-label="Breadcrumb"
-              className="mb-1 flex items-center gap-1 text-sm text-muted-foreground"
-            >
-              {breadcrumbs.map((item, index) => (
-                <span key={`${item.label}-${index}`} className="flex items-center gap-1">
-                  {index > 0 && <CaretRight className="size-3" />}
-                  {item.href ? (
-                    <Link
-                      href={item.href}
-                      className="transition-colors hover:text-foreground"
-                    >
-                      {item.label}
-                    </Link>
-                  ) : (
-                    <span className="text-foreground">{item.label}</span>
-                  )}
-                </span>
-              ))}
-            </nav>
-          )}
-          <h1 className="text-xl font-semibold tracking-tight text-balance">
-            {title}
-          </h1>
+    <header className="border-b border-border bg-background/95">
+      <div className="flex min-h-16 items-center gap-4 px-4 py-4 md:px-6">
+        <div className="flex min-w-0 items-center gap-4">
+          <div className="flex shrink-0 items-center md:hidden">
+            <MobileSidebarTrigger />
+            <div className="ml-3 h-8 w-px shrink-0 bg-border" />
+          </div>
+          <div className="min-w-0">
+            {breadcrumbs.length > 0 && (
+              <nav
+                aria-label="Breadcrumb"
+                className="mb-1 flex items-center gap-1 text-sm text-muted-foreground"
+              >
+                {breadcrumbs.map((item, index) => (
+                  <span key={`${item.label}-${index}`} className="flex items-center gap-1">
+                    {index > 0 && <CaretRight className="size-3" />}
+                    {item.href ? (
+                      <Link
+                        href={item.href}
+                        className="transition-colors hover:text-foreground"
+                      >
+                        {item.label}
+                      </Link>
+                    ) : (
+                      <span className="text-foreground">{item.label}</span>
+                    )}
+                  </span>
+                ))}
+              </nav>
+            )}
+            <h1 className="text-xl font-semibold tracking-tight text-balance md:text-2xl">
+              {title}
+            </h1>
+          </div>
         </div>
-        {actions && <div className="shrink-0">{actions}</div>}
+        {actions && <div className="ml-auto shrink-0">{actions}</div>}
       </div>
     </header>
   );

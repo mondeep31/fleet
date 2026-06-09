@@ -75,3 +75,11 @@ That's your next ~5 days of work. Once you can do this with a test repo that has
 https://github.com/mondeep31/fleet-test-repo-1/
 
 use this to test
+
+todo:
+
+1. delete project endpoint -> archives the project and all its deployments so they dont show up.
+2. retrigger deployment for a particular deployment.
+3. have a sandboxed environment for each deployment
+4. instead of just docker run, use a docker network for each user, so they cannot access other users deployments.
+5. oauth w github only, and when we click on new project, it will show all the repos for that user in a seperate page and then we can click on deploy instead of just entering the repo url.

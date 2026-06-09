@@ -34,27 +34,29 @@ export function VirtualDeploymentList({
 
   if (!useVirtual) {
     return (
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Status</TableHead>
-            <TableHead>Branch</TableHead>
-            <TableHead>Created</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>URL</TableHead>
-            <TableHead>Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {deployments.map((deployment) => (
-            <DeploymentRow
-              key={deployment.deploymentId}
-              deployment={deployment}
-              onStopped={onStopped}
-            />
-          ))}
-        </TableBody>
-      </Table>
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Status</TableHead>
+              <TableHead>Branch</TableHead>
+              <TableHead>Created</TableHead>
+              <TableHead>Duration</TableHead>
+              <TableHead>URL</TableHead>
+              <TableHead>Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {deployments.map((deployment) => (
+              <DeploymentRow
+                key={deployment.deploymentId}
+                deployment={deployment}
+                onStopped={onStopped}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     );
   }
 
@@ -76,7 +78,7 @@ export function VirtualDeploymentList({
       </Table>
       <div
         ref={parentRef}
-        className="max-h-[calc(100dvh-220px)] overflow-auto"
+        className="max-h-[calc(100dvh-220px)] overflow-auto scrollbar-thin scrollbar-track-[#2f2f2d] scrollbar-thumb-[#7b7b75] scrollbar-corner-[#2f2f2d] scrollbar-hover:scrollbar-thumb-[#92928c]"
       >
         <div
           style={{

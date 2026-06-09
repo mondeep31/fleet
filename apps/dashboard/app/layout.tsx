@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Fleet",
   description: "Self-hosted deployment platform",
+  icons: {
+    icon: { url: "/sailboat.svg", type: "image/svg+xml" },
+    shortcut: "/sailboat.svg",
+    apple: "/sailboat.svg",
+  },
 };
 
 export default function RootLayout({

@@ -74,7 +74,7 @@ export function DeploymentProgress({ status }: { status: DeploymentStatus }) {
           );
         })}
       </div>
-      <div className="h-1 overflow-hidden rounded-full bg-[var(--bg-elevated)]">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--bg-elevated)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]">
         <div
           className={cn(
             "h-full rounded-full transition-[width] duration-500",

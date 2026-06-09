@@ -102,7 +102,7 @@ export default function DeploymentDetailPage() {
 
         {deployment && (
           <>
-            <section className="rounded-xl border border-border bg-[var(--bg-surface)] p-6">
+            <section className="rounded-xl border border-border bg-card p-6 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={deployment.status} className="text-sm" />
@@ -115,7 +115,7 @@ export default function DeploymentDetailPage() {
                     href={deployment.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-[var(--bg-elevated)] px-3 py-2 text-sm transition-colors hover:border-foreground/20"
+                    className="inline-flex items-center gap-2 rounded-lg border border-border bg-[var(--bg-elevated)] px-3 py-2 text-sm transition-colors hover:border-white/20 hover:bg-primary hover:text-primary-foreground"
                   >
                     {deployment.url}
                     <ArrowSquareOut className="size-4" />
@@ -132,8 +132,8 @@ export default function DeploymentDetailPage() {
               )}
             </section>
 
-            <section className="overflow-hidden rounded-xl border border-border">
-              <div className="border-b border-border px-4 py-3">
+            <section className="overflow-hidden rounded-xl border border-border bg-card shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+              <div className="border-b border-border bg-[var(--bg-elevated)]/45 px-4 py-3">
                 <h2 className="text-sm font-medium">Build Logs</h2>
               </div>
               <DeploymentLogs logs={logs} isLoading={logsLoading} />
@@ -143,7 +143,7 @@ export default function DeploymentDetailPage() {
       </div>
 
       <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
-        <DialogContent className="border-border bg-[var(--bg-surface)] sm:max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Stop Deployment</DialogTitle>
             <DialogDescription>

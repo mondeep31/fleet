@@ -64,13 +64,13 @@ export function NewProjectDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          <Button className="gap-2 bg-[var(--accent-custom)] text-[#0a0a0a] hover:bg-white/90">
+          <Button className="gap-2">
             <Plus className="size-4" weight="bold" />
             New Project
           </Button>
         }
       />
-      <DialogContent className="border-border bg-[var(--bg-surface)] sm:max-w-md">
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>New Project</DialogTitle>
           <DialogDescription>
@@ -86,7 +86,6 @@ export function NewProjectDialog({
               id="project-name"
               placeholder="my-app"
               aria-invalid={Boolean(errors.name)}
-              className="bg-[var(--bg-elevated)]"
               {...register("name")}
             />
             {errors.name && (
@@ -100,7 +99,6 @@ export function NewProjectDialog({
               id="repo-url"
               placeholder="https://github.com/org/repo"
               aria-invalid={Boolean(errors.repoUrl)}
-              className="bg-[var(--bg-elevated)]"
               {...register("repoUrl")}
             />
             {errors.repoUrl && (
@@ -125,7 +123,6 @@ export function NewProjectDialog({
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="bg-[var(--accent-custom)] text-[#0a0a0a] hover:bg-white/90"
             >
               {isSubmitting ? "Creating…" : "Create Project"}
             </Button>
