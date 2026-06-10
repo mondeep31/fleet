@@ -20,7 +20,7 @@ async function exitIfStopped(deploymentId: string) {
 }
 
 export async function handleDeployJob(payload: DeployJobPayload) {
-  const { deploymentId, repoUrl } = payload;
+  const { deploymentId, projectId, repoUrl } = payload;
 
   try {
     await exitIfStopped(deploymentId);
@@ -76,8 +76,17 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     await updateDeployment(deploymentId, { status: "deploying" });
     await appendDeploymentLogs(deploymentId, ["Deploying container..."]);
-    const { url } = await runContainer({ imageTag, deploymentId });
-    await updateDeployment(deploymentId, { status: "live", url });
+    const { containerId, networkName, url } = await runContainer({
+      imageTag,
+      deploymentId,
+      projectId,
+    });
+    await updateDeployment(deploymentId, {
+      status: "live",
+      containerId,
+      networkName,
+      url,
+    });
     await appendDeploymentLogs(deploymentId, [`Deployment live at ${url}`]);
     console.log(`live ${deploymentId} → ${url}`);
   } catch (err) {

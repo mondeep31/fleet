@@ -57,6 +57,12 @@ const deploymentSchema = new mongoose.Schema(
     imageTag: {
       type: String,
     },
+    containerId: {
+      type: String,
+    },
+    networkName: {
+      type: String,
+    },
     url: {
       type: String,
     },

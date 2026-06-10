@@ -5,6 +5,8 @@ interface DeploymentUpdate {
   commitSha?: string;
   clonePath?: string;
   imageTag?: string;
+  containerId?: string;
+  networkName?: string;
   url?: string;
   error?: string;
 }

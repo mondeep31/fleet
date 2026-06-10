@@ -55,6 +55,8 @@ export interface Deployment {
   status: DeploymentStatus;
   clonePath?: string;
   imageTag?: string;
+  containerId?: string;
+  networkName?: string;
   url?: string;
   error?: string;
   logs?: string[];

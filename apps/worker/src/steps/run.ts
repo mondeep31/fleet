@@ -1,12 +1,14 @@
-import { getDocker } from "../lib/docker";
+import { ensureNetwork, getDocker, getProjectNetworkName } from "../lib/docker";
 
 interface RunContainerParams {
   imageTag: string;
   deploymentId: string;
+  projectId: string;
 }
 
 interface RunContainerResult {
   containerId: string;
+  networkName: string;
   url: string;
 }
 
@@ -25,10 +27,12 @@ async function getContainerPort(imageTag: string): Promise<string> {
 export async function runContainer({
   imageTag,
   deploymentId,
+  projectId,
 }: RunContainerParams): Promise<RunContainerResult> {
   const docker = getDocker();
   const containerPort = await getContainerPort(imageTag);
   const containerName = `fleet-${deploymentId}`;
+  const networkName = await ensureNetwork(getProjectNetworkName(projectId));
 
   try {
     const existing = docker.getContainer(containerName);
@@ -44,8 +48,16 @@ export async function runContainer({
       [containerPort]: {},
     },
     HostConfig: {
+      NetworkMode: networkName,
       PortBindings: {
         [containerPort]: [{ HostIp: "0.0.0.0", HostPort: "0" }],
+      },
+    },
+    NetworkingConfig: {
+      EndpointsConfig: {
+        [networkName]: {
+          Aliases: [`app-${deploymentId}`],
+        },
       },
     },
   });
@@ -63,6 +75,7 @@ export async function runContainer({
 
   return {
     containerId: inspect.Id,
+    networkName,
     url: `http://localhost:${hostPort}`,
   };
 }

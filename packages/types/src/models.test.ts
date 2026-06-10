@@ -91,6 +91,8 @@ describe("types/models", () => {
       serverId: "srv_1",
       status: "failed",
       imageTag: "fleet-api:abc123",
+      containerId: "container_1",
+      networkName: "fleet-project-proj_1",
       url: "https://fleet-api.example.com",
       error: "container failed health check",
       createdAt: "2026-05-11T00:00:00.000Z",
@@ -112,9 +114,7 @@ describe("types/models", () => {
 
     expect(deployment.error).toBeTruthy();
     expect(queued.imageTag).toBeUndefined();
-    expectTypeOf(deployment.status).toEqualTypeOf<
-      "queued" | "building" | "deploying" | "live" | "failed" | "rolled_back"
-    >();
+    expectTypeOf(deployment.status).toEqualTypeOf<Deployment["status"]>();
   });
 
   test("Agent message unions support valid variants", () => {

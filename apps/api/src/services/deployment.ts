@@ -56,6 +56,8 @@ function toDeploymentResponse(deployment: {
   status: string;
   clonePath?: string | null;
   imageTag?: string | null;
+  containerId?: string | null;
+  networkName?: string | null;
   url?: string | null;
   error?: string | null;
   createdAt?: Date;
@@ -72,6 +74,8 @@ function toDeploymentResponse(deployment: {
     status: deployment.status,
     clonePath: deployment.clonePath ?? undefined,
     imageTag: deployment.imageTag ?? undefined,
+    containerId: deployment.containerId ?? undefined,
+    networkName: deployment.networkName ?? undefined,
     url: deployment.url ?? undefined,
     error: deployment.error ?? undefined,
     createdAt: deployment.createdAt,
