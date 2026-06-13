@@ -41,4 +41,16 @@ describe("buildAppUrl", () => {
       }),
     ).toBe("http://blog.localhost:18080");
   });
+
+  test("builds production deploy URL for mondeep.xyz", () => {
+    expect(
+      buildAppUrlFromEnv("depl-fleet-c4e6514f-faf1-4414-8745-8fb6e60c239d", {
+        FLEET_APPS_DOMAIN: "mondeep.xyz",
+        FLEET_PUBLIC_URL_SCHEME: "https",
+        FLEET_TRAEFIK_PUBLIC_PORT: "",
+      }),
+    ).toBe(
+      "https://depl-fleet-c4e6514f-faf1-4414-8745-8fb6e60c239d.mondeep.xyz",
+    );
+  });
 });

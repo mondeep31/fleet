@@ -1,5 +1,5 @@
 import { Project } from "@fleet/db";
-import { resolveUniqueSubdomain, slugifyProjectName } from "@fleet/config";
+import { buildProjectDeploySubdomain } from "@fleet/config";
 import { getErrorMessage } from "@fleet/errors";
 import type { DeployJobPayload } from "@fleet/queue";
 import { detectDockerfile } from "@fleet/runtime-detector";
@@ -24,24 +24,15 @@ async function exitIfStopped(deploymentId: string) {
 
 async function getProjectSubdomain(project: {
   projectId: string;
-  name: string;
   subdomain?: string | null;
 }) {
-  if (project.subdomain) {
-    return project.subdomain;
+  const expected = buildProjectDeploySubdomain(project.projectId);
+
+  if (project.subdomain !== expected) {
+    await Project.updateOne({ projectId: project.projectId }, { subdomain: expected });
   }
 
-  const baseSlug = slugifyProjectName(project.name);
-  const subdomain = await resolveUniqueSubdomain(baseSlug, async (candidate) => {
-    const existing = await Project.findOne({
-      subdomain: candidate,
-      projectId: { $ne: project.projectId },
-    });
-    return existing !== null;
-  });
-
-  await Project.updateOne({ projectId: project.projectId }, { subdomain });
-  return subdomain;
+  return expected;
 }
 
 export async function handleDeployJob(payload: DeployJobPayload) {

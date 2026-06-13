@@ -1,5 +1,18 @@
 import { describe, expect, test } from "vitest";
-import { resolveUniqueSubdomain, slugifyProjectName } from "./subdomain";
+import {
+  buildProjectDeploySubdomain,
+  resolveUniqueSubdomain,
+  slugifyProjectName,
+} from "./subdomain";
+
+describe("buildProjectDeploySubdomain", () => {
+  test("prefixes project id with depl-fleet", () => {
+    const projectId = "c4e6514f-faf1-4414-8745-8fb6e60c239d";
+    expect(buildProjectDeploySubdomain(projectId)).toBe(
+      "depl-fleet-c4e6514f-faf1-4414-8745-8fb6e60c239d",
+    );
+  });
+});
 
 describe("slugifyProjectName", () => {
   test("lowercases and hyphenates names", () => {

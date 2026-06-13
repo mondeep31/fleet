@@ -6,4 +6,9 @@ export {
   type SharedEnv,
 } from "./env";
 export { buildAppUrl, buildAppUrlFromEnv, type BuildAppUrlOptions } from "./routing";
-export { resolveUniqueSubdomain, slugifyProjectName } from "./subdomain";
+export {
+  buildProjectDeploySubdomain,
+  DEPLOY_SUBDOMAIN_PREFIX,
+  resolveUniqueSubdomain,
+  slugifyProjectName,
+} from "./subdomain";

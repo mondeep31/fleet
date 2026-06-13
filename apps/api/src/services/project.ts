@@ -1,5 +1,5 @@
 import { Project } from "@fleet/db";
-import { resolveUniqueSubdomain, slugifyProjectName } from "@fleet/config";
+import { buildProjectDeploySubdomain } from "@fleet/config";
 import { AppError } from "@fleet/errors";
 import {
   listDeploymentsByProjectId,
@@ -59,13 +59,16 @@ export const createProject = async ({
   repoUrl,
   userId,
 }: CreateProjectParams) => {
-  const baseSlug = slugifyProjectName(name);
-  const subdomain = await resolveUniqueSubdomain(baseSlug, async (candidate) => {
-    const existing = await Project.findOne({ subdomain: candidate });
-    return existing !== null;
-  });
+  const projectId = crypto.randomUUID();
+  const subdomain = buildProjectDeploySubdomain(projectId);
 
-  const project = await Project.create({ name, repoUrl, userId, subdomain });
+  const project = await Project.create({
+    name,
+    repoUrl,
+    userId,
+    projectId,
+    subdomain,
+  });
   return {
     id: project.projectId,
     name: project.name,

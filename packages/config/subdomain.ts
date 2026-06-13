@@ -1,5 +1,11 @@
 const SUBDOMAIN_FALLBACK = "app";
 
+export const DEPLOY_SUBDOMAIN_PREFIX = "depl-fleet";
+
+export function buildProjectDeploySubdomain(projectId: string): string {
+  return `${DEPLOY_SUBDOMAIN_PREFIX}-${projectId}`;
+}
+
 export function slugifyProjectName(name: string): string {
   const slug = name
     .trim()

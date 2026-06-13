@@ -22,11 +22,11 @@ flowchart LR
 3. The **worker** picks up the job from Redis (BullMQ) and runs the pipeline:
    - Clone repo to `/tmp/fleet-builds/{deploymentId}`
    - `docker build` → tag `fleet/{projectId}:{deploymentId}`
-   - Start container on Traefik with hostname `{subdomain}.localhost`
+   - Start container on Traefik with hostname `depl-fleet-{projectId}.localhost`
 4. Deployment status is updated in MongoDB at each step. Poll the API to get status, image tag, and URL.
-5. Open the returned `url` (e.g. `http://my-app.localhost:18080`) to reach the running app.
+5. Open the returned `url` (e.g. `http://depl-fleet-{projectId}.localhost:18080`) to reach the running app.
 
-Each project gets an auto-generated **subdomain** slug from its name. Traefik routes by `Host` header on port **18080** — no random host ports.
+Each project gets a deterministic **subdomain** of `depl-fleet-{projectId}`. Traefik routes by `Host` header on port **18080** — no random host ports.
 
 ## Monorepo layout
 
@@ -111,8 +111,8 @@ curl -s -X POST http://localhost:3010/api/v1/projects \
 curl -s http://localhost:3010/api/v1/deployments/DEPLOYMENT_ID \
   -H "Authorization: Bearer YOUR_TOKEN"
 
-# When status is "live", open or curl the url field
-curl -s http://my-app.localhost:18080
+# When status is "live", open or curl the url field (depl-fleet-{projectId}.localhost:18080)
+curl -s http://depl-fleet-PROJECT_ID.localhost:18080
 # → {"message":"Hello World"}
 ```
 
@@ -128,7 +128,7 @@ curl -s http://my-app.localhost:18080
 | `AGENT_TOKEN` | API | Placeholder until agent is implemented |
 | `PORT` | API | HTTP port (default `3010`) |
 | `API_URL` | API | Public API URL (default `http://localhost:3010`) |
-| `FLEET_APPS_DOMAIN` | API, worker | App hostname suffix (default `localhost`; use `apps.yourdomain.com` in production) |
+| `FLEET_APPS_DOMAIN` | API, worker | App hostname suffix (default `localhost`; use `mondeep.xyz` or your apex domain in production) |
 | `FLEET_PUBLIC_URL_SCHEME` | API, worker | `http` or `https` (default `http`) |
 | `FLEET_TRAEFIK_PUBLIC_PORT` | API, worker | Public Traefik port in URLs (default `18080`; leave empty for HTTPS on 443) |
 | `FLEET_TRAEFIK_NETWORK` | Worker | Docker network Traefik shares with app containers (default `fleet-proxy`) |
@@ -186,7 +186,7 @@ Happy path: `queued` → `cloning` → `cloned` → (Dockerfile detect) → `bui
 | Clone directory | `/tmp/fleet-builds/{deploymentId}` |
 | Docker image tag | `fleet/{projectId}:{deploymentId}` |
 | Container name | `fleet-project-{projectId}` |
-| URL format | `http://{subdomain}.localhost:18080` (local) |
+| URL format | `http://depl-fleet-{projectId}.localhost:18080` (local) |
 | Traefik network | `fleet-proxy` |
 
 Build and pipeline output is published to a **Redis Stream** (`logs:{deploymentId}`) by the worker during deploy, with a **24h TTL**. Live app output is tailed from Docker via `docker logs -f`. The dashboard consumes both through **`GET /deployments/:id/logs/stream`** (SSE). Logs are not stored in MongoDB.
@@ -257,26 +257,27 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 - **dockerode in worker** — build and run happen on the machine running the worker (local dev today; agent later for remote).
 - **Single root `.env`** — `@fleet/config` validates once; API uses `getEnv()`, worker/db/queue use `getSharedEnv()`.
 - **Managed servers (future)** — production target is Fleet-managed hosts via the agent, not the developer's laptop.
-- **Traefik** — stable subdomain URLs (`{subdomain}.localhost:18080` locally; custom domain in production).
+- **Traefik** — stable deploy URLs (`depl-fleet-{projectId}.localhost:18080` locally; `https://depl-fleet-{projectId}.yourdomain.com` in production).
 
-## Public HTTPS via Cloudflare Tunnel (Phase 2)
+## Public HTTPS for deploy URLs (Phase 2)
 
-After local Traefik routing works, expose apps on the internet without opening office router ports:
+Deploy URLs use the pattern `https://depl-fleet-{projectId}.mondeep.xyz` (replace `mondeep.xyz` with your domain). Fleet dashboard stays on a separate host (e.g. `fleet.mondeep.xyz`).
 
-1. Add your domain to Cloudflare and create a **Zero Trust tunnel** (`cloudflared` on the Fleet host).
-2. Route tunnel ingress: `*.apps.yourdomain.com` → `http://127.0.0.1:18080` (Traefik).
-3. Update `.env`:
+1. Update server `.env`:
 
 ```bash
-FLEET_APPS_DOMAIN=apps.yourdomain.com
+FLEET_APPS_DOMAIN=mondeep.xyz
 FLEET_PUBLIC_URL_SCHEME=https
 FLEET_TRAEFIK_PUBLIC_PORT=
 ```
 
-4. Set Cloudflare SSL/TLS mode to **Full**.
-5. **Redeploy** existing projects so Traefik labels and deployment URLs use the new domain.
+2. Add DNS: `A` record `*` → server IP (wildcard for deploy subdomains).
+3. Issue a wildcard TLS cert and configure nginx to proxy `depl-fleet-*.mondeep.xyz` → `http://127.0.0.1:18080` (Traefik).
+4. **Redeploy** existing projects so Traefik labels and stored URLs use the new domain.
 
-Users then reach apps at `https://{subdomain}.apps.yourdomain.com`. Cloudflare terminates TLS; Traefik stays on HTTP locally.
+Full server setup steps: [`docs/production-deploy-urls.md`](docs/production-deploy-urls.md).
+
+Optional later: Cloudflare Tunnel instead of opening port 443 — route `*.mondeep.xyz` → Traefik; TLS terminates at Cloudflare.
 
 ## Docker Compose services
 
