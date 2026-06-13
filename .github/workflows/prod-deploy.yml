@@ -1,0 +1,49 @@
+name: Production Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: prod-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Deploy to production
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            set -euo pipefail
+            cd "${{ secrets.DEPLOY_PATH }}"
+
+            git fetch origin main
+            git reset --hard origin/main
+
+            if [ ! -f app_env/.env ]; then
+              echo "Missing app_env/.env — create it on the server before deploying." >&2
+              exit 1
+            fi
+
+            cp app_env/.env .env
+            cp app_env/.env apps/dashboard/.env.production
+
+            bun run install:all -- --frozen-lockfile
+            bun run --cwd apps/dashboard build
+
+            docker compose up -d
+
+            pm2 startOrReload ecosystem.config.cjs --env production
+            pm2 save
