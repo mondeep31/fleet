@@ -19,6 +19,7 @@ export interface Project {
   projectId: string;
   repoUrl: string;
   userId: string;
+  subdomain: string;
   status?: ProjectStatus;
   runtime?: string;
 }

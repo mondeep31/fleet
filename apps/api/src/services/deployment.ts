@@ -1,7 +1,7 @@
 import { cancelDeployJob, enqueueDeploy } from "@fleet/queue";
 import { Deployment, Project } from "@fleet/db";
 import { AppError } from "@fleet/errors";
-import { removeDeploymentContainer } from "../lib/containers";
+import { getProjectContainerName, removeProjectContainer } from "../lib/containers";
 
 const MVP_BRANCH = "main";
 const MVP_COMMIT_SHA = "pending";
@@ -140,7 +140,7 @@ export async function stopDeployment(deploymentId: string, userId: string) {
   }
 
   await cancelDeployJob(deploymentId);
-  await removeDeploymentContainer(deploymentId);
+  await removeProjectContainer(deployment.projectId);
 
   const updated = await Deployment.findOneAndUpdate(
     { deploymentId },

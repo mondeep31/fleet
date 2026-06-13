@@ -13,6 +13,13 @@ const sharedEnvSchema = z.object({
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
+  FLEET_APPS_DOMAIN: z.string().min(1).default("localhost"),
+  FLEET_PUBLIC_URL_SCHEME: z.enum(["http", "https"]).default("http"),
+  FLEET_TRAEFIK_PUBLIC_PORT: z
+    .string()
+    .transform((value) => value.trim())
+    .optional(),
+  FLEET_TRAEFIK_NETWORK: z.string().min(1).default("fleet-proxy"),
 });
 
 const apiEnvSchema = sharedEnvSchema.extend({

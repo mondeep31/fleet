@@ -100,12 +100,12 @@ async function followRedisLogs(
 }
 
 async function followDockerLogs(
-  deploymentId: string,
+  projectId: string,
   res: Response,
   signal: AbortSignal,
 ): Promise<void> {
   try {
-    for await (const line of tailContainerLogs(deploymentId, signal)) {
+    for await (const line of tailContainerLogs(projectId, signal)) {
       if (signal.aborted) break;
       writeSseData(res, { line, source: "runtime" });
     }
@@ -121,7 +121,7 @@ export async function streamDeploymentLogs(
   signal: AbortSignal,
 ): Promise<void> {
   const deployment = await assertDeploymentOwnership(deploymentId, userId);
-  const { status, error } = deployment;
+  const { status, error, projectId } = deployment;
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -164,7 +164,7 @@ export async function streamDeploymentLogs(
       res.end();
       return;
     }
-    await followDockerLogs(deploymentId, res, signal);
+    await followDockerLogs(projectId, res, signal);
     writeSseEvent(res, "end");
     res.end();
     return;
@@ -173,7 +173,7 @@ export async function streamDeploymentLogs(
   if (IN_PROGRESS_STATUSES.has(status)) {
     const lastStatus = await followRedisLogs(deploymentId, res, signal);
     if (!signal.aborted && lastStatus === "live") {
-      await followDockerLogs(deploymentId, res, signal);
+      await followDockerLogs(projectId, res, signal);
     }
     writeSseEvent(res, "end");
     res.end();

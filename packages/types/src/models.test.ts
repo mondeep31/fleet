@@ -31,6 +31,7 @@ describe("types/models", () => {
       userId: "user_1",
       name: "fleet-api",
       repoUrl: "https://github.com/example/fleet",
+      subdomain: "fleet-api",
       runtime: "bun",
     };
 
@@ -39,6 +40,7 @@ describe("types/models", () => {
       userId: "user_1",
       name: "fleet-api",
       repoUrl: "https://github.com/example/fleet",
+      subdomain: "fleet-api-2",
     };
 
     expect(project.runtime).toBe("bun");

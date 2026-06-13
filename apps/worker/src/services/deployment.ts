@@ -52,3 +52,17 @@ export async function isDeploymentStopped(
     .lean();
   return deployment?.status === "stopped" || deployment?.status === "deleted";
 }
+
+export async function supersedeLiveDeployments(
+  projectId: string,
+  currentDeploymentId: string,
+) {
+  await Deployment.updateMany(
+    {
+      projectId,
+      deploymentId: { $ne: currentDeploymentId },
+      status: "live",
+    },
+    { status: "stopped", $unset: { url: 1 } },
+  );
+}

@@ -19,6 +19,12 @@ const projectSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  subdomain: {
+    type: String,
+    required: true,
+    unique: true,
+    index: true,
+  },
   runtime: {
     type: String,
   },

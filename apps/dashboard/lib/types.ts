@@ -24,6 +24,7 @@ export interface Project {
   name: string;
   repoUrl: string;
   userId: string;
+  subdomain: string;
   status?: ProjectStatus;
 }
 

@@ -1,5 +1,5 @@
 import { getDocker } from "../lib/docker";
-import { getContainerName } from "../lib/containers";
+import { getProjectContainerName } from "../lib/containers";
 
 function extractLines(buffer: Buffer): { lines: string[]; consumed: number } {
   const lines: string[] = [];
@@ -23,11 +23,11 @@ function extractLines(buffer: Buffer): { lines: string[]; consumed: number } {
 }
 
 export async function* tailContainerLogs(
-  deploymentId: string,
+  projectId: string,
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
   const docker = getDocker();
-  const container = docker.getContainer(getContainerName(deploymentId));
+  const container = docker.getContainer(getProjectContainerName(projectId));
 
   const logStream = (await container.logs({
     follow: true,

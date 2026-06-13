@@ -1,4 +1,5 @@
 import Docker from "dockerode";
+import { getSharedEnv } from "@fleet/config";
 
 let docker: Docker | null = null;
 
@@ -11,6 +12,15 @@ export function getDocker() {
 
 export function getProjectNetworkName(projectId: string) {
   return `fleet-project-${projectId}`;
+}
+
+export function getProjectContainerName(projectId: string) {
+  return `fleet-project-${projectId}`;
+}
+
+export async function ensureTraefikNetwork() {
+  const env = getSharedEnv();
+  return ensureNetwork(env.FLEET_TRAEFIK_NETWORK);
 }
 
 export async function ensureNetwork(networkName: string) {

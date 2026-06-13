@@ -1,3 +1,5 @@
+import { Project } from "@fleet/db";
+import { resolveUniqueSubdomain, slugifyProjectName } from "@fleet/config";
 import { getErrorMessage } from "@fleet/errors";
 import type { DeployJobPayload } from "@fleet/queue";
 import { detectDockerfile } from "@fleet/runtime-detector";
@@ -6,17 +8,40 @@ import {
   getDeployment,
   isDeploymentStopped,
   markDeploymentFailed,
+  supersedeLiveDeployments,
   updateDeployment,
 } from "../services/deployment";
 import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
-import { runContainer } from "../steps/run";
+import { removeProjectContainer, runContainer } from "../steps/run";
 
 async function exitIfStopped(deploymentId: string) {
   if (await isDeploymentStopped(deploymentId)) {
     throw new DeploymentStoppedError(deploymentId);
   }
+}
+
+async function getProjectSubdomain(project: {
+  projectId: string;
+  name: string;
+  subdomain?: string | null;
+}) {
+  if (project.subdomain) {
+    return project.subdomain;
+  }
+
+  const baseSlug = slugifyProjectName(project.name);
+  const subdomain = await resolveUniqueSubdomain(baseSlug, async (candidate) => {
+    const existing = await Project.findOne({
+      subdomain: candidate,
+      projectId: { $ne: project.projectId },
+    });
+    return existing !== null;
+  });
+
+  await Project.updateOne({ projectId: project.projectId }, { subdomain });
+  return subdomain;
 }
 
 export async function handleDeployJob(payload: DeployJobPayload) {
@@ -78,12 +103,21 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     await exitIfStopped(deploymentId);
 
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+    const subdomain = await getProjectSubdomain(project);
+
     await updateDeployment(deploymentId, { status: "deploying" });
     publishLog(deploymentId, "Deploying container...", "pipeline");
+    await removeProjectContainer(projectId);
+    await supersedeLiveDeployments(projectId, deploymentId);
+
     const { containerId, networkName, url } = await runContainer({
       imageTag,
-      deploymentId,
       projectId,
+      subdomain,
     });
     await updateDeployment(deploymentId, {
       status: "live",

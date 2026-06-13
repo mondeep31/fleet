@@ -1,4 +1,5 @@
 import { Project } from "@fleet/db";
+import { resolveUniqueSubdomain, slugifyProjectName } from "@fleet/config";
 import { AppError } from "@fleet/errors";
 import {
   listDeploymentsByProjectId,
@@ -21,6 +22,7 @@ interface ProjectResponse {
   name: string;
   repoUrl: string;
   userId: string;
+  subdomain: string;
   status: string;
 }
 
@@ -57,12 +59,19 @@ export const createProject = async ({
   repoUrl,
   userId,
 }: CreateProjectParams) => {
-  const project = await Project.create({ name, repoUrl, userId });
+  const baseSlug = slugifyProjectName(name);
+  const subdomain = await resolveUniqueSubdomain(baseSlug, async (candidate) => {
+    const existing = await Project.findOne({ subdomain: candidate });
+    return existing !== null;
+  });
+
+  const project = await Project.create({ name, repoUrl, userId, subdomain });
   return {
     id: project.projectId,
     name: project.name,
     repoUrl: project.repoUrl,
     userId: project.userId,
+    subdomain: project.subdomain,
     status: project.status ?? "active",
   };
 };
@@ -84,6 +93,7 @@ export const getAllProjectsForAUser = async ({
         name: project.name,
         repoUrl: project.repoUrl,
         userId: project.userId,
+        subdomain: project.subdomain,
         status: project.status ?? "active",
       }),
     ),
@@ -125,6 +135,7 @@ export async function archiveProject(projectId: string, userId: string) {
   return {
     projectId: updated.projectId,
     name: updated.name,
+    subdomain: updated.subdomain,
     status: updated.status,
   };
 }

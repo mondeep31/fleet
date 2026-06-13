@@ -22,11 +22,11 @@ flowchart LR
 3. The **worker** picks up the job from Redis (BullMQ) and runs the pipeline:
    - Clone repo to `/tmp/fleet-builds/{deploymentId}`
    - `docker build` → tag `fleet/{projectId}:{deploymentId}`
-   - `docker run` with a random host port mapped to the image's exposed port
+   - Start container on Traefik with hostname `{subdomain}.localhost`
 4. Deployment status is updated in MongoDB at each step. Poll the API to get status, image tag, and URL.
-5. `curl` the returned `url` (e.g. `http://localhost:55004`) to reach the running app.
+5. Open the returned `url` (e.g. `http://my-app.localhost:18080`) to reach the running app.
 
-Containers are named `fleet-{deploymentId}` so you can identify them locally. Routing today uses random `localhost` ports — Traefik is in `docker-compose.yml` but not wired into deploys yet.
+Each project gets an auto-generated **subdomain** slug from its name. Traefik routes by `Host` header on port **18080** — no random host ports.
 
 ## Monorepo layout
 
@@ -69,13 +69,13 @@ If you previously had `apps/api/.env`, merge once:
 bun run migrate:env
 ```
 
-The worker only needs shared variables (`MONGODB_URI`, `REDIS_URL`). The API additionally requires `JWT_SECRET`, `GITHUB_WEBHOOK_SECRET`, and `AGENT_TOKEN`.
+The worker uses shared variables (`MONGODB_URI`, `REDIS_URL`, and Traefik routing vars). The API additionally requires `JWT_SECRET`, `GITHUB_WEBHOOK_SECRET`, and `AGENT_TOKEN`.
 
 ### 2. Install and infrastructure
 
 ```bash
 bun install
-docker compose up -d   # Redis on localhost:16379, Traefik on :18080 (not used by deploys yet)
+docker compose up -d   # Redis on localhost:16379, Traefik on :18080
 ```
 
 ### 3. Run API and worker
@@ -111,8 +111,8 @@ curl -s -X POST http://localhost:3010/api/v1/projects \
 curl -s http://localhost:3010/api/v1/deployments/DEPLOYMENT_ID \
   -H "Authorization: Bearer YOUR_TOKEN"
 
-# When status is "live", curl the url field
-curl -s http://localhost:ASSIGNED_PORT
+# When status is "live", open or curl the url field
+curl -s http://my-app.localhost:18080
 # → {"message":"Hello World"}
 ```
 
@@ -128,6 +128,10 @@ curl -s http://localhost:ASSIGNED_PORT
 | `AGENT_TOKEN` | API | Placeholder until agent is implemented |
 | `PORT` | API | HTTP port (default `3010`) |
 | `API_URL` | API | Public API URL (default `http://localhost:3010`) |
+| `FLEET_APPS_DOMAIN` | API, worker | App hostname suffix (default `localhost`; use `apps.yourdomain.com` in production) |
+| `FLEET_PUBLIC_URL_SCHEME` | API, worker | `http` or `https` (default `http`) |
+| `FLEET_TRAEFIK_PUBLIC_PORT` | API, worker | Public Traefik port in URLs (default `18080`; leave empty for HTTPS on 443) |
+| `FLEET_TRAEFIK_NETWORK` | Worker | Docker network Traefik shares with app containers (default `fleet-proxy`) |
 
 Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env causes the process to exit with a clear error.
 
@@ -181,8 +185,9 @@ Happy path: `queued` → `cloning` → `cloned` → (Dockerfile detect) → `bui
 |----------|---------|
 | Clone directory | `/tmp/fleet-builds/{deploymentId}` |
 | Docker image tag | `fleet/{projectId}:{deploymentId}` |
-| Container name | `fleet-{deploymentId}` |
-| URL format | `http://localhost:{randomHostPort}` |
+| Container name | `fleet-project-{projectId}` |
+| URL format | `http://{subdomain}.localhost:18080` (local) |
+| Traefik network | `fleet-proxy` |
 
 Build and pipeline output is published to a **Redis Stream** (`logs:{deploymentId}`) by the worker during deploy, with a **24h TTL**. Live app output is tailed from Docker via `docker logs -f`. The dashboard consumes both through **`GET /deployments/:id/logs/stream`** (SSE). Logs are not stored in MongoDB.
 
@@ -231,8 +236,8 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 
 | Task | Notes |
 |------|-------|
-| **Traefik integration** | Label containers for subdomain routing via existing Traefik service |
-| **Environment model** | Use `Environment` (branch, subdomain) instead of MVP placeholders (`main`, `default`) |
+| ~~Traefik integration~~ | Done — subdomain routing via Traefik on `fleet-proxy` network |
+| **Environment model** | Use `Environment` (branch) instead of MVP placeholders (`main`, `default`) |
 | **Preview deployments** | Per-branch/PR preview: another `Deployment` + queue job (same pipeline as prod), unique preview URL (e.g. `pr-42.{project}.localhost` via Traefik). Ephemeral — stop/delete when done or when PR closes |
 
 ### Phase 3 — Platform expansion
@@ -252,14 +257,33 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 - **dockerode in worker** — build and run happen on the machine running the worker (local dev today; agent later for remote).
 - **Single root `.env`** — `@fleet/config` validates once; API uses `getEnv()`, worker/db/queue use `getSharedEnv()`.
 - **Managed servers (future)** — production target is Fleet-managed hosts via the agent, not the developer's laptop.
-- **Traefik (future)** — subdomain routing instead of raw `localhost` ports.
+- **Traefik** — stable subdomain URLs (`{subdomain}.localhost:18080` locally; custom domain in production).
+
+## Public HTTPS via Cloudflare Tunnel (Phase 2)
+
+After local Traefik routing works, expose apps on the internet without opening office router ports:
+
+1. Add your domain to Cloudflare and create a **Zero Trust tunnel** (`cloudflared` on the Fleet host).
+2. Route tunnel ingress: `*.apps.yourdomain.com` → `http://127.0.0.1:18080` (Traefik).
+3. Update `.env`:
+
+```bash
+FLEET_APPS_DOMAIN=apps.yourdomain.com
+FLEET_PUBLIC_URL_SCHEME=https
+FLEET_TRAEFIK_PUBLIC_PORT=
+```
+
+4. Set Cloudflare SSL/TLS mode to **Full**.
+5. **Redeploy** existing projects so Traefik labels and deployment URLs use the new domain.
+
+Users then reach apps at `https://{subdomain}.apps.yourdomain.com`. Cloudflare terminates TLS; Traefik stays on HTTP locally.
 
 ## Docker Compose services
 
 | Service | Port | Purpose |
 |---------|------|---------|
 | `redis` | `16379` | BullMQ job queue |
-| `traefik` | `18080` (web), `18081` (dashboard) | Reverse proxy — present but not used by deploy pipeline yet |
+| `traefik` | `18080` (web), `18081` (dashboard) | Reverse proxy — routes deploys by subdomain |
 
 ## Contributing / internal notes
 
