@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore, selectIsAuthenticated } from "@/stores/auth-store";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +10,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
   const hydrated = useAuthStore((s) => s.hydrated);
   const isAuthenticated = useAuthStore(selectIsAuthenticated);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (hydrated && isAuthenticated) {
       router.replace("/projects");
     }

@@ -4,6 +4,7 @@ import {
   getStoredUser,
   getToken,
   setAuth,
+  syncTokenCookie,
   type StoredUser,
 } from "@/lib/auth";
 
@@ -23,6 +24,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   hydrate: () => {
     const token = getToken();
     const user = getStoredUser();
+    if (token) {
+      syncTokenCookie(token);
+    }
     set({ token, user, hydrated: true });
   },
   setSession: (token, user) => {

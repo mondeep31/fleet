@@ -2,9 +2,16 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 export function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  const token = request.cookies.get("fleet_token")?.value;
+
+  if (token && (pathname === "/login" || pathname === "/signup")) {
+    return NextResponse.redirect(new URL("/projects", request.url));
+  }
+
   if (
     process.env.NODE_ENV === "production" &&
-    request.nextUrl.pathname.startsWith("/signup")
+    pathname.startsWith("/signup")
   ) {
     return NextResponse.redirect(new URL("/login", request.url));
   }
@@ -13,5 +20,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: "/signup",
+  matcher: ["/login", "/signup"],
 };
