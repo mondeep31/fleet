@@ -20,8 +20,9 @@ module.exports = {
     {
       name: "fleet-api",
       cwd: "./apps/api",
-      script: "src/index.ts",
-      interpreter: "bun",
+      script: "bun",
+      args: "run start",
+      interpreter: "none",
       instances: 1,
       autorestart: true,
       watch: false,
@@ -37,8 +38,9 @@ module.exports = {
     {
       name: "fleet-worker",
       cwd: "./apps/worker",
-      script: "src/index.ts",
-      interpreter: "bun",
+      script: "bun",
+      args: "run start",
+      interpreter: "none",
       instances: 1,
       autorestart: true,
       watch: false,

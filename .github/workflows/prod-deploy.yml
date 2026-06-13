@@ -40,8 +40,12 @@ jobs:
             cp app_env/.env .env
             cp app_env/.env apps/dashboard/.env.production
 
+            # app_env may carry development defaults; force production on the host
+            sed -i 's/^NODE_ENV=.*/NODE_ENV=production/' .env
+            sed -i 's/^NODE_ENV=.*/NODE_ENV=production/' apps/dashboard/.env.production
+
             bun run install:all -- --frozen-lockfile
-            bun run --cwd apps/dashboard build
+            bun run build:prod
 
             docker compose up -d
 

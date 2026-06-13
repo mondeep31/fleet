@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "install:all": "bun install",
+    "build:prod": "bun run --cwd apps/dashboard build",
     "setup": "bun run install:all && bun run setup:hooks",
     "setup:hooks": "git config core.hooksPath .githooks && chmod +x .githooks/pre-commit .githooks/pre-push",
     "migrate:env": "bun run scripts/migrate-env.ts",
