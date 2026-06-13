@@ -52,6 +52,7 @@ function buildTraefikLabels({
     "traefik.docker.network": env.FLEET_TRAEFIK_NETWORK,
     [`traefik.http.routers.${routerName}.rule`]: `Host(\`${host}\`)`,
     [`traefik.http.routers.${routerName}.entrypoints`]: "web",
+    [`traefik.http.routers.${routerName}.service`]: routerName,
     [`traefik.http.services.${routerName}.loadbalancer.server.port`]:
       containerPort.replace("/tcp", "").replace("/udp", ""),
   };
