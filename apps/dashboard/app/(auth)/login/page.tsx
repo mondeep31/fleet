@@ -19,6 +19,8 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
+const signupEnabled = process.env.NODE_ENV !== "production";
+
 export default function LoginPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
@@ -57,11 +59,13 @@ export default function LoginPage() {
       title="Login to fleet"
       subtitle="Sign in to continue to your dashboard"
       footer={
-        <AuthFooterLink
-          text="Don't have an account?"
-          linkText="Sign up"
-          href="/signup"
-        />
+        signupEnabled ? (
+          <AuthFooterLink
+            text="Don't have an account?"
+            linkText="Sign up"
+            href="/signup"
+          />
+        ) : undefined
       }
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

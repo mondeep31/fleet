@@ -1,3 +1,5 @@
+import { getEnv } from "@fleet/config";
+import { AppError } from "@fleet/errors";
 import type { RequestHandler } from "express";
 import {
   createUser,
@@ -13,6 +15,10 @@ import type {
 } from "../validators/user";
 
 const createUserController: RequestHandler = async (req, res) => {
+  if (getEnv().NODE_ENV === "production") {
+    throw new AppError(403, "Sign up is disabled", "SIGNUP_DISABLED");
+  }
+
   const { name, email, password } = req.body as CreateUserBody;
   const user = await createUser({ name, email, password });
   res.status(201).json({

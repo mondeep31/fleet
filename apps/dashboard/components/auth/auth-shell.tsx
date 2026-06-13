@@ -13,7 +13,7 @@ export function AuthShell({
   title: string;
   subtitle: string;
   children: React.ReactNode;
-  footer: React.ReactNode;
+  footer?: React.ReactNode;
 }) {
   const reduceMotion = useReducedMotion();
 
@@ -51,9 +51,11 @@ export function AuthShell({
 
         {children}
 
-        <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-          {footer}
-        </div>
+        {footer ? (
+          <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
+            {footer}
+          </div>
+        ) : null}
       </motion.div>
     </div>
   );
