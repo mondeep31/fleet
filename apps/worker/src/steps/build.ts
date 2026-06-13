@@ -1,6 +1,6 @@
 import tar from "tar-fs";
 import { getDocker } from "../lib/docker";
-import { appendDeploymentLogs } from "../services/deployment";
+import { flushLogs, publishLog } from "../services/logs";
 
 interface BuildImageParams {
   cloneDir: string;
@@ -37,11 +37,7 @@ export async function buildImage({
       (event) => {
         if (event.stream) {
           process.stdout.write(event.stream);
-          // TODO: stream logs via SSE/WebSocket instead of polling MongoDB
-          void appendDeploymentLogs(
-            deploymentId,
-            event.stream.split("\n"),
-          );
+          publishLog(deploymentId, event.stream.split("\n"), "build");
         }
         if (event.error) {
           failed = true;
@@ -51,5 +47,6 @@ export async function buildImage({
     );
   });
 
+  await flushLogs(deploymentId);
   return imageTag;
 }

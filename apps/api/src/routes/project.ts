@@ -1,10 +1,15 @@
 import { Router } from "express";
 import { validate } from "@fleet/api-middleware";
-import { createProjectBodySchema } from "../validators/user";
 import {
+  archiveProjectController,
   createProjectController,
   getAllProjectsController,
+  startProjectDeploymentController,
 } from "../controller/project";
+import {
+  createProjectBodySchema,
+  projectIdParamsSchema,
+} from "../validators/user";
 
 const router = Router();
 
@@ -15,5 +20,17 @@ router.post(
 );
 
 router.get("/", getAllProjectsController);
+
+router.post(
+  "/:projectId/deploy",
+  validate({ params: projectIdParamsSchema }),
+  startProjectDeploymentController,
+);
+
+router.delete(
+  "/:projectId",
+  validate({ params: projectIdParamsSchema }),
+  archiveProjectController,
+);
 
 export default router;

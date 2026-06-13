@@ -10,6 +10,7 @@
     "@fleet/config": "workspace:*",
     "@fleet/errors": "workspace:*",
     "@fleet/db": "workspace:*",
+    "@fleet/logs": "workspace:*",
     "@fleet/queue": "workspace:*",
     "@fleet/runtime-detector": "workspace:*",
     "bullmq": "^5.76.6",

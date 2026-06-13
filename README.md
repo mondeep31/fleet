@@ -153,7 +153,8 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 | `GET` | `/api/v1/deployments/:deploymentId` | Full deployment record |
 | `GET` | `/api/v1/deployments/:deploymentId/status` | Status, url, error only |
 | `GET` | `/api/v1/deployments/project/:projectId` | All deployments for a project |
-| `GET` | `/api/v1/deployments/:deploymentId/logs` | Build + pipeline logs from DB |
+| `GET` | `/api/v1/deployments/:deploymentId/logs/stream` | SSE log stream (build via Redis, runtime via Docker tail) |
+| `GET` | `/api/v1/deployments/:deploymentId/logs` | Deprecated (410) — use `/logs/stream` |
 | `DELETE` | `/api/v1/deployments/:deploymentId` | Stop/cancel deployment (removes container, cancels queued jobs) |
 
 ## Deployment lifecycle
@@ -183,7 +184,7 @@ Happy path: `queued` → `cloning` → `cloned` → (Dockerfile detect) → `bui
 | Container name | `fleet-{deploymentId}` |
 | URL format | `http://localhost:{randomHostPort}` |
 
-Build output and pipeline milestones are appended to `Deployment.logs[]` in MongoDB. Fetch via `GET /deployments/:id/logs`. Real-time log streaming (SSE/WebSocket) is planned — today you poll the full log array.
+Build and pipeline output is published to a **Redis Stream** (`logs:{deploymentId}`) by the worker during deploy, with a **24h TTL**. Live app output is tailed from Docker via `docker logs -f`. The dashboard consumes both through **`GET /deployments/:id/logs/stream`** (SSE). Logs are not stored in MongoDB.
 
 ### Stop a deployment
 
@@ -222,7 +223,7 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 | Task | Notes |
 |------|-------|
 | ~~Stop deployment~~ | Done — `DELETE /deployments/:id` stops live, cancels queued, cooperative cancel in-flight |
-| ~~Build logs in DB~~ | Done — `GET /deployments/:id/logs`; streaming (SSE/WebSocket) planned |
+| ~~Build log streaming~~ | Done — SSE via Redis Streams (24h) + Docker runtime tail |
 | ~~Dockerfile detector~~ | Done — root `Dockerfile` / `dockerfile` check before build |
 | **Redeploy** | New production deployment for same project without recreating it |
 

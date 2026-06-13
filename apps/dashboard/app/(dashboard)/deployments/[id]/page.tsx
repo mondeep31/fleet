@@ -19,8 +19,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   useDeployment,
-  useDeploymentLogs,
 } from "@/hooks/use-deployments";
+import { useDeploymentLogStream } from "@/hooks/use-deployment-log-stream";
 import { api, ApiError } from "@/lib/api";
 import { formatRelativeTime } from "@/lib/format";
 import { isTerminalStatus } from "@/lib/types";
@@ -30,7 +30,7 @@ export default function DeploymentDetailPage() {
   const deploymentId = params.id;
 
   const { deployment, isLoading, mutate } = useDeployment(deploymentId);
-  const { logs, isLoading: logsLoading } = useDeploymentLogs(
+  const { lines, streamState } = useDeploymentLogStream(
     deploymentId,
     deployment?.status,
   );
@@ -134,9 +134,9 @@ export default function DeploymentDetailPage() {
 
             <section className="overflow-hidden rounded-xl border border-border bg-card shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
               <div className="border-b border-border bg-[var(--bg-elevated)]/45 px-4 py-3">
-                <h2 className="text-sm font-medium">Build Logs</h2>
+                <h2 className="text-sm font-medium">Logs</h2>
               </div>
-              <DeploymentLogs logs={logs} isLoading={logsLoading} />
+              <DeploymentLogs lines={lines} streamState={streamState} />
             </section>
           </>
         )}

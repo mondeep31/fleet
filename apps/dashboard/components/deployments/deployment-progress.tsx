@@ -26,17 +26,23 @@ function getStepIndex(status: DeploymentStatus): number {
       return 4;
     case "failed":
     case "stopped":
+    case "deleted":
     case "rolled_back":
       return -1;
-    default:
-      return 0;
+    default: {
+      const _exhaustive: never = status;
+      return _exhaustive;
+    }
   }
 }
 
 export function DeploymentProgress({ status }: { status: DeploymentStatus }) {
   const currentIndex = getStepIndex(status);
   const isFailed =
-    status === "failed" || status === "stopped" || status === "rolled_back";
+    status === "failed" ||
+    status === "stopped" ||
+    status === "deleted" ||
+    status === "rolled_back";
 
   return (
     <div className="space-y-3">

@@ -1,30 +1,34 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { Skeleton } from "@/components/ui/skeleton";
+import type {
+  DeploymentLogLine,
+  LogStreamState,
+} from "@/hooks/use-deployment-log-stream";
 
 export function DeploymentLogs({
-  logs,
-  isLoading,
+  lines,
+  streamState,
 }: {
-  logs: string[];
-  isLoading: boolean;
+  lines: DeploymentLogLine[];
+  streamState: LogStreamState;
 }) {
   const parentRef = useRef<HTMLDivElement>(null);
   const shouldStickToBottom = useRef(true);
 
   const virtualizer = useVirtualizer({
-    count: logs.length,
+    count: lines.length,
     getScrollElement: () => parentRef.current,
     estimateSize: () => 22,
     overscan: 20,
   });
 
   useEffect(() => {
-    if (!shouldStickToBottom.current || logs.length === 0) return;
-    virtualizer.scrollToIndex(logs.length - 1, { align: "end" });
-  }, [logs.length, virtualizer]);
+    if (!shouldStickToBottom.current || lines.length === 0) return;
+    virtualizer.scrollToIndex(lines.length - 1, { align: "end" });
+  }, [lines.length, virtualizer]);
 
   useEffect(() => {
     const el = parentRef.current;
@@ -40,7 +44,7 @@ export function DeploymentLogs({
     return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
-  if (isLoading && logs.length === 0) {
+  if (streamState === "connecting" && lines.length === 0) {
     return (
       <div className="space-y-2 p-4">
         {Array.from({ length: 8 }).map((_, i) => (
@@ -50,10 +54,16 @@ export function DeploymentLogs({
     );
   }
 
-  if (logs.length === 0) {
+  if (lines.length === 0) {
     return (
       <p className="p-4 font-mono text-sm text-muted-foreground">
-        Waiting for build output…
+        {streamState === "unavailable"
+          ? "Logs unavailable."
+          : streamState === "ended"
+            ? "No log output captured."
+            : streamState === "live"
+              ? "Connected. Waiting for log output…"
+              : "Waiting for build output…"}
       </p>
     );
   }
@@ -63,7 +73,7 @@ export function DeploymentLogs({
   return (
     <div
       ref={parentRef}
-      className="h-[420px] overflow-auto bg-[var(--bg-inset)] p-4 font-mono text-xs leading-relaxed text-[#e4e0d8]"
+      className="h-[420px] overflow-auto bg-[var(--bg-inset)] p-4 font-mono text-xs leading-relaxed text-[#e4e0d8] scrollbar-thin scrollbar-track-[#2f2f2d] scrollbar-thumb-[#7b7b75] scrollbar-corner-[#2f2f2d] scrollbar-hover:scrollbar-thumb-[#92928c]"
     >
       <div
         style={{
@@ -86,7 +96,7 @@ export function DeploymentLogs({
             }}
             className="whitespace-pre-wrap break-all"
           >
-            {logs[virtualRow.index]}
+            {lines[virtualRow.index]?.line}
           </div>
         ))}
       </div>

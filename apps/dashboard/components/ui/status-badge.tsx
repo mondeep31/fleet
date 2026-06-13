@@ -42,6 +42,10 @@ const statusConfig: Record<
     label: "Stopped",
     className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
   },
+  deleted: {
+    label: "Deleted",
+    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+  },
 };
 
 export function StatusBadge({

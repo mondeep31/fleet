@@ -1,6 +1,11 @@
 import type { RequestHandler } from "express";
 import { startDeploy } from "../services/deployment";
-import { createProject, getAllProjectsForAUser } from "../services/project";
+import {
+  archiveProject,
+  createProject,
+  getAllProjectsForAUser,
+  startProjectDeployment,
+} from "../services/project";
 import type { CreateProjectBody } from "../validators/user";
 
 const createProjectController: RequestHandler = async (req, res) => {
@@ -32,4 +37,31 @@ const getAllProjectsController: RequestHandler = async (req, res) => {
   });
 };
 
-export { createProjectController, getAllProjectsController };
+const archiveProjectController: RequestHandler = async (req, res) => {
+  const { projectId } = req.params;
+  const userId = req.user!.userId;
+  const project = await archiveProject(projectId, userId);
+  res.status(200).json({
+    message: "Project archived successfully",
+    success: true,
+    data: project,
+  });
+};
+
+const startProjectDeploymentController: RequestHandler = async (req, res) => {
+  const { projectId } = req.params;
+  const userId = req.user!.userId;
+  const deployment = await startProjectDeployment(projectId, userId);
+  res.status(201).json({
+    message: "Deployment started successfully",
+    success: true,
+    data: deployment,
+  });
+};
+
+export {
+  archiveProjectController,
+  createProjectController,
+  getAllProjectsController,
+  startProjectDeploymentController,
+};

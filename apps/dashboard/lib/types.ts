@@ -7,7 +7,10 @@ export type DeploymentStatus =
   | "live"
   | "failed"
   | "rolled_back"
-  | "stopped";
+  | "stopped"
+  | "deleted";
+
+export type ProjectStatus = "active" | "archived";
 
 export interface AuthUser {
   userId: string;
@@ -21,6 +24,7 @@ export interface Project {
   name: string;
   repoUrl: string;
   userId: string;
+  status?: ProjectStatus;
 }
 
 export interface Deployment {
@@ -56,6 +60,7 @@ export const TERMINAL_STATUSES: DeploymentStatus[] = [
   "live",
   "failed",
   "stopped",
+  "deleted",
   "rolled_back",
 ];
 

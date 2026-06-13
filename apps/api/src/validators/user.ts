@@ -5,6 +5,10 @@ export const createProjectBodySchema = z.object({
   repoUrl: z.string().trim().url("Invalid repository URL"),
 });
 
+export const projectIdParamsSchema = z.object({
+  projectId: z.string().trim().min(1, "Project ID is required"),
+});
+
 export const createUserBodySchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   email: z.string().trim().email("Invalid email address"),
@@ -24,4 +28,5 @@ export const loginBodySchema = z.object({
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;
+export type ProjectIdParams = z.infer<typeof projectIdParamsSchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;

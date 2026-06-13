@@ -37,6 +37,7 @@ export function DeploymentRow({
 
   const canStop =
     deployment.status !== "stopped" &&
+    deployment.status !== "deleted" &&
     deployment.status !== "live" &&
     deployment.status !== "failed";
 

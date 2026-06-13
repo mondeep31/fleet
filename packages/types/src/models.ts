@@ -1,6 +1,7 @@
 import type {
   DeploymentStatus,
   EnvironmentType,
+  ProjectStatus,
   ServerStatus,
 } from "./enums";
 
@@ -18,6 +19,7 @@ export interface Project {
   projectId: string;
   repoUrl: string;
   userId: string;
+  status?: ProjectStatus;
   runtime?: string;
 }
 

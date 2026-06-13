@@ -36,7 +36,7 @@ export default function ProjectsPage() {
       />
 
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
-        <div className="relative min-w-0 flex-1">
+        <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
           <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             value={query}
@@ -100,7 +100,11 @@ export default function ProjectsPage() {
         {!isLoading && !error && visibleProjects.length > 0 && (
           <div className="grid gap-3 md:gap-4 xl:grid-cols-2">
             {visibleProjects.map((project) => (
-              <ProjectCard key={project.projectId} project={project} />
+              <ProjectCard
+                key={project.projectId}
+                project={project}
+                onChanged={() => mutate()}
+              />
             ))}
           </div>
         )}

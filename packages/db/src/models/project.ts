@@ -22,6 +22,11 @@ const projectSchema = new mongoose.Schema({
   runtime: {
     type: String,
   },
+  status: {
+    type: String,
+    enum: ["active", "archived"],
+    default: "active",
+  },
 });
 
 projectSchema.set("toJSON", {

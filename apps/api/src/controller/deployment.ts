@@ -1,10 +1,11 @@
 import type { RequestHandler } from "express";
+import { AppError } from "@fleet/errors";
 import {
   getDeploymentById,
-  getDeploymentLogs,
   getDeploymentsByProjectId,
   stopDeployment,
 } from "../services/deployment";
+import { streamDeploymentLogs } from "../services/log-stream";
 
 const getDeploymentController: RequestHandler = async (req, res) => {
   const { deploymentId } = req.params;
@@ -33,7 +34,8 @@ const getDeploymentStatusController: RequestHandler = async (req, res) => {
 
 const getDeploymentsByProjectController: RequestHandler = async (req, res) => {
   const { projectId } = req.params;
-  const deployments = await getDeploymentsByProjectId(projectId);
+  const userId = req.user!.userId;
+  const deployments = await getDeploymentsByProjectId(projectId, userId);
   res.status(200).json({
     message: "Deployments fetched successfully",
     success: true,
@@ -41,16 +43,37 @@ const getDeploymentsByProjectController: RequestHandler = async (req, res) => {
   });
 };
 
-// TODO: stream logs in real time (SSE/WebSocket) — currently returns full array from DB
-const getDeploymentLogsController: RequestHandler = async (req, res) => {
+const getDeploymentLogsController: RequestHandler = (_req, res) => {
+  throw new AppError(
+    410,
+    "Log polling is deprecated. Use GET /deployments/:deploymentId/logs/stream instead.",
+    "LOGS_ENDPOINT_DEPRECATED",
+  );
+};
+
+const streamDeploymentLogsController: RequestHandler = async (req, res, next) => {
   const { deploymentId } = req.params;
   const userId = req.user!.userId;
-  const logs = await getDeploymentLogs(deploymentId, userId);
-  res.status(200).json({
-    message: "Deployment logs fetched successfully",
-    success: true,
-    data: logs,
+  const abortController = new AbortController();
+
+  req.on("close", () => {
+    abortController.abort();
   });
+
+  try {
+    await streamDeploymentLogs(
+      deploymentId,
+      userId,
+      res,
+      abortController.signal,
+    );
+  } catch (err) {
+    if (!res.headersSent) {
+      next(err);
+      return;
+    }
+    res.end();
+  }
 };
 
 const stopDeploymentController: RequestHandler = async (req, res) => {
@@ -70,4 +93,5 @@ export {
   getDeploymentStatusController,
   getDeploymentsByProjectController,
   stopDeploymentController,
+  streamDeploymentLogsController,
 };

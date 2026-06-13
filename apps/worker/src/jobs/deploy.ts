@@ -3,12 +3,12 @@ import type { DeployJobPayload } from "@fleet/queue";
 import { detectDockerfile } from "@fleet/runtime-detector";
 import { DeploymentStoppedError } from "../errors/deployment-stopped";
 import {
-  appendDeploymentLogs,
   getDeployment,
   isDeploymentStopped,
   markDeploymentFailed,
   updateDeployment,
 } from "../services/deployment";
+import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
 import { runContainer } from "../steps/run";
@@ -27,7 +27,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     const deployment = await getDeployment(deploymentId);
 
     await updateDeployment(deploymentId, { status: "cloning" });
-    await appendDeploymentLogs(deploymentId, ["Cloning repository..."]);
+    publishLog(deploymentId, "Cloning repository...", "pipeline");
 
     const { cloneDir, commitSha } = await cloneRepo({
       repoUrl,
@@ -42,9 +42,11 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       commitSha,
       clonePath: cloneDir,
     });
-    await appendDeploymentLogs(deploymentId, [
+    publishLog(
+      deploymentId,
       `Clone complete (${commitSha.slice(0, 7)})`,
-    ]);
+      "pipeline",
+    );
     console.log(`cloned ${deploymentId} → ${cloneDir}`);
 
     await exitIfStopped(deploymentId);
@@ -55,12 +57,14 @@ export async function handleDeployJob(payload: DeployJobPayload) {
         "No Dockerfile found at repository root. Add a Dockerfile or dockerfile to deploy.",
       );
     }
-    await appendDeploymentLogs(deploymentId, [
+    publishLog(
+      deploymentId,
       `Dockerfile found: ${dockerfile.relativePath}`,
-    ]);
+      "pipeline",
+    );
 
     await updateDeployment(deploymentId, { status: "building" });
-    await appendDeploymentLogs(deploymentId, ["Building Docker image..."]);
+    publishLog(deploymentId, "Building Docker image...", "pipeline");
     const imageTag = `fleet/${deployment.projectId}:${deploymentId}`;
     await buildImage({
       cloneDir,
@@ -69,13 +73,13 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       dockerfile: dockerfile.relativePath,
     });
     await updateDeployment(deploymentId, { imageTag });
-    await appendDeploymentLogs(deploymentId, [`Build complete: ${imageTag}`]);
+    publishLog(deploymentId, `Build complete: ${imageTag}`, "pipeline");
     console.log(`built ${deploymentId} → ${imageTag}`);
 
     await exitIfStopped(deploymentId);
 
     await updateDeployment(deploymentId, { status: "deploying" });
-    await appendDeploymentLogs(deploymentId, ["Deploying container..."]);
+    publishLog(deploymentId, "Deploying container...", "pipeline");
     const { containerId, networkName, url } = await runContainer({
       imageTag,
       deploymentId,
@@ -87,19 +91,23 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       networkName,
       url,
     });
-    await appendDeploymentLogs(deploymentId, [`Deployment live at ${url}`]);
+    publishLog(deploymentId, `Deployment live at ${url}`, "pipeline");
+    await finalizeDeploymentLogs(deploymentId);
     console.log(`live ${deploymentId} → ${url}`);
   } catch (err) {
     if (err instanceof DeploymentStoppedError) {
-      await appendDeploymentLogs(deploymentId, ["Deployment stopped"]);
+      publishLog(deploymentId, "Deployment stopped", "pipeline");
+      await finalizeDeploymentLogs(deploymentId);
       console.log(`stopped ${deploymentId}`);
       return;
     }
 
     const message = getErrorMessage(err);
+    publishLog(deploymentId, `Error: ${message}`, "pipeline");
     await markDeploymentFailed(deploymentId, message).catch((updateErr) => {
       console.error("failed to mark deployment as failed:", updateErr);
     });
+    await finalizeDeploymentLogs(deploymentId);
     throw err;
   }
 }

@@ -91,14 +91,34 @@ export async function getDeploymentById(deploymentId: string) {
   return toDeploymentResponse(deployment);
 }
 
-export async function getDeploymentsByProjectId(projectId: string) {
+export async function listDeploymentsByProjectId(projectId: string) {
   const deployments = await Deployment.find({ projectId }).sort({
     createdAt: -1,
   });
   return deployments.map(toDeploymentResponse);
 }
 
-async function assertDeploymentOwnership(deploymentId: string, userId: string) {
+export async function getDeploymentsByProjectId(
+  projectId: string,
+  userId: string,
+) {
+  await assertProjectAccess(projectId, userId);
+
+  return listDeploymentsByProjectId(projectId);
+}
+
+async function assertProjectAccess(projectId: string, userId: string) {
+  const project = await Project.findOne({ projectId });
+  if (!project || project.userId !== userId) {
+    throw new AppError(404, "Project not found", "PROJECT_NOT_FOUND");
+  }
+  if (project.status === "archived") {
+    throw new AppError(404, "Project not found", "PROJECT_NOT_FOUND");
+  }
+  return project;
+}
+
+export async function assertDeploymentOwnership(deploymentId: string, userId: string) {
   const deployment = await Deployment.findOne({ deploymentId });
   if (!deployment) {
     throw new AppError(404, "Deployment not found", "DEPLOYMENT_NOT_FOUND");
@@ -112,18 +132,10 @@ async function assertDeploymentOwnership(deploymentId: string, userId: string) {
   return deployment;
 }
 
-export async function getDeploymentLogs(deploymentId: string, userId: string) {
-  const deployment = await assertDeploymentOwnership(deploymentId, userId);
-  return {
-    deploymentId: deployment.deploymentId,
-    logs: deployment.logs ?? [],
-  };
-}
-
 export async function stopDeployment(deploymentId: string, userId: string) {
   const deployment = await assertDeploymentOwnership(deploymentId, userId);
 
-  if (deployment.status === "stopped") {
+  if (deployment.status === "deleted" || deployment.status === "stopped") {
     return toDeploymentResponse(deployment);
   }
 
@@ -132,7 +144,7 @@ export async function stopDeployment(deploymentId: string, userId: string) {
 
   const updated = await Deployment.findOneAndUpdate(
     { deploymentId },
-    { status: "stopped", $unset: { url: 1 } },
+    { status: "deleted", $unset: { url: 1 } },
     { new: true },
   );
 

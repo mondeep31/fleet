@@ -117,15 +117,22 @@ export const api = {
       error?: string;
     }>(`/api/v1/deployments/${deploymentId}/status`),
 
-  getDeploymentLogs: (deploymentId: string) =>
-    request<{ deploymentId: string; logs: string[] }>(
-      `/api/v1/deployments/${deploymentId}/logs`,
-    ),
-
   stopDeployment: (deploymentId: string) =>
     request<Deployment>(`/api/v1/deployments/${deploymentId}`, {
       method: "DELETE",
     }),
+
+  startProjectDeployment: (projectId: string) =>
+    request<{ deploymentId: string; status: string }>(
+      `/api/v1/projects/${projectId}/deploy`,
+      { method: "POST" },
+    ),
+
+  archiveProject: (projectId: string) =>
+    request<{ projectId: string; name: string; status: string }>(
+      `/api/v1/projects/${projectId}`,
+      { method: "DELETE" },
+    ),
 
   getProjectsWithLatestDeploy: async (): Promise<ProjectWithLatestDeploy[]> => {
     const { projects } = await api.getProjects();

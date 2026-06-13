@@ -44,24 +44,11 @@ export async function markDeploymentFailed(
   });
 }
 
-export async function appendDeploymentLogs(
-  deploymentId: string,
-  lines: string[],
-) {
-  const trimmed = lines.map((line) => line.trimEnd()).filter((line) => line.length > 0);
-  if (trimmed.length === 0) return;
-
-  await Deployment.findOneAndUpdate(
-    { deploymentId },
-    { $push: { logs: { $each: trimmed } } },
-  );
-}
-
 export async function isDeploymentStopped(
   deploymentId: string,
 ): Promise<boolean> {
   const deployment = await Deployment.findOne({ deploymentId })
     .select("status")
     .lean();
-  return deployment?.status === "stopped";
+  return deployment?.status === "stopped" || deployment?.status === "deleted";
 }

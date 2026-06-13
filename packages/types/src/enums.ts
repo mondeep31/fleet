@@ -7,7 +7,10 @@ export type DeploymentStatus =
   | "live"
   | "failed"
   | "rolled_back"
-  | "stopped";
+  | "stopped"
+  | "deleted";
+
+export type ProjectStatus = "active" | "archived";
 
 export type RuntimeType =
   | "nextjs"

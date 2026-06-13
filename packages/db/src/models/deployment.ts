@@ -45,6 +45,7 @@ const deploymentSchema = new mongoose.Schema(
         "failed",
         "rolled_back",
         "stopped",
+        "deleted",
       ],
     },
     logs: {
