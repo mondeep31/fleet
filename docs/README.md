@@ -83,3 +83,7 @@ todo:
 3. have a sandboxed environment for each deployment
 4. instead of just docker run, use a docker network for each user, so they cannot access other users deployments.
 5. oauth w github only, and when we click on new project, it will show all the repos for that user in a seperate page and then we can click on deploy instead of just entering the repo url.
+
+6. oauth - so that all repos are available to the user.
+7. users should be able to add env into the project. we need to inject that to docker container and read from it.
+8. if i add any new env, it should be reflected in the new deployment.
