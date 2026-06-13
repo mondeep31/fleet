@@ -7,7 +7,7 @@ services:
       - redis_data:/data
 
   traefik:
-    image: traefik:v3.0
+    image: traefik:v3.6.2
     ports:
       - "127.0.0.1:${TRAEFIK_WEB_HOST_PORT:-18080}:80"
       - "127.0.0.1:${TRAEFIK_DASHBOARD_HOST_PORT:-18081}:8080"
