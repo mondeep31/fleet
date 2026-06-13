@@ -26,13 +26,13 @@ jobs:
           git fetch origin main
           git reset --hard origin/main
 
-          if [ ! -f app_env/.env ]; then
+          if [ ! -f ../app_env/.env ]; then
             echo "Missing app_env/.env — create it on the server before deploying." >&2
             exit 1
           fi
 
-          cp app_env/.env .env
-          cp app_env/.env apps/dashboard/.env.production
+          cp ../app_env/.env .env
+          cp ../app_env/.env apps/dashboard/.env.production
 
           # app_env may carry development defaults; force production on the host
           sed -i 's/^NODE_ENV=.*/NODE_ENV=production/' .env
