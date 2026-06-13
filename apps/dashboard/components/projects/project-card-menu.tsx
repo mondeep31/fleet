@@ -212,11 +212,11 @@ export function ProjectCardMenu({
             setError(null);
           }}
           className={cn(
-            "flex size-7 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground",
-            open && "bg-[var(--bg-elevated)] text-foreground",
+            "flex size-7 shrink-0 items-center justify-center rounded-full border border-border bg-[var(--bg-inset)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground",
+            open && "border-border bg-[var(--bg-elevated)] text-foreground",
           )}
         >
-          <DotsThree className="size-4" weight="bold" />
+          <DotsThree className="size-4 shrink-0" weight="bold" />
         </button>
       </div>
 

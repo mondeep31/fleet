@@ -18,12 +18,7 @@ export default function ProjectsPage() {
 
     return projects.filter((project) => {
       const latest = project.latestDeployment;
-      return [
-        project.name,
-        project.repoUrl,
-        latest?.url,
-        latest?.status,
-      ]
+      return [project.name, project.repoUrl, latest?.url, latest?.status]
         .filter(Boolean)
         .some((value) => value!.toLowerCase().includes(normalized));
     });
@@ -31,9 +26,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <Header
-        title="Projects"
-      />
+      <Header title="Projects" />
 
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
         <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
@@ -41,7 +34,11 @@ export default function ProjectsPage() {
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search projects..."
+            placeholder={
+              typeof window !== "undefined" && window.innerWidth <= 768
+                ? "Search"
+                : "Search projects"
+            }
             className="pl-9"
           />
         </div>
@@ -91,14 +88,17 @@ export default function ProjectsPage() {
           </div>
         )}
 
-        {!isLoading && !error && projects.length > 0 && visibleProjects.length === 0 && (
-          <div className="rounded-lg border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
-            No projects match your search.
-          </div>
-        )}
+        {!isLoading &&
+          !error &&
+          projects.length > 0 &&
+          visibleProjects.length === 0 && (
+            <div className="rounded-lg border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+              No projects match your search.
+            </div>
+          )}
 
         {!isLoading && !error && visibleProjects.length > 0 && (
-          <div className="grid gap-3 md:gap-4 xl:grid-cols-2">
+          <div className="grid min-w-0 gap-3 md:gap-4 xl:grid-cols-2">
             {visibleProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}
