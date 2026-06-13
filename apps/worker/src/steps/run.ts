@@ -44,7 +44,7 @@ function buildTraefikLabels({
   containerPort: string;
 }) {
   const env = getSharedEnv();
-  const routerName = projectId.replace(/[^a-zA-Z0-9]/g, "");
+  const routerName = `fleet${projectId.replace(/[^a-zA-Z0-9]/g, "")}`;
   const host = `${subdomain}.${env.FLEET_APPS_DOMAIN}`;
 
   return {
@@ -98,22 +98,17 @@ export async function runContainer({
       [containerPort]: {},
     },
     Labels: buildTraefikLabels({ projectId, subdomain, containerPort }),
-    HostConfig: {
-      NetworkMode: projectNetworkName,
-    },
     NetworkingConfig: {
       EndpointsConfig: {
         [projectNetworkName]: {
           Aliases: [`app-${projectId}`],
         },
+        [traefikNetworkName]: {},
       },
     },
   });
 
   await container.start();
-
-  const traefikNetwork = docker.getNetwork(traefikNetworkName);
-  await traefikNetwork.connect({ Container: container.id });
 
   const inspect = await container.inspect();
 
