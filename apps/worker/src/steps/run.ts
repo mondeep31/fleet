@@ -3,8 +3,8 @@ import {
   getSharedEnv,
 } from "@fleet/config";
 import {
+  buildFleetLabels,
   ensureNetwork,
-  ensureTraefikNetwork,
   getDeploymentContainerName,
   getDocker,
   getProjectNetworkName,
@@ -61,9 +61,10 @@ function buildTraefikLabels({
 }
 
 /**
- * Starts a new deployment container with a deployment-scoped name.
- * Does NOT remove any existing container — the caller handles cutover
- * after confirming the new container is running.
+ * Starts a new deployment container on the project network ONLY.
+ * The container is NOT attached to Traefik yet — the caller must call
+ * attachContainerToTraefik() after removing all sibling containers to ensure
+ * exactly one container is routable at any time.
  */
 export async function runContainer({
   imageTag,
@@ -77,7 +78,6 @@ export async function runContainer({
   const containerPort = await getContainerPort(imageTag);
   const containerName = getDeploymentContainerName(projectId, deploymentId);
   const projectNetworkName = getProjectNetworkName(projectId);
-  const traefikNetworkName = await ensureTraefikNetwork();
 
   await ensureNetwork(projectNetworkName);
 
@@ -88,13 +88,17 @@ export async function runContainer({
       [containerPort]: {},
     },
     Env: Object.entries(env).map(([k, v]) => `${k}=${v}`),
-    Labels: buildTraefikLabels({ projectId, subdomain, containerPort }),
+    Labels: {
+      ...buildTraefikLabels({ projectId, subdomain, containerPort }),
+      ...buildFleetLabels(projectId, deploymentId),
+    },
+    // Only attach to the project network on create. Traefik network is
+    // connected later by the deploy job, after old containers are removed.
     NetworkingConfig: {
       EndpointsConfig: {
         [projectNetworkName]: {
           Aliases: [`app-${projectId}`],
         },
-        [traefikNetworkName]: {},
       },
     },
   });

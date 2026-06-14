@@ -6,7 +6,6 @@ import { detectDockerfile } from "@fleet/runtime-detector";
 import { DeploymentStoppedError } from "../errors/deployment-stopped";
 import {
   getDeployment,
-  getLiveContainerIdForProject,
   isDeploymentStopped,
   markDeploymentFailed,
   supersedeLiveDeployments,
@@ -16,7 +15,11 @@ import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { getDecryptedProjectVariables } from "../services/project-variable";
 import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
-import { removeContainerById, removeProjectContainer } from "../lib/docker";
+import {
+  attachContainerToTraefik,
+  removeAllProjectContainers,
+  removeContainerById,
+} from "../lib/docker";
 import { runContainer } from "../steps/run";
 
 async function exitIfStopped(deploymentId: string) {
@@ -40,6 +43,9 @@ async function getProjectSubdomain(project: {
 
 export async function handleDeployJob(payload: DeployJobPayload) {
   const { deploymentId, projectId, repoUrl } = payload;
+
+  // Track the new container ID so the catch block can clean it up on failure.
+  let newContainerId: string | null = null;
 
   try {
     await exitIfStopped(deploymentId);
@@ -103,10 +109,6 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     }
     const subdomain = await getProjectSubdomain(project);
 
-    // Capture the old container ID before we start the new one so we can
-    // remove it after the new container is confirmed running (blue-green).
-    const oldContainerId = await getLiveContainerIdForProject(projectId, deploymentId);
-
     await updateDeployment(deploymentId, { status: "deploying" });
     publishLog(deploymentId, "Deploying container...", "pipeline");
 
@@ -116,8 +118,8 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       publishLog(deploymentId, `Injecting ${envCount} environment variable${envCount === 1 ? "" : "s"}`, "pipeline");
     }
 
-    // Start the new container. runContainer waits until Docker reports Running.
-    // If this throws, the old container is still running — no downtime.
+    // Phase 1: Start the new container on the project network only (not yet
+    // connected to Traefik). If this fails, nothing has changed for the user.
     const { containerId, networkName, url } = await runContainer({
       imageTag,
       projectId,
@@ -125,17 +127,18 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       subdomain,
       env: envVars,
     });
+    newContainerId = containerId;
 
-    // New container is running — now cut over by removing the old one.
-    if (oldContainerId) {
-      await removeContainerById(oldContainerId);
-    } else {
-      // First deploy: also clean up any legacy fixed-name container that may
-      // exist from a pre-blue-green deployment.
-      await removeProjectContainer(projectId);
-    }
+    // Phase 2: Remove EVERY other project container (old live, legacy
+    // fixed-name, orphans from failed deploys). After this call there is only
+    // one container for this project — the new one, not yet routable.
+    await removeAllProjectContainers(projectId, containerId);
 
-    // Mark previous live deployments as stopped in DB.
+    // Phase 3: Attach the new container to Traefik. From this moment it is the
+    // sole backend for the project URL — no overlap, no load-balancing.
+    await attachContainerToTraefik(containerId);
+
+    // Phase 4: Bookkeeping — mark old DB records stopped, new one live.
     await supersedeLiveDeployments(projectId, deploymentId);
 
     await updateDeployment(deploymentId, {
@@ -153,6 +156,14 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       await finalizeDeploymentLogs(deploymentId);
       console.log(`stopped ${deploymentId}`);
       return;
+    }
+
+    // If a container was created for this deployment but the cutover failed,
+    // remove it so it doesn't linger as a Traefik backend or an orphan.
+    if (newContainerId) {
+      await removeContainerById(newContainerId).catch((cleanupErr) => {
+        console.error("failed to remove orphan container after deploy error:", cleanupErr);
+      });
     }
 
     const message = getErrorMessage(err);
