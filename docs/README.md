@@ -91,3 +91,5 @@ todo:
 9. setup proper monitoring and logging for the project.
 10. github integration.
 11. teams integration, multiple people can access the same set of projects or whatever.
+12. github webhooks, app, auto deploy on push, like vercel.
+13. dockerfile in subdirs what to do, decide later.
