@@ -9,13 +9,6 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/projects", request.url));
   }
 
-  if (
-    process.env.NODE_ENV === "production" &&
-    pathname.startsWith("/signup")
-  ) {
-    return NextResponse.redirect(new URL("/login", request.url));
-  }
-
   return NextResponse.next();
 }
 
