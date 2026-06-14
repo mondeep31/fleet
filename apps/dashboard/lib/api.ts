@@ -1,4 +1,4 @@
-import { getToken } from "@/lib/auth";
+import { clearAuth, getToken } from "@/lib/auth";
 import { useAuthStore } from "@/stores/auth-store";
 import type {
   ApiResponse,
