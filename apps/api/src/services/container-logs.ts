@@ -22,12 +22,25 @@ function extractLines(buffer: Buffer): { lines: string[]; consumed: number } {
   return { lines, consumed: offset };
 }
 
+interface TailContainerLogsParams {
+  projectId: string;
+  containerId?: string | null;
+}
+
+function resolveContainer({ projectId, containerId }: TailContainerLogsParams) {
+  const docker = getDocker();
+  if (containerId) {
+    return docker.getContainer(containerId);
+  }
+  // Legacy deployments used a fixed container name per project.
+  return docker.getContainer(getProjectContainerName(projectId));
+}
+
 export async function* tailContainerLogs(
-  projectId: string,
+  params: TailContainerLogsParams,
   signal?: AbortSignal,
 ): AsyncGenerator<string> {
-  const docker = getDocker();
-  const container = docker.getContainer(getProjectContainerName(projectId));
+  const container = resolveContainer(params);
 
   const logStream = (await container.logs({
     follow: true,

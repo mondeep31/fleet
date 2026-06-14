@@ -101,16 +101,25 @@ async function followRedisLogs(
 
 async function followDockerLogs(
   projectId: string,
+  containerId: string | null | undefined,
   res: Response,
   signal: AbortSignal,
 ): Promise<void> {
+  writeSseData(res, {
+    line: "Tailing application output…",
+    source: "pipeline",
+  });
+
   try {
-    for await (const line of tailContainerLogs(projectId, signal)) {
+    for await (const line of tailContainerLogs({ projectId, containerId }, signal)) {
       if (signal.aborted) break;
       writeSseData(res, { line, source: "runtime" });
     }
   } catch {
-    // container removed or unavailable
+    writeSseData(res, {
+      line: "Application logs unavailable (container may have stopped).",
+      source: "pipeline",
+    });
   }
 }
 
@@ -121,7 +130,7 @@ export async function streamDeploymentLogs(
   signal: AbortSignal,
 ): Promise<void> {
   const deployment = await assertDeploymentOwnership(deploymentId, userId);
-  const { status, error, projectId } = deployment;
+  const { status, error, projectId, containerId } = deployment;
 
   res.setHeader("Content-Type", "text/event-stream");
   res.setHeader("Cache-Control", "no-cache, no-transform");
@@ -164,7 +173,7 @@ export async function streamDeploymentLogs(
       res.end();
       return;
     }
-    await followDockerLogs(projectId, res, signal);
+    await followDockerLogs(projectId, containerId, res, signal);
     writeSseEvent(res, "end");
     res.end();
     return;
@@ -173,7 +182,15 @@ export async function streamDeploymentLogs(
   if (IN_PROGRESS_STATUSES.has(status)) {
     const lastStatus = await followRedisLogs(deploymentId, res, signal);
     if (!signal.aborted && lastStatus === "live") {
-      await followDockerLogs(projectId, res, signal);
+      const liveDeployment = await Deployment.findOne({ deploymentId })
+        .select("containerId")
+        .lean();
+      await followDockerLogs(
+        projectId,
+        liveDeployment?.containerId,
+        res,
+        signal,
+      );
     }
     writeSseEvent(res, "end");
     res.end();
