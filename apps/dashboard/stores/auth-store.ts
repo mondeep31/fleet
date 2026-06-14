@@ -35,7 +35,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   logout: () => {
     clearAuth();
-    set({ token: null, user: null });
+    set({ token: null, user: null, hydrated: true });
+    if (typeof window !== "undefined") {
+      window.location.assign("/login");
+    }
   },
 }));
 

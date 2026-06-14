@@ -1,4 +1,5 @@
-import { getToken, clearAuth } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
+import { useAuthStore } from "@/stores/auth-store";
 import type {
   ApiResponse,
   AuthUser,
@@ -52,10 +53,7 @@ async function request<T>(
     | null;
 
   if (response.status === 401) {
-    clearAuth();
-    if (typeof window !== "undefined") {
-      window.location.href = "/login";
-    }
+    useAuthStore.getState().logout();
     throw new ApiError("Unauthorized", 401);
   }
 

@@ -13,7 +13,8 @@ function setTokenCookie(token: string): void {
 }
 
 function clearTokenCookie(): void {
-  document.cookie = `${TOKEN_KEY}=; path=/; max-age=0; SameSite=Lax`;
+  const expires = "Thu, 01 Jan 1970 00:00:00 GMT";
+  document.cookie = `${TOKEN_KEY}=; path=/; expires=${expires}; max-age=0; SameSite=Lax`;
 }
 
 export function syncTokenCookie(token: string): void {

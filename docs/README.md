@@ -87,3 +87,7 @@ todo:
 6. oauth - so that all repos are available to the user.
 7. ✅ users should be able to add env into the project. we need to inject that to docker container and read from it. — Done: AES-256-GCM encrypted at rest in ProjectVariable, injected via docker `Env` at container start.
 8. ✅ if i add any new env, it should be reflected in the new deployment. — Done: saving env vars auto-triggers a redeploy. URL is project-stable (derived from projectId). Blue-green cutover: new container starts before old is removed.
+
+9. setup proper monitoring and logging for the project.
+10. github integration.
+11. teams integration, multiple people can access the same set of projects or whatever.

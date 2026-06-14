@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   CaretDown,
   CaretRight,
@@ -96,14 +96,12 @@ function MobileSidebarOverlay({
   onOpenChange: (open: boolean) => void;
 }) {
   const pathname = usePathname();
-  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
   function handleLogout() {
-    logout();
     onOpenChange(false);
-    router.replace("/login");
+    logout();
   }
 
   return (
@@ -193,13 +191,11 @@ function MobileSidebarOverlay({
 
 export function Sidebar() {
   const pathname = usePathname();
-  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
 
   function handleLogout() {
     logout();
-    router.replace("/login");
   }
 
   return (

@@ -19,7 +19,6 @@ export function AuthShell({
 
   return (
     <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-background px-4 py-12">
-      <div className="pointer-events-none absolute left-1/2 top-[35%] h-[460px] w-[min(640px,86vw)] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(255,255,255,0.1)_0%,rgba(255,255,255,0.045)_25%,rgba(255,255,255,0.015)_48%,transparent_72%)] blur-2xl" />
       <div
         className="pointer-events-none absolute inset-0 opacity-42"
         style={{
@@ -32,10 +31,10 @@ export function AuthShell({
         initial={reduceMotion ? false : { opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[370px] rounded-xl border border-white/[0.08] bg-card/90 p-8 shadow-[inset_0_0_0_1px_rgba(255,255,255,0.02),inset_0_1px_0_rgba(255,255,255,0.08),0_20px_60px_rgba(0,0,0,0.5)] backdrop-blur"
+        className="relative w-full max-w-[370px] rounded-xl border border-white/[0.08] bg-card p-8"
       >
         <div className="mb-6 flex justify-center">
-          <div className="flex size-11 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_16px_40px_-28px_rgba(255,255,255,0.7)]">
+          <div className="flex size-11 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
             <FleetLogo className="size-5" />
           </div>
         </div>

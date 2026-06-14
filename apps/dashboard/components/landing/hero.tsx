@@ -38,15 +38,6 @@ export function Hero() {
           backgroundSize: "24px 24px",
         }}
       />
-      {/* Radial glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[480px] w-[min(680px,88vw)] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
-        style={{
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 68%)",
-        }}
-      />
 
       <div className="relative mx-auto max-w-5xl px-6 py-24 text-center">
         <motion.p
