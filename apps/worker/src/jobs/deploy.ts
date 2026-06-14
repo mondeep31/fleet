@@ -6,6 +6,7 @@ import { detectDockerfile } from "@fleet/runtime-detector";
 import { DeploymentStoppedError } from "../errors/deployment-stopped";
 import {
   getDeployment,
+  getLiveContainerIdForProject,
   isDeploymentStopped,
   markDeploymentFailed,
   supersedeLiveDeployments,
@@ -15,7 +16,8 @@ import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { getDecryptedProjectVariables } from "../services/project-variable";
 import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
-import { removeProjectContainer, runContainer } from "../steps/run";
+import { removeContainerById, removeProjectContainer } from "../lib/docker";
+import { runContainer } from "../steps/run";
 
 async function exitIfStopped(deploymentId: string) {
   if (await isDeploymentStopped(deploymentId)) {
@@ -101,10 +103,12 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     }
     const subdomain = await getProjectSubdomain(project);
 
+    // Capture the old container ID before we start the new one so we can
+    // remove it after the new container is confirmed running (blue-green).
+    const oldContainerId = await getLiveContainerIdForProject(projectId, deploymentId);
+
     await updateDeployment(deploymentId, { status: "deploying" });
     publishLog(deploymentId, "Deploying container...", "pipeline");
-    await removeProjectContainer(projectId);
-    await supersedeLiveDeployments(projectId, deploymentId);
 
     const envVars = await getDecryptedProjectVariables(projectId);
     const envCount = Object.keys(envVars).length;
@@ -112,12 +116,28 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       publishLog(deploymentId, `Injecting ${envCount} environment variable${envCount === 1 ? "" : "s"}`, "pipeline");
     }
 
+    // Start the new container. runContainer waits until Docker reports Running.
+    // If this throws, the old container is still running — no downtime.
     const { containerId, networkName, url } = await runContainer({
       imageTag,
       projectId,
+      deploymentId,
       subdomain,
       env: envVars,
     });
+
+    // New container is running — now cut over by removing the old one.
+    if (oldContainerId) {
+      await removeContainerById(oldContainerId);
+    } else {
+      // First deploy: also clean up any legacy fixed-name container that may
+      // exist from a pre-blue-green deployment.
+      await removeProjectContainer(projectId);
+    }
+
+    // Mark previous live deployments as stopped in DB.
+    await supersedeLiveDeployments(projectId, deploymentId);
+
     await updateDeployment(deploymentId, {
       status: "live",
       containerId,

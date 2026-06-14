@@ -18,22 +18,40 @@ export interface MaskedVariable {
 
 /**
  * Replace the full set of env vars for a project.
- * Deletes any keys not present in the new list, upserts the rest.
+ *
+ * Merge semantics for the value field:
+ *   - Non-empty value   → encrypt and overwrite (or create).
+ *   - Empty value + key already exists → preserve existing ciphertext (secret unchanged).
+ *   - Empty value + key is new         → store empty string (allowed).
+ *   - Key absent from the list         → deleted.
  */
 export async function saveProjectVariables(
   projectId: string,
   variables: VariableInput[],
 ): Promise<void> {
-  const key = getEncryptionKey();
+  const encKey = getEncryptionKey();
   const newKeys = variables.map((v) => v.key);
 
+  // Delete keys removed from the list.
   await ProjectVariable.deleteMany({
     projectId,
     key: { $nin: newKeys },
   });
 
+  // Load existing keys so we can skip re-encryption for preserved secrets.
+  const existingKeys = new Set(
+    (await ProjectVariable.find({ projectId }).select("key").lean()).map(
+      (v) => v.key,
+    ),
+  );
+
   for (const { key: varKey, value } of variables) {
-    const encrypted = encryptSecret(value, key);
+    if (value === "" && existingKeys.has(varKey)) {
+      // Empty value submitted for an existing key — preserve current ciphertext.
+      continue;
+    }
+
+    const encrypted = encryptSecret(value, encKey);
     await ProjectVariable.findOneAndUpdate(
       { projectId, key: varKey },
       {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Info } from "@phosphor-icons/react";
+import { CheckCircle, Info, WarningCircle } from "@phosphor-icons/react";
 import useSWR from "swr";
 import { api, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -18,10 +18,10 @@ import type { EnvVariableRow } from "@/lib/types";
 
 interface EnvVariablesCardProps {
   projectId: string;
-  onRedeployNeeded?: () => void;
+  onDeployStarted?: () => void;
 }
 
-export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCardProps) {
+export function EnvVariablesCard({ projectId, onDeployStarted }: EnvVariablesCardProps) {
   const { data, isLoading, mutate } = useSWR(
     `project-variables-${projectId}`,
     () => api.getProjectVariables(projectId),
@@ -30,16 +30,17 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
   const [rows, setRows] = useState<EnvVariableRow[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
+  const [notice, setNotice] = useState<{ kind: "success" | "warn"; text: string } | null>(null);
 
-  // Initialise rows from fetched data. Existing saved variables show key only
-  // (value is masked server-side); new rows the user adds have a blank value.
+  // Initialise rows from server data. hasExistingValue=true means the value is
+  // already encrypted server-side; the UI shows a masked placeholder.
   useEffect(() => {
     if (data?.variables) {
       setRows(
         data.variables.map((v) => ({
           key: v.key,
           value: "",
+          hasExistingValue: v.hasValue,
         })),
       );
     }
@@ -47,7 +48,7 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
 
   async function handleSave() {
     setError(null);
-    setSaved(false);
+    setNotice(null);
 
     const validRows = rows.filter((r) => r.key.trim() !== "");
     const keys = validRows.map((r) => r.key.trim());
@@ -58,10 +59,20 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
 
     setIsSaving(true);
     try {
-      await api.updateProjectVariables(projectId, validRows);
+      const result = await api.updateProjectVariables(projectId, validRows);
       await mutate();
-      setSaved(true);
-      onRedeployNeeded?.();
+
+      if (result.redeploy.started) {
+        setNotice({ kind: "success", text: "Variables saved — redeploy started." });
+        onDeployStarted?.();
+      } else {
+        setNotice({
+          kind: "warn",
+          text: result.redeploy.reason?.includes("in progress")
+            ? "Variables saved. A deployment is already in progress — it will use these values."
+            : "Variables saved. Redeploy manually to apply them to the live app.",
+        });
+      }
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -73,15 +84,13 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
     }
   }
 
-  const hasChanges = !isLoading;
-
   return (
     <Card>
       <CardHeader className="border-b">
         <CardTitle>Environment Variables</CardTitle>
         <CardDescription>
-          Injected at container start as runtime environment variables.
-          Changes take effect on the next deployment.
+          Injected at container start as runtime environment variables. Saving
+          automatically triggers a redeploy.
         </CardDescription>
       </CardHeader>
 
@@ -101,7 +110,7 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
             rows={rows}
             onChange={(next) => {
               setRows(next);
-              setSaved(false);
+              setNotice(null);
             }}
             disabled={isSaving}
           />
@@ -113,12 +122,14 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
           </p>
         )}
 
-        {saved && (
+        {notice && (
           <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-[var(--bg-elevated)] px-3 py-2 text-sm text-muted-foreground">
-            <Info className="mt-0.5 size-4 shrink-0" />
-            <span>
-              Variables saved. Redeploy the project to apply them to the live app.
-            </span>
+            {notice.kind === "success" ? (
+              <CheckCircle className="mt-0.5 size-4 shrink-0 text-green-500" />
+            ) : (
+              <Info className="mt-0.5 size-4 shrink-0" />
+            )}
+            <span>{notice.text}</span>
           </div>
         )}
       </CardContent>
@@ -126,10 +137,10 @@ export function EnvVariablesCard({ projectId, onRedeployNeeded }: EnvVariablesCa
       <CardFooter className="justify-end">
         <Button
           onClick={handleSave}
-          disabled={isSaving || isLoading || !hasChanges}
+          disabled={isSaving || isLoading}
           size="sm"
         >
-          {isSaving ? "Saving…" : "Save variables"}
+          {isSaving ? "Saving…" : "Save & redeploy"}
         </Button>
       </CardFooter>
     </Card>

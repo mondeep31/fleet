@@ -6,6 +6,8 @@ export interface ProjectVariable {
 export interface EnvVariableRow {
   key: string;
   value: string;
+  /** True when this row was loaded from the server and already has a saved value. */
+  hasExistingValue?: boolean;
 }
 
 export type DeploymentStatus =

@@ -109,7 +109,10 @@ export const api = {
     ),
 
   updateProjectVariables: (projectId: string, variables: EnvVariableRow[]) =>
-    request<{ variables: ProjectVariable[] }>(
+    request<{
+      variables: ProjectVariable[];
+      redeploy: { started: boolean; deploymentId?: string; reason?: string };
+    }>(
       `/api/v1/projects/${projectId}/variables`,
       {
         method: "PUT",

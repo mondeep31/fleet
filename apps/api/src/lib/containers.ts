@@ -13,15 +13,7 @@ export function getProjectContainerName(projectId: string) {
   return `fleet-project-${projectId}`;
 }
 
-/** @deprecated Use getProjectContainerName(projectId) — containers are named per project. */
-export function getContainerName(deploymentId: string) {
-  return `fleet-${deploymentId}`;
-}
-
-export async function removeProjectContainer(projectId: string) {
-  const docker = getDocker();
-  const container = docker.getContainer(getProjectContainerName(projectId));
-
+async function removeContainerSilently(container: Docker.Container) {
   try {
     await container.remove({ force: true });
   } catch (err) {
@@ -33,6 +25,28 @@ export async function removeProjectContainer(projectId: string) {
       throw err;
     }
   }
+}
+
+/**
+ * Remove the container associated with a deployment.
+ * Prefers the stored containerId (blue-green deployments) and falls back to
+ * the legacy fixed project container name for older deployments.
+ */
+export async function removeProjectContainer(
+  projectId: string,
+  containerId?: string | null,
+) {
+  const docker = getDocker();
+
+  if (containerId) {
+    await removeContainerSilently(docker.getContainer(containerId));
+    return;
+  }
+
+  // Legacy fallback: fixed container name used before blue-green.
+  await removeContainerSilently(
+    docker.getContainer(getProjectContainerName(projectId)),
+  );
 }
 
 export async function removeDeploymentContainer(

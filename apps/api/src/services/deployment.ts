@@ -140,7 +140,7 @@ export async function stopDeployment(deploymentId: string, userId: string) {
   }
 
   await cancelDeployJob(deploymentId);
-  await removeProjectContainer(deployment.projectId);
+  await removeProjectContainer(deployment.projectId, deployment.containerId ?? null);
 
   const updated = await Deployment.findOneAndUpdate(
     { deploymentId },

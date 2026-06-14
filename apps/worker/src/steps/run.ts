@@ -5,14 +5,15 @@ import {
 import {
   ensureNetwork,
   ensureTraefikNetwork,
+  getDeploymentContainerName,
   getDocker,
-  getProjectContainerName,
   getProjectNetworkName,
 } from "../lib/docker";
 
 interface RunContainerParams {
   imageTag: string;
   projectId: string;
+  deploymentId: string;
   subdomain: string;
   env?: Record<string, string>;
 }
@@ -59,39 +60,26 @@ function buildTraefikLabels({
   };
 }
 
-export async function removeProjectContainer(projectId: string) {
-  const docker = getDocker();
-  const containerName = getProjectContainerName(projectId);
-
-  try {
-    const existing = docker.getContainer(containerName);
-    await existing.remove({ force: true });
-  } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    if (
-      !message.includes("404") &&
-      !message.toLowerCase().includes("no such container")
-    ) {
-      throw err;
-    }
-  }
-}
-
+/**
+ * Starts a new deployment container with a deployment-scoped name.
+ * Does NOT remove any existing container — the caller handles cutover
+ * after confirming the new container is running.
+ */
 export async function runContainer({
   imageTag,
   projectId,
+  deploymentId,
   subdomain,
   env = {},
 }: RunContainerParams): Promise<RunContainerResult> {
   const docker = getDocker();
   const sharedEnv = getSharedEnv();
   const containerPort = await getContainerPort(imageTag);
-  const containerName = getProjectContainerName(projectId);
+  const containerName = getDeploymentContainerName(projectId, deploymentId);
   const projectNetworkName = getProjectNetworkName(projectId);
   const traefikNetworkName = await ensureTraefikNetwork();
 
   await ensureNetwork(projectNetworkName);
-  await removeProjectContainer(projectId);
 
   const container = await docker.createContainer({
     Image: imageTag,
@@ -112,6 +100,17 @@ export async function runContainer({
   });
 
   await container.start();
+
+  // Wait until Docker reports the container as running (up to 30s).
+  const deadline = Date.now() + 30_000;
+  while (Date.now() < deadline) {
+    const info = await container.inspect();
+    if (info.State.Running) break;
+    if (info.State.Dead || info.State.OOMKilled) {
+      throw new Error(`Container exited immediately after start (exitCode=${info.State.ExitCode})`);
+    }
+    await new Promise((r) => setTimeout(r, 500));
+  }
 
   const inspect = await container.inspect();
 

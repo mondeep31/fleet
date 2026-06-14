@@ -25,9 +25,15 @@ export function EnvVariableEditor({
   }
 
   function updateRow(index: number, field: "key" | "value", value: string) {
-    const updated = rows.map((row, i) =>
-      i === index ? { ...row, [field]: value } : row,
-    );
+    const updated = rows.map((row, i) => {
+      if (i !== index) return row;
+      // Once the user types a new value, clear the hasExistingValue flag so
+      // the API receives the new value and re-encrypts it.
+      if (field === "value") {
+        return { ...row, value, hasExistingValue: false };
+      }
+      return { ...row, [field]: value };
+    });
     onChange(updated);
   }
 
@@ -47,7 +53,10 @@ export function EnvVariableEditor({
       {rows.length > 0 && (
         <div className="space-y-2">
           {rows.map((row, index) => {
-            const isDuplicate = row.key.trim() && duplicateKeys.has(row.key.trim());
+            const isDuplicate = Boolean(row.key.trim() && duplicateKeys.has(row.key.trim()));
+            // When row has a saved value and the user hasn't typed a new one,
+            // show the masked placeholder instead of a blank input.
+            const showMasked = Boolean(row.hasExistingValue && row.value === "");
             return (
               <div key={index} className="flex gap-2">
                 <Input
@@ -59,7 +68,7 @@ export function EnvVariableEditor({
                   className="flex-1 font-mono text-sm"
                 />
                 <Input
-                  placeholder="value"
+                  placeholder={showMasked ? "••••••••" : "value"}
                   value={row.value}
                   onChange={(e) => updateRow(index, "value", e.target.value)}
                   disabled={disabled}

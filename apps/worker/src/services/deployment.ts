@@ -66,3 +66,22 @@ export async function supersedeLiveDeployments(
     { status: "stopped", $unset: { url: 1 } },
   );
 }
+
+/**
+ * Returns the containerId of the currently live deployment for a project,
+ * excluding the deployment that is being promoted. Used for blue-green cutover.
+ */
+export async function getLiveContainerIdForProject(
+  projectId: string,
+  excludeDeploymentId: string,
+): Promise<string | null> {
+  const deployment = await Deployment.findOne({
+    projectId,
+    deploymentId: { $ne: excludeDeploymentId },
+    status: "live",
+    containerId: { $exists: true, $ne: null },
+  })
+    .select("containerId")
+    .lean();
+  return deployment?.containerId ?? null;
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
+  ArrowCounterClockwise,
   DotsThree,
   Play,
   Stop,
@@ -50,6 +51,10 @@ function canStartDeployment(deployment?: Deployment): boolean {
   return REDEPLOYABLE_STATUSES.includes(deployment.status);
 }
 
+function canRedeployDeployment(deployment?: Deployment): boolean {
+  return deployment?.status === "live";
+}
+
 export function ProjectCardMenu({
   projectId,
   latestDeployment,
@@ -62,13 +67,14 @@ export function ProjectCardMenu({
   const [open, setOpen] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [loading, setLoading] = useState<
-    "stop" | "start" | "archive" | null
+    "stop" | "start" | "redeploy" | "archive" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const showStop = canStopDeployment(latestDeployment);
   const showStart = canStartDeployment(latestDeployment);
+  const showRedeploy = canRedeployDeployment(latestDeployment);
 
   useEffect(() => {
     if (!open) return;
@@ -123,6 +129,24 @@ export function ProjectCardMenu({
     }
   }
 
+  async function handleRedeploy() {
+    setLoading("redeploy");
+    setError(null);
+    try {
+      await api.startProjectDeployment(projectId);
+      setOpen(false);
+      onChanged();
+    } catch (err) {
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to start redeploy. Try again.",
+      );
+    } finally {
+      setLoading(null);
+    }
+  }
+
   async function handleArchive() {
     setLoading("archive");
     setError(null);
@@ -161,6 +185,22 @@ export function ProjectCardMenu({
               >
                 <Stop className="size-4" />
                 Stop deployment
+              </Button>
+            )}
+            {showRedeploy && (
+              <Button
+                variant="ghost"
+                size="sm"
+                disabled={loading !== null}
+                className="h-9 w-full justify-start gap-2 rounded-none bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  void handleRedeploy();
+                }}
+              >
+                <ArrowCounterClockwise className="size-4" />
+                Redeploy
               </Button>
             )}
             {showStart && (

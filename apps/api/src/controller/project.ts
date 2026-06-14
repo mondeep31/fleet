@@ -83,10 +83,25 @@ const updateProjectVariablesController: RequestHandler = async (req, res) => {
   const variables = req.body as ProjectVariablesBody;
   await saveProjectVariables(projectId, variables);
   const updated = await listProjectVariables(projectId);
+
+  // Auto-redeploy unless the caller opts out with ?redeploy=false.
+  let redeploy: { started: boolean; deploymentId?: string; reason?: string };
+  if (req.query["redeploy"] === "false") {
+    redeploy = { started: false, reason: "skipped by caller" };
+  } else {
+    try {
+      const deployment = await startProjectDeployment(projectId, userId);
+      redeploy = { started: true, deploymentId: deployment.deploymentId };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      redeploy = { started: false, reason: message };
+    }
+  }
+
   res.status(200).json({
     message: "Variables updated successfully",
     success: true,
-    data: { variables: updated },
+    data: { variables: updated, redeploy },
   });
 };
 
