@@ -5,13 +5,18 @@ import {
   createProject,
   getAllProjectsForAUser,
   startProjectDeployment,
+  assertProjectOwnership,
 } from "../services/project";
-import type { CreateProjectBody } from "../validators/user";
+import {
+  listProjectVariables,
+  saveProjectVariables,
+} from "../services/project-variable";
+import type { CreateProjectBody, ProjectVariablesBody } from "../validators/user";
 
 const createProjectController: RequestHandler = async (req, res) => {
-  const { name, repoUrl } = req.body as CreateProjectBody;
+  const { name, repoUrl, variables } = req.body as CreateProjectBody;
   const userId = req.user!.userId;
-  const project = await createProject({ name, repoUrl, userId });
+  const project = await createProject({ name, repoUrl, userId, variables });
   const deployment = await startDeploy({
     projectId: project.id,
     repoUrl: project.repoUrl,
@@ -59,9 +64,37 @@ const startProjectDeploymentController: RequestHandler = async (req, res) => {
   });
 };
 
+const getProjectVariablesController: RequestHandler = async (req, res) => {
+  const { projectId } = req.params;
+  const userId = req.user!.userId;
+  await assertProjectOwnership(projectId, userId);
+  const variables = await listProjectVariables(projectId);
+  res.status(200).json({
+    message: "Variables fetched successfully",
+    success: true,
+    data: { variables },
+  });
+};
+
+const updateProjectVariablesController: RequestHandler = async (req, res) => {
+  const { projectId } = req.params;
+  const userId = req.user!.userId;
+  await assertProjectOwnership(projectId, userId);
+  const variables = req.body as ProjectVariablesBody;
+  await saveProjectVariables(projectId, variables);
+  const updated = await listProjectVariables(projectId);
+  res.status(200).json({
+    message: "Variables updated successfully",
+    success: true,
+    data: { variables: updated },
+  });
+};
+
 export {
   archiveProjectController,
   createProjectController,
   getAllProjectsController,
   startProjectDeploymentController,
+  getProjectVariablesController,
+  updateProjectVariablesController,
 };

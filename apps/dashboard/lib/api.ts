@@ -3,7 +3,9 @@ import type {
   ApiResponse,
   AuthUser,
   Deployment,
+  EnvVariableRow,
   Project,
+  ProjectVariable,
   ProjectWithLatestDeploy,
 } from "@/lib/types";
 
@@ -92,12 +94,26 @@ export const api = {
   getProjects: () =>
     request<{ projects: Project[] }>("/api/v1/projects"),
 
-  createProject: (name: string, repoUrl: string) =>
+  createProject: (name: string, repoUrl: string, variables: EnvVariableRow[] = []) =>
     request<Project & { deploymentId: string; deploymentStatus: string }>(
       "/api/v1/projects",
       {
         method: "POST",
-        body: JSON.stringify({ name, repoUrl }),
+        body: JSON.stringify({ name, repoUrl, variables }),
+      },
+    ),
+
+  getProjectVariables: (projectId: string) =>
+    request<{ variables: ProjectVariable[] }>(
+      `/api/v1/projects/${projectId}/variables`,
+    ),
+
+  updateProjectVariables: (projectId: string, variables: EnvVariableRow[]) =>
+    request<{ variables: ProjectVariable[] }>(
+      `/api/v1/projects/${projectId}/variables`,
+      {
+        method: "PUT",
+        body: JSON.stringify(variables),
       },
     ),
 

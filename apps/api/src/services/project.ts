@@ -6,11 +6,13 @@ import {
   startDeploy,
   stopDeployment,
 } from "./deployment";
+import { saveProjectVariables, type VariableInput } from "./project-variable";
 
 interface CreateProjectParams {
   name: string;
   repoUrl: string;
   userId: string;
+  variables?: VariableInput[];
 }
 
 interface GetAllProjectsForAUserParams {
@@ -58,6 +60,7 @@ export const createProject = async ({
   name,
   repoUrl,
   userId,
+  variables = [],
 }: CreateProjectParams) => {
   const projectId = crypto.randomUUID();
   const subdomain = buildProjectDeploySubdomain(projectId);
@@ -69,6 +72,11 @@ export const createProject = async ({
     projectId,
     subdomain,
   });
+
+  if (variables.length > 0) {
+    await saveProjectVariables(projectId, variables);
+  }
+
   return {
     id: project.projectId,
     name: project.name,

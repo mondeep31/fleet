@@ -14,6 +14,7 @@ interface RunContainerParams {
   imageTag: string;
   projectId: string;
   subdomain: string;
+  env?: Record<string, string>;
 }
 
 interface RunContainerResult {
@@ -43,13 +44,13 @@ function buildTraefikLabels({
   subdomain: string;
   containerPort: string;
 }) {
-  const env = getSharedEnv();
+  const sharedEnv = getSharedEnv();
   const routerName = `fleet${projectId.replace(/[^a-zA-Z0-9]/g, "")}`;
-  const host = `${subdomain}.${env.FLEET_APPS_DOMAIN}`;
+  const host = `${subdomain}.${sharedEnv.FLEET_APPS_DOMAIN}`;
 
   return {
     "traefik.enable": "true",
-    "traefik.docker.network": env.FLEET_TRAEFIK_NETWORK,
+    "traefik.docker.network": sharedEnv.FLEET_TRAEFIK_NETWORK,
     [`traefik.http.routers.${routerName}.rule`]: `Host(\`${host}\`)`,
     [`traefik.http.routers.${routerName}.entrypoints`]: "web",
     [`traefik.http.routers.${routerName}.service`]: routerName,
@@ -80,9 +81,10 @@ export async function runContainer({
   imageTag,
   projectId,
   subdomain,
+  env = {},
 }: RunContainerParams): Promise<RunContainerResult> {
   const docker = getDocker();
-  const env = getSharedEnv();
+  const sharedEnv = getSharedEnv();
   const containerPort = await getContainerPort(imageTag);
   const containerName = getProjectContainerName(projectId);
   const projectNetworkName = getProjectNetworkName(projectId);
@@ -97,6 +99,7 @@ export async function runContainer({
     ExposedPorts: {
       [containerPort]: {},
     },
+    Env: Object.entries(env).map(([k, v]) => `${k}=${v}`),
     Labels: buildTraefikLabels({ projectId, subdomain, containerPort }),
     NetworkingConfig: {
       EndpointsConfig: {
@@ -115,6 +118,6 @@ export async function runContainer({
   return {
     containerId: inspect.Id,
     networkName: projectNetworkName,
-    url: buildAppUrlFromEnv(subdomain, env),
+    url: buildAppUrlFromEnv(subdomain, sharedEnv),
   };
 }

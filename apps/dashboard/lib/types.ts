@@ -1,3 +1,13 @@
+export interface ProjectVariable {
+  key: string;
+  hasValue: boolean;
+}
+
+export interface EnvVariableRow {
+  key: string;
+  value: string;
+}
+
 export type DeploymentStatus =
   | "queued"
   | "cloning"

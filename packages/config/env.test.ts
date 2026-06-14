@@ -1,11 +1,14 @@
 import { afterEach, describe, expect, test } from "vitest";
 import { getEnv, getSharedEnv, resetEnvCache } from "./env";
 
+import { randomBytes } from "node:crypto";
+
 const REQUIRED_ENV = {
   MONGODB_URI: "mongodb://localhost:27017/fleet",
   JWT_SECRET: "a".repeat(32),
   GITHUB_WEBHOOK_SECRET: "github-secret",
   AGENT_TOKEN: "agent-token",
+  FLEET_SECRETS_ENCRYPTION_KEY: randomBytes(32).toString("base64"),
 } as const;
 
 const ORIGINAL_ENV = { ...process.env };
@@ -82,7 +85,10 @@ describe("getSharedEnv", () => {
   test("returns shared vars without API-only fields", () => {
     resetProcessEnv();
     Reflect.deleteProperty(process.env, "NODE_ENV");
-    Object.assign(process.env, { MONGODB_URI: REQUIRED_ENV.MONGODB_URI });
+    Object.assign(process.env, {
+      MONGODB_URI: REQUIRED_ENV.MONGODB_URI,
+      FLEET_SECRETS_ENCRYPTION_KEY: REQUIRED_ENV.FLEET_SECRETS_ENCRYPTION_KEY,
+    });
     const env = getSharedEnv();
 
     expect(env.MONGODB_URI).toBe(REQUIRED_ENV.MONGODB_URI);
@@ -93,6 +99,9 @@ describe("getSharedEnv", () => {
   test("exits when MONGODB_URI is missing", () => {
     resetProcessEnv();
     delete process.env.MONGODB_URI;
+    Object.assign(process.env, {
+      FLEET_SECRETS_ENCRYPTION_KEY: REQUIRED_ENV.FLEET_SECRETS_ENCRYPTION_KEY,
+    });
 
     process.exit = ((code?: number) => {
       throw new Error(`EXIT_${code ?? 0}`);

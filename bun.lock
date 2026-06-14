@@ -45,6 +45,7 @@
         "@fleet/errors": "workspace:*",
         "@fleet/logs": "workspace:*",
         "@fleet/queue": "workspace:*",
+        "@fleet/secrets": "workspace:*",
         "bcryptjs": "^3.0.3",
         "dockerode": "^5.0.0",
         "express": "^5.2.1",
@@ -120,6 +121,7 @@
         "@fleet/logs": "workspace:*",
         "@fleet/queue": "workspace:*",
         "@fleet/runtime-detector": "workspace:*",
+        "@fleet/secrets": "workspace:*",
         "bullmq": "^5.76.6",
         "dockerode": "^5.0.0",
         "fs-extra": "^11.3.5",
@@ -226,6 +228,14 @@
       },
       "devDependencies": {
         "@types/fs-extra": "^11.0.4",
+        "@types/node": "^25.6.2",
+        "typescript": "^6.0.3",
+      },
+    },
+    "packages/secrets": {
+      "name": "@fleet/secrets",
+      "version": "0.0.1",
+      "devDependencies": {
         "@types/node": "^25.6.2",
         "typescript": "^6.0.3",
       },
@@ -411,6 +421,8 @@
     "@fleet/queue": ["@fleet/queue@workspace:packages/queue"],
 
     "@fleet/runtime-detector": ["@fleet/runtime-detector@workspace:packages/runtime-detector"],
+
+    "@fleet/secrets": ["@fleet/secrets@workspace:packages/secrets"],
 
     "@fleet/types": ["@fleet/types@workspace:packages/types"],
 
@@ -2109,6 +2121,8 @@
     "@fleet/queue/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@fleet/runtime-detector/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "@fleet/secrets/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@fleet/worker/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 

@@ -12,6 +12,7 @@ import {
   updateDeployment,
 } from "../services/deployment";
 import { finalizeDeploymentLogs, publishLog } from "../services/logs";
+import { getDecryptedProjectVariables } from "../services/project-variable";
 import { buildImage } from "../steps/build";
 import { cloneRepo } from "../steps/clone";
 import { removeProjectContainer, runContainer } from "../steps/run";
@@ -105,10 +106,17 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     await removeProjectContainer(projectId);
     await supersedeLiveDeployments(projectId, deploymentId);
 
+    const envVars = await getDecryptedProjectVariables(projectId);
+    const envCount = Object.keys(envVars).length;
+    if (envCount > 0) {
+      publishLog(deploymentId, `Injecting ${envCount} environment variable${envCount === 1 ? "" : "s"}`, "pipeline");
+    }
+
     const { containerId, networkName, url } = await runContainer({
       imageTag,
       projectId,
       subdomain,
+      env: envVars,
     });
     await updateDeployment(deploymentId, {
       status: "live",

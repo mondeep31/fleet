@@ -18,6 +18,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
+import { EnvVariableEditor } from "./env-variable-editor";
+import type { EnvVariableRow } from "@/lib/types";
 
 const projectSchema = z.object({
   name: z.string().min(2, "Project name must be at least 2 characters"),
@@ -33,6 +35,7 @@ export function NewProjectDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [variables, setVariables] = useState<EnvVariableRow[]>([]);
 
   const {
     register,
@@ -44,11 +47,29 @@ export function NewProjectDialog({
     defaultValues: { name: "", repoUrl: "" },
   });
 
+  function handleOpenChange(next: boolean) {
+    setOpen(next);
+    if (!next) {
+      reset();
+      setVariables([]);
+      setError(null);
+    }
+  }
+
   async function onSubmit(values: ProjectForm) {
     setError(null);
+
+    const validVariables = variables.filter((v) => v.key.trim() !== "");
+    const keys = validVariables.map((v) => v.key.trim());
+    if (keys.length !== new Set(keys).size) {
+      setError("Environment variables contain duplicate keys.");
+      return;
+    }
+
     try {
-      await api.createProject(values.name, values.repoUrl);
+      await api.createProject(values.name, values.repoUrl, validVariables);
       reset();
+      setVariables([]);
       setOpen(false);
       onCreated();
     } catch (err) {
@@ -61,7 +82,7 @@ export function NewProjectDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger
         render={
           <Button className="gap-2">
@@ -70,7 +91,7 @@ export function NewProjectDialog({
           </Button>
         }
       />
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Project</DialogTitle>
           <DialogDescription>
@@ -106,6 +127,18 @@ export function NewProjectDialog({
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label>Environment Variables</Label>
+            <p className="text-xs text-muted-foreground">
+              Injected at runtime — available as <code>process.env.KEY</code> in your app.
+            </p>
+            <EnvVariableEditor
+              rows={variables}
+              onChange={setVariables}
+              disabled={isSubmitting}
+            />
+          </div>
+
           {error && (
             <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
@@ -116,7 +149,7 @@ export function NewProjectDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => handleOpenChange(false)}
             >
               Cancel
             </Button>
