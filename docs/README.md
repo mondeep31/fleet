@@ -93,3 +93,4 @@ todo:
 11. teams integration, multiple people can access the same set of projects or whatever.
 12. github webhooks, app, auto deploy on push, like vercel.
 13. dockerfile in subdirs what to do, decide later.
+14. sending email/slack alerts on deployment errors
