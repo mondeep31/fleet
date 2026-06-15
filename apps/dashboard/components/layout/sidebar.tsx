@@ -128,7 +128,7 @@ function MobileSidebarOverlay({
         )}
       >
         <div className="flex h-16 items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_10px_24px_-16px_rgba(255,255,255,0.6)]">
+          <div className="flex size-8 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
             <FleetLogo className="size-4" />
           </div>
           <span className="text-sm font-semibold tracking-tight">fleet</span>
@@ -201,7 +201,7 @@ export function Sidebar() {
   return (
     <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-border bg-[var(--bg-surface)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)] md:flex">
       <div className="flex h-16 items-center gap-2 px-4">
-        <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-[0_10px_24px_-16px_rgba(255,255,255,0.6)]">
+        <div className="flex size-8 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
           <FleetLogo className="size-4" />
         </div>
         <span className="text-sm font-semibold tracking-tight">fleet</span>

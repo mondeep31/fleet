@@ -10,7 +10,8 @@ export function LandingFooter() {
           <span className="text-sm">fleet</span>
         </div>
         <p className="hidden text-xs text-[var(--text-secondary)] sm:block">
-          Submit a repo. Get a live URL.
+          Paste a repository link. Fleet deploys it and gives you a live URL you
+          can open and share.
         </p>
         <Link
           href="/login"

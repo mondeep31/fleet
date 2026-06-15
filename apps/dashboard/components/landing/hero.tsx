@@ -51,17 +51,17 @@ export function Hero() {
           {...mo(0.12)}
           className="text-balance text-5xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-6xl lg:text-7xl"
         >
-          Submit a URL.
+          Making deployment easy.
           <br />
-          Get one back.
+          One click deployment.
         </motion.h1>
 
         <motion.p
           {...mo(0.26)}
           className="mx-auto mt-6 max-w-[480px] text-balance text-base leading-relaxed text-[var(--text-secondary)]"
         >
-          Paste a repository link. Fleet deploys it and gives you a live
-          URL you can open and share.
+          Paste a repository link. Fleet deploys it and gives you a live URL you
+          can open and share.
         </motion.p>
 
         <motion.div
