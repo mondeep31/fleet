@@ -9,6 +9,7 @@ import {
   getDocker,
   getProjectNetworkName,
 } from "../lib/docker";
+import { resolveContainerPortFromImageConfig } from "../lib/container-port";
 
 interface RunContainerParams {
   imageTag: string;
@@ -24,16 +25,13 @@ interface RunContainerResult {
   url: string;
 }
 
-async function getContainerPort(imageTag: string): Promise<string> {
+async function getContainerPort(
+  imageTag: string,
+  runtimeEnv: Record<string, string>,
+): Promise<string> {
   const docker = getDocker();
   const image = await docker.getImage(imageTag).inspect();
-  const exposed = Object.keys(image.Config.ExposedPorts ?? {});
-
-  if (exposed.length === 0) {
-    throw new Error(`Image ${imageTag} does not expose any ports`);
-  }
-
-  return exposed[0]!;
+  return resolveContainerPortFromImageConfig(image.Config, runtimeEnv.PORT);
 }
 
 function buildTraefikLabels({
@@ -75,7 +73,7 @@ export async function runContainer({
 }: RunContainerParams): Promise<RunContainerResult> {
   const docker = getDocker();
   const sharedEnv = getSharedEnv();
-  const containerPort = await getContainerPort(imageTag);
+  const containerPort = await getContainerPort(imageTag, env);
   const containerName = getDeploymentContainerName(projectId, deploymentId);
   const projectNetworkName = getProjectNetworkName(projectId);
 
