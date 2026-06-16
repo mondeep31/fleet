@@ -12,6 +12,8 @@ interface StartDeployParams {
   projectId: string;
   repoUrl: string;
   branch: string;
+  commitSha?: string;
+  commitMessage?: string;
 }
 
 interface StartDeployResult {
@@ -23,12 +25,14 @@ export async function startDeploy({
   projectId,
   repoUrl,
   branch,
+  commitSha,
+  commitMessage,
 }: StartDeployParams): Promise<StartDeployResult> {
   const deployment = await Deployment.create({
     projectId,
     branch,
-    commitSha: MVP_COMMIT_SHA,
-    commitMessage: MVP_COMMIT_MESSAGE,
+    commitSha: commitSha ?? MVP_COMMIT_SHA,
+    commitMessage: commitMessage ?? MVP_COMMIT_MESSAGE,
     environmentId: MVP_ENVIRONMENT_ID,
     serverId: MVP_SERVER_ID,
     status: "queued",

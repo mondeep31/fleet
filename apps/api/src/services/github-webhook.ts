@@ -56,9 +56,16 @@ export async function handleGitHubWebhookDelivery(
   });
 
   let deploys = 0;
+  const commit = push.head_commit
+    ? {
+        commitSha: push.head_commit.id,
+        commitMessage: push.head_commit.message.split("\n")[0] ?? push.head_commit.message,
+      }
+    : undefined;
+
   for (const project of projects) {
     try {
-      const result = await triggerDeployForProject(project.projectId);
+      const result = await triggerDeployForProject(project.projectId, commit);
       if (result) deploys++;
     } catch (err: unknown) {
       const code = (err as { code?: string }).code;

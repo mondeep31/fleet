@@ -6,7 +6,8 @@ const steps = [
   { number: "01", label: "Connect GitHub and pick a repository" },
   { number: "02", label: "Choose a branch and configure env vars" },
   { number: "03", label: "Fleet clones, builds, and runs your container" },
-  { number: "04", label: "Open your live URL — redeploy anytime" },
+  { number: "04", label: "Push to deploy — GitHub webhooks trigger CI/CD on every commit" },
+  { number: "05", label: "Zero-downtime cutover — your URL stays live while the new version rolls out" },
 ] as const;
 
 export function Workflow() {

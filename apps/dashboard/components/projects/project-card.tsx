@@ -5,7 +5,18 @@ import { ArrowSquareOut, GitBranch } from "@phosphor-icons/react";
 import { ProjectCardMenu } from "@/components/projects/project-card-menu";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { extractRepoDomain, formatRelativeTime } from "@/lib/format";
-import type { ProjectWithLatestDeploy } from "@/lib/types";
+import { isActiveStatus, type ProjectWithLatestDeploy } from "@/lib/types";
+
+function displayCommitMessage(
+  latest: ProjectWithLatestDeploy["latestDeployment"],
+): string {
+  if (!latest) return "No deployments yet";
+  if (latest.commitMessage && latest.commitMessage !== "Initial deploy") {
+    return latest.commitMessage;
+  }
+  if (isActiveStatus(latest.status)) return "Deploy in progress";
+  return latest.commitMessage || "No commit message";
+}
 
 export function ProjectCard({
   project,
@@ -66,28 +77,32 @@ export function ProjectCard({
         </div>
       </div>
 
-      <Link
-        href={`/projects/${project.projectId}`}
-        className="mt-4 block min-w-0 space-y-3"
-      >
-        <span className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[var(--bg-elevated)] px-2 py-1 text-xs font-medium text-foreground">
+      <div className="mt-4 block min-w-0 space-y-3">
+        <a
+          href={project.repoUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-[var(--bg-elevated)] px-2 py-1 text-xs font-medium text-foreground transition-colors hover:bg-[var(--bg-inset)]"
+        >
           <GitBranch className="size-3" weight="bold" />
           <span className="truncate">{domain}</span>
-        </span>
+        </a>
 
-        <div className="min-w-0 text-xs">
+        <Link
+          href={`/projects/${project.projectId}`}
+          className="block min-w-0 text-xs"
+        >
           <p className="truncate font-medium text-foreground">
-            {latest
-              ? `Latest deploy ${latest.status.replace("_", " ")}`
-              : "No deployments yet"}
+            {displayCommitMessage(latest)}
           </p>
           <p className="mt-1 truncate text-muted-foreground">
             {latest?.createdAt
-              ? `${formatRelativeTime(latest.createdAt)} on main`
+              ? `${formatRelativeTime(latest.createdAt)} on ${project.branch}`
               : "Waiting for first deployment"}
           </p>
-        </div>
-      </Link>
+        </Link>
+      </div>
     </div>
   );
 }

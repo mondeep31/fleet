@@ -68,8 +68,8 @@ export function Hero() {
           className="mx-auto mt-6 max-w-[520px] text-balance text-base leading-relaxed text-[var(--text-secondary)]"
         >
           Connect GitHub, pick a repository and branch, and Fleet builds your
-          Docker image and ships a stable URL — with env vars, build logs, and
-          one-click redeploys.
+          Docker image and ships a stable URL — with env vars, build logs,
+          push-to-deploy CI/CD, and zero-downtime rollouts.
         </motion.p>
 
         <motion.div

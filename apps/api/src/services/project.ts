@@ -204,11 +204,14 @@ export async function archiveProject(projectId: string, userId: string) {
   };
 }
 
-async function deployIfIdle(project: {
-  projectId: string;
-  repoUrl: string;
-  branch?: string | null;
-}) {
+async function deployIfIdle(
+  project: {
+    projectId: string;
+    repoUrl: string;
+    branch?: string | null;
+  },
+  commit?: { commitSha?: string; commitMessage?: string },
+) {
   const deployments = await listDeploymentsByProjectId(project.projectId);
   const hasInProgress = deployments.some((d) =>
     IN_PROGRESS_DEPLOYMENT_STATUSES.includes(
@@ -228,6 +231,8 @@ async function deployIfIdle(project: {
     projectId: project.projectId,
     repoUrl: project.repoUrl,
     branch: project.branch ?? "main",
+    commitSha: commit?.commitSha,
+    commitMessage: commit?.commitMessage,
   });
 }
 
@@ -244,12 +249,16 @@ export async function startProjectDeployment(projectId: string, userId: string) 
  */
 export async function triggerDeployForProject(
   projectId: string,
+  commit?: { commitSha?: string; commitMessage?: string },
 ): Promise<{ deploymentId: string; status: string } | null> {
   const project = await Project.findOne({ projectId, status: "active" });
   if (!project) return null;
-  return deployIfIdle({
-    projectId: project.projectId,
-    repoUrl: project.repoUrl,
-    branch: project.branch,
-  });
+  return deployIfIdle(
+    {
+      projectId: project.projectId,
+      repoUrl: project.repoUrl,
+      branch: project.branch,
+    },
+    commit,
+  );
 }

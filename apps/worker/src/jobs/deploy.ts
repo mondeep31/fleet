@@ -67,7 +67,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       githubToken = await getDecryptedGitHubToken(project.userId);
     }
 
-    const { cloneDir, commitSha } = await cloneRepo({
+    const { cloneDir, commitSha, commitMessage } = await cloneRepo({
       repoUrl,
       deploymentId,
       branch: deployment.branch,
@@ -79,6 +79,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     await updateDeployment(deploymentId, {
       status: "cloned",
       commitSha,
+      commitMessage,
       clonePath: cloneDir,
     });
     publishLog(

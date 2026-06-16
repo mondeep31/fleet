@@ -82,7 +82,7 @@ vi.mock("../lib/github-repo", () => ({
 }));
 
 vi.mock("../steps/clone", () => ({
-  cloneRepo: vi.fn().mockResolvedValue({ cloneDir: "/tmp/test", commitSha: "abc1234" }),
+  cloneRepo: vi.fn().mockResolvedValue({ cloneDir: "/tmp/test", commitSha: "abc1234", commitMessage: "test commit" }),
 }));
 
 vi.mock("../steps/build", () => ({

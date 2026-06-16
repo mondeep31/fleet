@@ -17,10 +17,10 @@ import {
 import { TableCell, TableRow } from "@/components/ui/table";
 import { api, ApiError } from "@/lib/api";
 import {
-  formatDuration,
   formatRelativeTime,
   truncateId,
 } from "@/lib/format";
+import { DeployDuration } from "@/components/deployments/deploy-duration";
 import type { Deployment } from "@/lib/types";
 
 export function DeploymentRow({
@@ -81,8 +81,12 @@ export function DeploymentRow({
         <TableCell className="text-muted-foreground">
           {formatRelativeTime(deployment.createdAt)}
         </TableCell>
-        <TableCell className="tabular-nums text-muted-foreground">
-          {formatDuration(deployment.createdAt, deployment.updatedAt)}
+        <TableCell>
+          <DeployDuration
+            createdAt={deployment.createdAt}
+            updatedAt={deployment.updatedAt}
+            status={deployment.status}
+          />
         </TableCell>
         <TableCell>
           {deployment.url ? (

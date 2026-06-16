@@ -41,7 +41,7 @@ export function VirtualDeploymentList({
               <TableHead>Status</TableHead>
               <TableHead>Branch</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Duration</TableHead>
+              <TableHead>Deploy time</TableHead>
               <TableHead>URL</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -70,7 +70,7 @@ export function VirtualDeploymentList({
             <TableHead>Status</TableHead>
             <TableHead>Branch</TableHead>
             <TableHead>Created</TableHead>
-            <TableHead>Duration</TableHead>
+            <TableHead>Deploy time</TableHead>
             <TableHead>URL</TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>

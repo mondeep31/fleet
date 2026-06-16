@@ -3,6 +3,7 @@ import { Deployment } from "@fleet/db";
 interface DeploymentUpdate {
   status?: string;
   commitSha?: string;
+  commitMessage?: string;
   clonePath?: string;
   imageTag?: string;
   containerId?: string;

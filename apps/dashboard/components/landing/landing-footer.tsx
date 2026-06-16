@@ -10,8 +10,8 @@ export function LandingFooter() {
           <span className="text-sm">fleet</span>
         </div>
         <p className="hidden text-xs text-[var(--text-secondary)] sm:block">
-          Connect GitHub, deploy from your repos, and get a live URL with logs
-          and redeploys.
+          Connect GitHub, deploy from your repos, and get a live URL with CI/CD,
+          build logs, and zero-downtime rollouts.
         </p>
         <Link
           href="/login"

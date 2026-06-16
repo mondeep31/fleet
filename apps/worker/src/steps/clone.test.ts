@@ -1,6 +1,7 @@
 import { describe, test, expect, vi, beforeEach } from "vitest";
 
 const mockClone = vi.fn().mockResolvedValue(undefined);
+const mockRaw = vi.fn().mockResolvedValue("feat: add landing page\n");
 const mockRevparse = vi.fn().mockResolvedValue("abc1234def5678  ");
 const mockEnv = vi.fn();
 
@@ -9,6 +10,7 @@ vi.mock("simple-git", () => {
     const instance = {
       clone: mockClone,
       revparse: mockRevparse,
+      raw: mockRaw,
       env: (...args: unknown[]) => {
         mockEnv(...args);
         return instance;
@@ -52,6 +54,7 @@ describe("cloneRepo", () => {
       ["--branch", "main", "--single-branch"],
     );
     expect(result.commitSha).toBe("abc1234def5678");
+    expect(result.commitMessage).toBe("feat: add landing page");
   });
 
   test("uses x-access-token authenticated URL when githubToken is provided", async () => {

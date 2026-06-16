@@ -14,6 +14,7 @@ interface CloneRepoParams {
 interface CloneRepoResult {
   cloneDir: string;
   commitSha: string;
+  commitMessage: string;
 }
 
 export async function cloneRepo({
@@ -48,6 +49,9 @@ export async function cloneRepo({
 
   const repoGit = simpleGit(cloneDir);
   const commitSha = (await repoGit.revparse(["HEAD"])).trim();
+  const commitMessage = (
+    await repoGit.raw(["log", "-1", "--format=%s"])
+  ).trim();
 
-  return { cloneDir, commitSha };
+  return { cloneDir, commitSha, commitMessage };
 }

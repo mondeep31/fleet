@@ -90,6 +90,51 @@ function Fig03() {
   );
 }
 
+function Fig04() {
+  return (
+    <svg
+      viewBox="0 0 160 130"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-36 w-auto"
+      aria-hidden
+    >
+      {/* Push event — branch node */}
+      <circle cx="32" cy="24" r="6" />
+      <line x1="32" y1="30" x2="32" y2="48" />
+      <line x1="20" y1="24" x2="26" y2="24" />
+      <line x1="38" y1="24" x2="48" y2="24" />
+
+      {/* Webhook delivery */}
+      <line x1="48" y1="24" x2="80" y2="24" strokeDasharray="3 3" />
+      <circle cx="80" cy="24" r="4" />
+
+      {/* Pipeline down to containers */}
+      <line x1="80" y1="28" x2="80" y2="52" />
+
+      {/* Old container — faded, being replaced */}
+      <polygon points="48,72 68,62 68,92 48,102" strokeOpacity="0.35" />
+      <polygon points="68,62 88,72 88,102 68,92" strokeOpacity="0.35" />
+
+      {/* New container — live */}
+      <polygon points="92,72 112,62 112,92 92,102" />
+      <polygon points="112,62 132,72 132,102 112,92" />
+
+      {/* Swap arrow */}
+      <path d="M 76 82 L 88 82" />
+      <path d="M 84 78 L 88 82 L 84 86" />
+
+      {/* Traefik route — traffic line to new container only */}
+      <line x1="132" y1="77" x2="148" y2="77" />
+      <line x1="148" y1="77" x2="148" y2="40" />
+      <line x1="112" y1="62" x2="148" y2="40" strokeDasharray="3 3" />
+    </svg>
+  );
+}
+
 const figs = [
   {
     label: "FIG 0.1",
@@ -110,7 +155,14 @@ const figs = [
     Illustration: Fig03,
     title: "Track & redeploy",
     description:
-      "Watch build logs stream in, open your live URL, and redeploy whenever you need to.",
+      "Watch build logs stream in, open your live URL, and redeploy with one click.",
+  },
+  {
+    label: "FIG 0.4",
+    Illustration: Fig04,
+    title: "Push-to-deploy CI/CD",
+    description:
+      "Fleet registers a GitHub webhook on your repo. Every push to your branch triggers a build — no manual redeploys.",
   },
 ] as const;
 
@@ -119,7 +171,7 @@ export function Figs() {
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-24">
-      <div className="grid grid-cols-1 gap-16 sm:grid-cols-3 sm:gap-12">
+      <div className="grid grid-cols-1 gap-16 sm:grid-cols-2 lg:grid-cols-4 sm:gap-12">
         {figs.map(({ label, Illustration, title, description }, i) => (
           <motion.div
             key={label}

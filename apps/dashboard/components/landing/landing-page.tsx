@@ -2,6 +2,7 @@ import { LandingNav } from "./landing-nav";
 import { Hero } from "./hero";
 import { DeployedSection } from "./deployed-section";
 import { Figs } from "./figs";
+import { CicdSection } from "./cicd-section";
 import { Workflow } from "./workflow";
 import { LandingFooter } from "./landing-footer";
 
@@ -13,6 +14,7 @@ export function LandingPage() {
         <Hero />
         <DeployedSection />
         <Figs />
+        <CicdSection />
         <Workflow />
       </main>
       <LandingFooter />

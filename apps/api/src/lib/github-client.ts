@@ -56,7 +56,10 @@ export interface DockerfileMissing {
   reason: string;
 }
 
-export type DockerfileCheckResult = DockerfileResult | RailpackResult | DockerfileMissing;
+export type DockerfileCheckResult =
+  | DockerfileResult
+  | RailpackResult
+  | DockerfileMissing;
 
 function authHeaders(token: string): Record<string, string> {
   return {
