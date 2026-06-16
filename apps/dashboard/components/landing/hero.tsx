@@ -51,7 +51,7 @@ export function Hero() {
           {...mo(0)}
           className="mb-6 font-mono text-[10px] tracking-[0.22em] text-[var(--text-secondary)] uppercase"
         >
-          Self-hosted deployment
+          Shipping made simple
         </motion.p>
 
         <motion.h1

@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Fleet",
-  description: "Self-hosted deployment platform",
+  description:
+    "Connect GitHub, pick a repo, and get a stable live URL — with build logs, env vars, push-to-deploy, and zero-downtime rollouts.",
   icons: {
     icon: { url: "/sailboat.svg", type: "image/svg+xml" },
     shortcut: "/sailboat.svg",
