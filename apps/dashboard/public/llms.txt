@@ -1,0 +1,28 @@
+# Fleet
+
+> Connect GitHub, pick a repo, and get a stable live URL — with build logs, env vars, push-to-deploy, and zero-downtime rollouts.
+
+Fleet is a deployment platform for Docker-based applications. It connects to GitHub via OAuth, lets users pick a repository and branch, then automatically clones the code, builds a Docker image, and runs the container behind a stable subdomain URL.
+
+## What Fleet does
+
+- GitHub OAuth integration — connect your account and browse repos directly
+- Automatic Docker image build from your repository's Dockerfile
+- Stable live URL per project (e.g. `https://depl-fleet-{projectId}.yourdomain.com`)
+- Push-to-deploy CI/CD via GitHub webhooks — every push to your tracked branch triggers a full redeploy
+- Encrypted environment variable injection at container start
+- Streaming build logs and runtime logs via SSE
+- Zero-downtime rollouts — new container starts before the old one is removed
+- Stop, rollback, and delete deployments
+
+## Key pages
+
+- Home / landing: /
+- Sign in: /login
+- Sign up: /signup
+- Projects dashboard: /projects (authenticated)
+- New project: /projects/new (authenticated)
+
+## Sitemap
+
+https://fleet.mondeep.xyz/sitemap.xml

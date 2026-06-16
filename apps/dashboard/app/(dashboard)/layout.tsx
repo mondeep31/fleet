@@ -1,5 +1,10 @@
+import type { Metadata } from "next";
 import { AuthGuard } from "@/components/auth/auth-guard";
 import { Sidebar } from "@/components/layout/sidebar";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: true },
+};
 
 export default function DashboardLayout({
   children,
