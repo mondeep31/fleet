@@ -48,9 +48,11 @@ module.exports = {
       kill_timeout: 10_000,
       env: {
         NODE_ENV: "development",
+        BUILDKIT_HOST: "docker-container://fleet-buildkit",
       },
       env_production: {
         NODE_ENV: "production",
+        BUILDKIT_HOST: "docker-container://fleet-buildkit",
       },
     },
     {

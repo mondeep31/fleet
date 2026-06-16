@@ -1,4 +1,5 @@
 import { flushLogs, publishLog } from "../services/logs";
+import { ensureBuildKit, ensureRailpackBin } from "../lib/railpack";
 
 interface BuildRailpackParams {
   cloneDir: string;
@@ -11,9 +12,19 @@ export async function buildRailpack({
   imageTag,
   deploymentId,
 }: BuildRailpackParams): Promise<string> {
-  const proc = Bun.spawn(["railpack", "build", "--name", imageTag, cloneDir], {
+  publishLog(deploymentId, "Preparing railpack build environment...", "pipeline");
+  const [railpackBin, buildkitHost] = await Promise.all([
+    ensureRailpackBin(),
+    ensureBuildKit(),
+  ]);
+
+  const proc = Bun.spawn([railpackBin, "build", "--name", imageTag, cloneDir], {
     stdout: "pipe",
     stderr: "pipe",
+    env: {
+      ...process.env,
+      BUILDKIT_HOST: buildkitHost,
+    },
   });
 
   async function streamLines(stream: ReadableStream<Uint8Array>) {

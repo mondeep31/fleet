@@ -43,5 +43,11 @@ jobs:
 
           docker compose up -d
 
+          # Railpack build backend (used when repos have no Dockerfile)
+          mkdir -p "$HOME/.fleet/bin"
+          curl -fsSL https://railpack.com/install.sh | sh -s -- -f -y -b "$HOME/.fleet/bin"
+          docker rm -f fleet-buildkit 2>/dev/null || true
+          docker run --rm --privileged -d --name fleet-buildkit moby/buildkit:latest
+
           pm2 startOrReload ecosystem.config.cjs --env production
           pm2 save
