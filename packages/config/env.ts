@@ -23,6 +23,9 @@ const sharedEnvSchema = z.object({
   // Base64-encoded 32-byte key used to encrypt project env vars at rest.
   // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
   FLEET_SECRETS_ENCRYPTION_KEY: z.string().min(44),
+  RESEND_API_KEY: z.string().min(1),
+  RESEND_FROM_EMAIL: z.string().min(1).default("Fleet <onboarding@resend.dev>"),
+  DASHBOARD_URL: z.string().url().default("http://localhost:3000"),
 });
 
 const apiEnvSchema = sharedEnvSchema.extend({

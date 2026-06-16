@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@fleet/config": "workspace:*",
+    "@fleet/email": "workspace:*",
     "@fleet/errors": "workspace:*",
     "@fleet/db": "workspace:*",
     "@fleet/logs": "workspace:*",

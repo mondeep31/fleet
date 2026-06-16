@@ -1,6 +1,7 @@
 import { User } from "@fleet/db";
 import bcrypt from "bcryptjs";
 import { signJWT } from "@fleet/auth";
+import { enqueueEmail } from "@fleet/queue";
 import { AppError } from "@fleet/errors";
 
 interface CreateUserParams {
@@ -46,6 +47,7 @@ export const createUser = async ({
     throw new AppError(400, "User already exists", "USER_ALREADY_EXISTS");
   }
   const user = await User.create({ name, email, password: hashedPassword });
+  await enqueueEmail({ type: "signup", to: user.email, name: user.name });
   const token = signJWT(user.userId);
   return {
     userId: user.userId,
@@ -125,6 +127,7 @@ export const loginUserByEmailAndPassword = async ({
   if (!isPasswordValid) {
     throw new AppError(401, "Invalid password", "INVALID_PASSWORD");
   }
+  await enqueueEmail({ type: "login", to: user.email, name: user.name });
   const token = signJWT(user.userId);
   return {
     userId: user.userId,

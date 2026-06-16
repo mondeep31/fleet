@@ -13,6 +13,9 @@ const REQUIRED_ENV = {
   GITHUB_CLIENT_SECRET: "test-client-secret",
   GITHUB_OAUTH_CALLBACK_URL: "http://localhost:3010/api/v1/integrations/github/callback",
   GITHUB_OAUTH_SUCCESS_REDIRECT: "http://localhost:3000/connections",
+  RESEND_API_KEY: "re_test_key",
+  RESEND_FROM_EMAIL: "Fleet <onboarding@resend.dev>",
+  DASHBOARD_URL: "http://localhost:3000",
 } as const;
 
 const ORIGINAL_ENV = { ...process.env };
@@ -92,12 +95,15 @@ describe("getSharedEnv", () => {
     Object.assign(process.env, {
       MONGODB_URI: REQUIRED_ENV.MONGODB_URI,
       FLEET_SECRETS_ENCRYPTION_KEY: REQUIRED_ENV.FLEET_SECRETS_ENCRYPTION_KEY,
+      RESEND_API_KEY: REQUIRED_ENV.RESEND_API_KEY,
     });
     const env = getSharedEnv();
 
     expect(env.MONGODB_URI).toBe(REQUIRED_ENV.MONGODB_URI);
     expect(env.REDIS_URL).toBe("redis://localhost:16379");
     expect(env.NODE_ENV).toBe("development");
+    expect(env.RESEND_API_KEY).toBe(REQUIRED_ENV.RESEND_API_KEY);
+    expect(env.DASHBOARD_URL).toBe("http://localhost:3000");
   });
 
   test("exits when MONGODB_URI is missing", () => {
@@ -105,6 +111,7 @@ describe("getSharedEnv", () => {
     delete process.env.MONGODB_URI;
     Object.assign(process.env, {
       FLEET_SECRETS_ENCRYPTION_KEY: REQUIRED_ENV.FLEET_SECRETS_ENCRYPTION_KEY,
+      RESEND_API_KEY: REQUIRED_ENV.RESEND_API_KEY,
     });
 
     process.exit = ((code?: number) => {

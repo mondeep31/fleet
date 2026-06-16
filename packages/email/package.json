@@ -1,0 +1,20 @@
+{
+  "name": "@fleet/email",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "test:email": "bun run scripts/send-test-email.ts"
+  },
+  "dependencies": {
+    "@fleet/brand": "workspace:*",
+    "@fleet/config": "workspace:*",
+    "@fleet/queue": "workspace:*",
+    "resend": "^6.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.6.2",
+    "typescript": "^6.0.3"
+  }
+}
