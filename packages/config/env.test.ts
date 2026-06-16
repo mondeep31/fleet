@@ -12,7 +12,7 @@ const REQUIRED_ENV = {
   GITHUB_CLIENT_ID: "test-client-id",
   GITHUB_CLIENT_SECRET: "test-client-secret",
   GITHUB_OAUTH_CALLBACK_URL: "http://localhost:3010/api/v1/integrations/github/callback",
-  GITHUB_OAUTH_SUCCESS_REDIRECT: "http://localhost:3000/connections",
+  GITHUB_OAUTH_SUCCESS_REDIRECT: "http://localhost:3000/projects",
   RESEND_API_KEY: "re_test_key",
   RESEND_FROM_EMAIL: "Fleet <onboarding@resend.dev>",
   DASHBOARD_URL: "http://localhost:3000",

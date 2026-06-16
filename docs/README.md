@@ -94,3 +94,6 @@ todo:
 12. github webhooks, app, auto deploy on push, like vercel.
 13. dockerfile in subdirs what to do, decide later.
 14. sending email/slack alerts on deployment errors
+
+15. webhook setup that detects new pushes and deploys the new changes.
+16. railpack
