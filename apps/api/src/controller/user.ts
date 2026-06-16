@@ -34,9 +34,9 @@ const getUserController: RequestHandler = async (req, res) => {
 
 const updateUserController: RequestHandler = async (req, res) => {
   const userId = req.user!.userId;
-  const { currentPassword, newPassword } = req.body as UpdateUserBody;
+  const { name, currentPassword, newPassword } = req.body as UpdateUserBody;
 
-  const user = await updateUser({ userId, currentPassword, newPassword });
+  const user = await updateUser({ userId, name, currentPassword, newPassword });
   res.status(200).json({
     message: "User updated successfully",
     success: true,

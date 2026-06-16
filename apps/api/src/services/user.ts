@@ -19,8 +19,9 @@ interface GetUserPasswordParams {
 
 interface UpdateUserParams {
   userId: string;
-  currentPassword: string;
-  newPassword: string;
+  name?: string;
+  currentPassword?: string;
+  newPassword?: string;
 }
 
 interface LoginUserByEmailAndPasswordParams {
@@ -68,6 +69,7 @@ export const getUserById = async ({ id }: GetUserByIdParams) => {
 
 export const updateUser = async ({
   userId,
+  name,
   currentPassword,
   newPassword,
 }: UpdateUserParams) => {
@@ -76,25 +78,31 @@ export const updateUser = async ({
     throw new AppError(404, "User not found", "USER_NOT_FOUND");
   }
 
-  if (currentPassword === newPassword) {
-    throw new AppError(
-      400,
-      "New password cannot be the same as the current password",
-      "INVALID_PASSWORD",
+  if (newPassword) {
+    if (currentPassword === newPassword) {
+      throw new AppError(
+        400,
+        "New password cannot be the same as the current password",
+        "INVALID_PASSWORD",
+      );
+    }
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword!,
+      user.password,
     );
+    if (!isCurrentPasswordValid) {
+      throw new AppError(
+        401,
+        "Invalid current password",
+        "INVALID_CURRENT_PASSWORD",
+      );
+    }
+    user.password = await bcrypt.hash(newPassword, 10);
   }
-  const isCurrentPasswordValid = await bcrypt.compare(
-    currentPassword,
-    user.password,
-  );
-  if (!isCurrentPasswordValid) {
-    throw new AppError(
-      401,
-      "Invalid current password",
-      "INVALID_CURRENT_PASSWORD",
-    );
+
+  if (name !== undefined) {
+    user.name = name;
   }
-  user.password = await bcrypt.hash(newPassword, 10);
 
   await user.save();
 

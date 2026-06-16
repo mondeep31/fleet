@@ -35,10 +35,32 @@ export const createUserBodySchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export const updateUserBodySchema = z.object({
-  currentPassword: z.string().min(8, "Password must be at least 8 characters"),
-  newPassword: z.string().min(8, "Password must be at least 8 characters"),
-});
+export const updateUserBodySchema = z
+  .object({
+    name: z.string().trim().min(2, "Name must be at least 2 characters").optional(),
+    currentPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .optional(),
+    newPassword: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .optional(),
+  })
+  .refine((data) => data.name !== undefined || data.newPassword !== undefined, {
+    message: "At least one of name or newPassword must be provided",
+  })
+  .refine(
+    (data) => !data.newPassword || data.currentPassword !== undefined,
+    { message: "currentPassword is required when changing password" },
+  )
+  .refine(
+    (data) =>
+      !data.currentPassword ||
+      data.newPassword !== undefined ||
+      data.name !== undefined,
+    { message: "newPassword is required when currentPassword is provided" },
+  );
 
 export const loginBodySchema = z.object({
   email: z.string().trim().email("Invalid email address"),

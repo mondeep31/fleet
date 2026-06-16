@@ -99,6 +99,24 @@ export async function listDeploymentsByProjectId(projectId: string) {
   return deployments.map(toDeploymentResponse);
 }
 
+export async function getLatestDeploymentsForProjects(projectIds: string[]) {
+  if (projectIds.length === 0) {
+    return new Map<string, ReturnType<typeof toDeploymentResponse>>();
+  }
+
+  const deployments = await Deployment.find({
+    projectId: { $in: projectIds },
+  }).sort({ createdAt: -1 });
+
+  const latestByProject = new Map<string, ReturnType<typeof toDeploymentResponse>>();
+  for (const deployment of deployments) {
+    if (!latestByProject.has(deployment.projectId)) {
+      latestByProject.set(deployment.projectId, toDeploymentResponse(deployment));
+    }
+  }
+  return latestByProject;
+}
+
 export async function getDeploymentsByProjectId(
   projectId: string,
   userId: string,

@@ -5,7 +5,7 @@ import { updateUserBodySchema } from "../validators/user";
 
 const router = Router();
 
-router.get("/:id", getUserController);
+router.get("/", getUserController);
 router.patch(
   "/",
   validate({ body: updateUserBodySchema }),

@@ -57,8 +57,12 @@ async function request<T>(
     | null;
 
   if (response.status === 401) {
-    useAuthStore.getState().logout();
-    throw new ApiError("Unauthorized", 401);
+    const code =
+      payload && "code" in payload ? (payload.code as string) : undefined;
+    if (code !== "INVALID_CURRENT_PASSWORD") {
+      useAuthStore.getState().logout();
+    }
+    throw new ApiError("Unauthorized", 401, code);
   }
 
   if (!response.ok) {
@@ -93,8 +97,18 @@ export const api = {
   getUser: () =>
     request<{ userId: string; name: string; email: string }>("/api/v1/users"),
 
+  updateUser: (body: {
+    name?: string;
+    currentPassword?: string;
+    newPassword?: string;
+  }) =>
+    request<{ userId: string; name: string; email: string }>("/api/v1/users", {
+      method: "PATCH",
+      body: JSON.stringify(body),
+    }),
+
   getProjects: () =>
-    request<{ projects: Project[] }>("/api/v1/projects"),
+    request<{ projects: ProjectWithLatestDeploy[] }>("/api/v1/projects"),
 
   createProject: (
     name: string,
@@ -191,19 +205,7 @@ export const api = {
 
   getProjectsWithLatestDeploy: async (): Promise<ProjectWithLatestDeploy[]> => {
     const { projects } = await api.getProjects();
-    const enriched = await Promise.all(
-      projects.map(async (project) => {
-        try {
-          const { deployments } = await api.getDeploymentsByProject(
-            project.projectId,
-          );
-          return { ...project, latestDeployment: deployments[0] };
-        } catch {
-          return { ...project };
-        }
-      }),
-    );
-    return enriched;
+    return projects;
   },
 };
 

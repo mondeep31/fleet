@@ -3,6 +3,7 @@ import { buildProjectDeploySubdomain } from "@fleet/config";
 import { AppError } from "@fleet/errors";
 import {
   listDeploymentsByProjectId,
+  getLatestDeploymentsForProjects,
   startDeploy,
   stopDeployment,
 } from "./deployment";
@@ -21,6 +22,12 @@ interface GetAllProjectsForAUserParams {
   userId: string;
 }
 
+type LatestDeployment = Awaited<
+  ReturnType<typeof getLatestDeploymentsForProjects>
+> extends Map<string, infer D>
+  ? D
+  : never;
+
 interface ProjectResponse {
   projectId: string;
   name: string;
@@ -29,6 +36,7 @@ interface ProjectResponse {
   userId: string;
   subdomain: string;
   status: string;
+  latestDeployment?: LatestDeployment;
 }
 
 const IN_PROGRESS_DEPLOYMENT_STATUSES = [
@@ -113,18 +121,26 @@ export const getAllProjectsForAUser = async ({
   if (!projects) {
     throw new AppError(404, "No projects found", "NO_PROJECTS_FOUND");
   }
+
+  const projectResponses: ProjectResponse[] = projects.map((project) => ({
+    projectId: project.projectId,
+    name: project.name,
+    repoUrl: project.repoUrl,
+    branch: project.branch ?? "main",
+    userId: project.userId,
+    subdomain: project.subdomain,
+    status: project.status ?? "active",
+  }));
+
+  const latestByProject = await getLatestDeploymentsForProjects(
+    projectResponses.map((p) => p.projectId),
+  );
+
   return {
-    projects: projects.map(
-      (project): ProjectResponse => ({
-        projectId: project.projectId,
-        name: project.name,
-        repoUrl: project.repoUrl,
-        branch: project.branch ?? "main",
-        userId: project.userId,
-        subdomain: project.subdomain,
-        status: project.status ?? "active",
-      }),
-    ),
+    projects: projectResponses.map((p) => ({
+      ...p,
+      latestDeployment: latestByProject.get(p.projectId),
+    })),
   };
 };
 

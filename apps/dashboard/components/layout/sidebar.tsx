@@ -175,9 +175,14 @@ function MobileSidebarOverlay({
 
         <div className="pb-3">
           <Link
-            href="/connections"
+            href="/settings"
             onClick={() => onOpenChange(false)}
-            className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+            className={cn(
+              "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+              pathname.startsWith("/settings")
+                ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
+                : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+            )}
           >
             <Gear className="size-4" />
             Settings
@@ -238,8 +243,13 @@ export function Sidebar() {
 
       <div className="p-3">
         <Link
-          href="/connections"
-          className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+          href="/settings"
+          className={cn(
+            "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+            pathname.startsWith("/settings")
+              ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
+              : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+          )}
         >
           <Gear className="size-4" />
           Settings
