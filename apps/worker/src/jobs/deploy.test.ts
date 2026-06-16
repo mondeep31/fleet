@@ -17,11 +17,13 @@ vi.mock("@fleet/db", () => ({
   Project: {
     findOne: vi.fn().mockResolvedValue({
       projectId: "proj1",
+      userId: "user-1",
       repoUrl: "https://github.com/test/test",
       subdomain: "depl-fleet-proj1",
     }),
     updateOne: vi.fn().mockResolvedValue({}),
   },
+  Integration: {},
 }));
 
 vi.mock("@fleet/config", () => ({
@@ -68,6 +70,15 @@ vi.mock("../services/logs", () => ({
 
 vi.mock("../services/project-variable", () => ({
   getDecryptedProjectVariables: vi.fn().mockResolvedValue({ FOO: "bar" }),
+}));
+
+vi.mock("../services/github-integration", () => ({
+  getDecryptedGitHubToken: vi.fn().mockResolvedValue("ghp_test_token"),
+}));
+
+vi.mock("../lib/github-repo", () => ({
+  isGitHubRepoUrl: vi.fn().mockReturnValue(false),
+  redactSecrets: vi.fn((msg: string) => msg),
 }));
 
 vi.mock("../steps/clone", () => ({

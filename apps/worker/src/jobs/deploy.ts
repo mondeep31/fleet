@@ -12,10 +12,12 @@ import {
   updateDeployment,
 } from "../services/deployment";
 import { finalizeDeploymentLogs, publishLog } from "../services/logs";
+import { getDecryptedGitHubToken } from "../services/github-integration";
 import { getDecryptedProjectVariables } from "../services/project-variable";
 import { buildImage } from "../steps/build";
 import { buildRailpack } from "../steps/build-railpack";
 import { cloneRepo } from "../steps/clone";
+import { isGitHubRepoUrl } from "../lib/github-repo";
 import {
   attachContainerToTraefik,
   removeAllProjectContainers,
@@ -52,13 +54,24 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     await exitIfStopped(deploymentId);
     const deployment = await getDeployment(deploymentId);
 
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      throw new Error(`Project not found: ${projectId}`);
+    }
+
     await updateDeployment(deploymentId, { status: "cloning" });
     publishLog(deploymentId, "Cloning repository...", "pipeline");
+
+    let githubToken: string | undefined;
+    if (isGitHubRepoUrl(repoUrl)) {
+      githubToken = await getDecryptedGitHubToken(project.userId);
+    }
 
     const { cloneDir, commitSha } = await cloneRepo({
       repoUrl,
       deploymentId,
       branch: deployment.branch,
+      githubToken,
     });
 
     await exitIfStopped(deploymentId);
@@ -110,10 +123,6 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     await exitIfStopped(deploymentId);
 
-    const project = await Project.findOne({ projectId });
-    if (!project) {
-      throw new Error(`Project not found: ${projectId}`);
-    }
     const subdomain = await getProjectSubdomain(project);
 
     await updateDeployment(deploymentId, { status: "deploying" });
