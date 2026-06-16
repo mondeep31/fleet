@@ -6,7 +6,7 @@ const APPS = [
   {
     name: "Beetle AI",
     src: "/beetle.png",
-    href: "https://bettleai.dev",
+    href: "https://beetleai.dev",
   },
   {
     name: "Choppr",
