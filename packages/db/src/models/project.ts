@@ -38,6 +38,9 @@ const projectSchema = new mongoose.Schema({
     enum: ["active", "archived"],
     default: "active",
   },
+  githubHookId: {
+    type: Number,
+  },
 });
 
 projectSchema.set("toJSON", {

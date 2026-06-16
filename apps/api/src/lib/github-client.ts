@@ -102,7 +102,7 @@ export function buildAuthorizeUrl(
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: callbackUrl,
-    scope: "read:user repo",
+    scope: "read:user repo admin:repo_hook",
     state,
   });
   return `${GITHUB_AUTH_URL}?${params.toString()}`;
@@ -249,6 +249,66 @@ export async function getRootDockerfile(
   }
 
   return { ok: true, buildMethod: "railpack" };
+}
+
+// ---------------------------------------------------------------------------
+// Webhook hook management
+// ---------------------------------------------------------------------------
+
+export interface GitHubHook {
+  id: number;
+  name: string;
+  active: boolean;
+  events: string[];
+  config: {
+    url?: string;
+    content_type?: string;
+    insecure_ssl?: string;
+  };
+}
+
+export async function listRepoHooks(
+  token: string,
+  owner: string,
+  repo: string,
+): Promise<GitHubHook[]> {
+  return ghFetch<GitHubHook[]>(`/repos/${owner}/${repo}/hooks`, token);
+}
+
+export async function createRepoHook(
+  token: string,
+  owner: string,
+  repo: string,
+  webhookUrl: string,
+  secret: string,
+): Promise<GitHubHook> {
+  return ghFetch<GitHubHook>(`/repos/${owner}/${repo}/hooks`, token, {
+    method: "POST",
+    data: {
+      name: "web",
+      active: true,
+      events: ["push"],
+      config: {
+        url: webhookUrl,
+        content_type: "json",
+        secret,
+        insecure_ssl: "0",
+      },
+    },
+  });
+}
+
+export async function deleteRepoHook(
+  token: string,
+  owner: string,
+  repo: string,
+  hookId: number,
+): Promise<void> {
+  // 204 = deleted, 404 = already gone — both are fine.
+  await githubApi.delete(`/repos/${owner}/${repo}/hooks/${hookId}`, {
+    headers: authHeaders(token),
+    validateStatus: (s) => s === 204 || s === 404,
+  });
 }
 
 /** Best-effort token revocation — caller should not throw on failure. */

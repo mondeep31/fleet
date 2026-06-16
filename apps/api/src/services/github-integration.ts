@@ -42,7 +42,7 @@ export async function handleOAuthCallback(
       authTag: encrypted.authTag,
       githubUserId: String(ghUser.id),
       githubUsername: ghUser.login,
-      scopes: ["read:user", "repo"],
+      scopes: ["read:user", "repo", "admin:repo_hook"],
       connectedAt: new Date(),
     },
     { upsert: true, new: true },
@@ -53,10 +53,15 @@ export async function handleOAuthCallback(
 
 export async function getGitHubStatus(
   userId: string,
-): Promise<{ connected: boolean; username?: string }> {
+): Promise<{ connected: boolean; username?: string; needsReconnect?: boolean }> {
   const integration = await Integration.findOne({ userId, provider: "github" });
   if (!integration) return { connected: false };
-  return { connected: true, username: integration.githubUsername };
+  const needsReconnect = !integration.scopes.includes("admin:repo_hook");
+  return {
+    connected: true,
+    username: integration.githubUsername,
+    ...(needsReconnect ? { needsReconnect: true } : {}),
+  };
 }
 
 export async function disconnectGitHub(userId: string): Promise<void> {

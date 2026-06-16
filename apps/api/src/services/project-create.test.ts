@@ -3,6 +3,7 @@
  * - branch is persisted on the Project document
  * - create is blocked (400) when GitHub repo validation fails
  * - non-GitHub repos skip validation
+ * - webhook hook is registered for GitHub repos (and skipped for non-GitHub)
  */
 import { describe, test, expect, vi, beforeEach } from "vitest";
 
@@ -54,6 +55,13 @@ vi.mock("./project-variable", () => ({
   saveProjectVariables: (...args: unknown[]) => mockSaveProjectVariables(...args),
 }));
 
+const mockEnsureRepoWebhook = vi.fn().mockResolvedValue(42);
+
+vi.mock("./github-hooks", () => ({
+  ensureRepoWebhook: (...args: unknown[]) => mockEnsureRepoWebhook(...args),
+  removeRepoWebhookIfUnused: vi.fn(),
+}));
+
 // ---------------------------------------------------------------------------
 // Subject
 // ---------------------------------------------------------------------------
@@ -90,6 +98,7 @@ describe("createProject", () => {
       buildMethod: "dockerfile",
       dockerfilePath: "Dockerfile",
     });
+    mockEnsureRepoWebhook.mockResolvedValue(42);
   });
 
   test("persists the supplied branch on the Project document", async () => {
@@ -145,5 +154,23 @@ describe("createProject", () => {
       "app",
       "feat/new-ui",
     );
+  });
+
+  test("registers GitHub webhook for GitHub repos", async () => {
+    await createProject(BASE);
+    expect(mockEnsureRepoWebhook).toHaveBeenCalledWith("user-1", "acme", "app");
+  });
+
+  test("skips webhook registration for non-GitHub repos", async () => {
+    await createProject({ ...BASE, repoUrl: "https://gitlab.com/acme/app" });
+    expect(mockEnsureRepoWebhook).not.toHaveBeenCalled();
+  });
+
+  test("fails project create when hook registration fails", async () => {
+    mockEnsureRepoWebhook.mockRejectedValue(
+      Object.assign(new Error("hook failed"), { code: "GITHUB_HOOK_FAILED", status: 403 }),
+    );
+    await expect(createProject(BASE)).rejects.toMatchObject({ code: "GITHUB_HOOK_FAILED" });
+    expect(mockProjectCreate).not.toHaveBeenCalled();
   });
 });

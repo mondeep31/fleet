@@ -9,6 +9,7 @@ import {
 } from "./deployment";
 import { saveProjectVariables, type VariableInput } from "./project-variable";
 import { validateRepoDockerfile } from "./github-repos";
+import { ensureRepoWebhook, removeRepoWebhookIfUnused } from "./github-hooks";
 
 interface CreateProjectParams {
   name: string;
@@ -89,6 +90,14 @@ export const createProject = async ({
   const projectId = crypto.randomUUID();
   const subdomain = buildProjectDeploySubdomain(projectId);
 
+  // Register the GitHub webhook before writing to the DB so that if hook
+  // creation fails we fail fast without leaving an orphaned project.
+  let githubHookId: number | undefined;
+  if (githubMatch) {
+    const [, owner, repo] = githubMatch;
+    githubHookId = await ensureRepoWebhook(userId, owner, repo);
+  }
+
   const project = await Project.create({
     name,
     repoUrl,
@@ -96,6 +105,7 @@ export const createProject = async ({
     userId,
     projectId,
     subdomain,
+    ...(githubHookId !== undefined ? { githubHookId } : {}),
   });
 
   if (variables.length > 0) {
@@ -178,6 +188,14 @@ export async function archiveProject(projectId: string, userId: string) {
     throw new AppError(404, "Project not found", "PROJECT_NOT_FOUND");
   }
 
+  // Best-effort: remove the GitHub webhook if no other active project uses this repo.
+  await removeRepoWebhookIfUnused(
+    userId,
+    projectId,
+    project.repoUrl,
+    project.githubHookId as number | undefined,
+  );
+
   return {
     projectId: updated.projectId,
     name: updated.name,
@@ -186,13 +204,15 @@ export async function archiveProject(projectId: string, userId: string) {
   };
 }
 
-export async function startProjectDeployment(projectId: string, userId: string) {
-  const project = await assertProjectOwnership(projectId, userId);
-
-  const deployments = await listDeploymentsByProjectId(projectId);
-  const hasInProgress = deployments.some((deployment) =>
+async function deployIfIdle(project: {
+  projectId: string;
+  repoUrl: string;
+  branch?: string | null;
+}) {
+  const deployments = await listDeploymentsByProjectId(project.projectId);
+  const hasInProgress = deployments.some((d) =>
     IN_PROGRESS_DEPLOYMENT_STATUSES.includes(
-      deployment.status as (typeof IN_PROGRESS_DEPLOYMENT_STATUSES)[number],
+      d.status as (typeof IN_PROGRESS_DEPLOYMENT_STATUSES)[number],
     ),
   );
 
@@ -208,5 +228,28 @@ export async function startProjectDeployment(projectId: string, userId: string) 
     projectId: project.projectId,
     repoUrl: project.repoUrl,
     branch: project.branch ?? "main",
+  });
+}
+
+export async function startProjectDeployment(projectId: string, userId: string) {
+  const project = await assertProjectOwnership(projectId, userId);
+  return deployIfIdle(project);
+}
+
+/**
+ * Triggers a deployment for a project without requiring a userId.
+ * Used by the GitHub webhook handler where there is no authenticated user.
+ * Silently returns null (rather than throwing) when the project is not found or
+ * archived, so the webhook handler can iterate over multiple projects gracefully.
+ */
+export async function triggerDeployForProject(
+  projectId: string,
+): Promise<{ deploymentId: string; status: string } | null> {
+  const project = await Project.findOne({ projectId, status: "active" });
+  if (!project) return null;
+  return deployIfIdle({
+    projectId: project.projectId,
+    repoUrl: project.repoUrl,
+    branch: project.branch,
   });
 }

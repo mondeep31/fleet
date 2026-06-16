@@ -124,10 +124,10 @@ curl -s http://depl-fleet-PROJECT_ID.localhost:18080
 | `REDIS_URL` | API, worker | Redis URL (default `redis://localhost:16379`) |
 | `NODE_ENV` | API, worker | `development` \| `production` \| `test` |
 | `JWT_SECRET` | API | Min 32 characters |
-| `GITHUB_WEBHOOK_SECRET` | API | Placeholder until GitHub webhooks are implemented |
+| `GITHUB_WEBHOOK_SECRET` | API | HMAC secret for GitHub push deliveries. Generate: `openssl rand -hex 32` |
 | `AGENT_TOKEN` | API | Placeholder until agent is implemented |
 | `PORT` | API | HTTP port (default `3010`) |
-| `API_URL` | API | Public API URL (default `http://localhost:3010`) |
+| `API_URL` | API | Public API URL (default `http://localhost:3010`). In production must be a publicly reachable HTTPS URL — Fleet registers `{API_URL}/webhooks/github` on each GitHub project |
 | `FLEET_APPS_DOMAIN` | API, worker | App hostname suffix (default `localhost`; use `mondeep.xyz` or your apex domain in production) |
 | `FLEET_PUBLIC_URL_SCHEME` | API, worker | `http` or `https` (default `http`) |
 | `FLEET_TRAEFIK_PUBLIC_PORT` | API, worker | Public Traefik port in URLs (default `18080`; leave empty for HTTPS on 443) |
@@ -137,6 +137,17 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 
 ## API reference
 
+### GitHub push webhooks (auto-deploy)
+
+When a GitHub project is created Fleet automatically registers a push webhook on the repo via the user's OAuth token. On every `git push` to the tracked branch, GitHub delivers a `POST /webhooks/github` to the API which verifies the `X-Hub-Signature-256` signature, matches the payload to active projects, and enqueues a new deployment.
+
+**Requirements:**
+- `API_URL` must be a publicly reachable HTTPS URL in production (Fleet uses `{API_URL}/webhooks/github` as the webhook delivery URL).
+- `GITHUB_WEBHOOK_SECRET` must match the secret used when the hook was created.
+- GitHub OAuth must be connected with `admin:repo_hook` scope. If a user connected before this feature shipped, they must **reconnect GitHub** on the Connections page. `GET /api/v1/integrations/github/status` returns `needsReconnect: true` when the stored token lacks the required scope.
+
+**Local dev:** GitHub cannot reach `localhost`. Use [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to expose the API, then set `API_URL` to the tunnel URL and restart the API.
+
 ### Public (no auth)
 
 | Method | Path | Description |
@@ -145,6 +156,7 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 | `GET` | `/ping` | Ping |
 | `POST` | `/v1/signup` | Create account → JWT |
 | `POST` | `/v1/login` | Login → JWT |
+| `POST` | `/webhooks/github` | GitHub push webhook receiver (HMAC-verified) |
 
 ### Authenticated (`Authorization: Bearer <token>`)
 

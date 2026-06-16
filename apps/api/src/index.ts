@@ -8,6 +8,7 @@ import { authMiddleware } from "@fleet/auth";
 import router from "./routes";
 import unauthRoutes from "./routes/unauth";
 import { githubCallbackController } from "./controller/github-integration";
+import { githubWebhookController } from "./controller/github-webhook";
 
 const { PORT } = getEnv();
 
@@ -16,6 +17,14 @@ const app = express();
 const ping: RequestHandler = (_, res) => {
   res.json({ message: "pong" });
 };
+
+// Webhook route must receive the raw body for HMAC verification.
+// Mount it before express.json() so the body is not consumed first.
+app.post(
+  "/webhooks/github",
+  express.raw({ type: "application/json" }),
+  githubWebhookController,
+);
 
 app.use(express.json());
 app.get("/health", (_, res) => {
