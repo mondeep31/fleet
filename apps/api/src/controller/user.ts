@@ -4,12 +4,16 @@ import {
   getUserById,
   updateUser,
   loginUserByEmailAndPassword,
+  requestPasswordReset,
+  confirmPasswordReset,
 } from "../services/user";
 
 import type {
   CreateUserBody,
   LoginBody,
   UpdateUserBody,
+  PasswordResetRequestBody,
+  PasswordResetConfirmBody,
 } from "../validators/user";
 
 const createUserController: RequestHandler = async (req, res) => {
@@ -54,9 +58,31 @@ const loginController: RequestHandler = async (req, res) => {
   });
 };
 
+const requestPasswordResetController: RequestHandler = async (req, res) => {
+  const { email } = req.body as PasswordResetRequestBody;
+  await requestPasswordReset({ email });
+  res.status(200).json({
+    message: "Reset code sent to your email.",
+    success: true,
+    data: null,
+  });
+};
+
+const confirmPasswordResetController: RequestHandler = async (req, res) => {
+  const { email, code, newPassword } = req.body as PasswordResetConfirmBody;
+  await confirmPasswordReset({ email, code, newPassword });
+  res.status(200).json({
+    message: "Password updated successfully.",
+    success: true,
+    data: null,
+  });
+};
+
 export {
   createUserController,
   getUserController,
   updateUserController,
   loginController,
+  requestPasswordResetController,
+  confirmPasswordResetController,
 };

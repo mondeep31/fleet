@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { loginEmailHtml, signupEmailHtml } from "./templates";
+import { loginEmailHtml, passwordResetEmailHtml, signupEmailHtml } from "./templates";
 
 const DASHBOARD = "http://localhost:3000";
 const LOGO_CID = "sailboat-logo";
@@ -22,6 +22,24 @@ describe("email templates", () => {
     expect(html).toContain("#252525");
     expect(html).toContain("#f3f1eb");
     expect(html).toContain("#a7a39a");
+  });
+
+  test("password-reset template includes OTP code, expiry, and reset link", () => {
+    const html = passwordResetEmailHtml({
+      name: "Alex",
+      code: "482910",
+      expiresMinutes: 15,
+      dashboardUrl: DASHBOARD,
+      logoCid: LOGO_CID,
+    });
+
+    expect(html).toContain("Reset your password");
+    expect(html).toContain("Hi Alex");
+    expect(html).toContain("482910");
+    expect(html).toContain("15 minutes");
+    expect(html).toContain(`href="${DASHBOARD}/reset-password"`);
+    expect(html).toContain(`src="cid:${LOGO_CID}"`);
+    expect(html).toContain("Go to reset page");
   });
 
   test("login template includes sign-in time and inline logo", () => {

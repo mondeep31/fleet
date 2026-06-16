@@ -1,1 +1,1 @@
-export { sendLoginEmail, sendSignupEmail } from "./send";
+export { sendLoginEmail, sendSignupEmail, sendPasswordResetEmail } from "./send";

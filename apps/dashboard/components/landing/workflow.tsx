@@ -3,9 +3,10 @@
 import { motion, useReducedMotion } from "framer-motion";
 
 const steps = [
-  { number: "01", label: "Paste your repository URL" },
-  { number: "02", label: "Fleet deploys your app" },
-  { number: "03", label: "Get a live URL back" },
+  { number: "01", label: "Connect GitHub and pick a repository" },
+  { number: "02", label: "Choose a branch and configure env vars" },
+  { number: "03", label: "Fleet clones, builds, and runs your container" },
+  { number: "04", label: "Open your live URL — redeploy anytime" },
 ] as const;
 
 export function Workflow() {

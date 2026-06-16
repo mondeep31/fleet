@@ -1,7 +1,7 @@
 import { SAILBOAT_PNG_BASE64 } from "@fleet/brand";
 import { getSharedEnv } from "@fleet/config";
 import { getResendClient } from "./client";
-import { loginEmailHtml, signupEmailHtml } from "./templates";
+import { loginEmailHtml, passwordResetEmailHtml, signupEmailHtml } from "./templates";
 
 interface SendSignupEmailParams {
   to: string;
@@ -83,6 +83,31 @@ export async function sendLoginEmail({
     html: loginEmailHtml({
       name,
       loginTime: `${formatLoginTime(loginAt)} UTC`,
+      dashboardUrl: DASHBOARD_URL,
+      logoCid: LOGO_CID,
+    }),
+  });
+}
+
+interface SendPasswordResetEmailParams {
+  to: string;
+  name: string;
+  code: string;
+}
+
+export async function sendPasswordResetEmail({
+  to,
+  name,
+  code,
+}: SendPasswordResetEmailParams): Promise<void> {
+  const { DASHBOARD_URL } = getSharedEnv();
+  await sendEmail({
+    to,
+    subject: "Your Fleet password reset code",
+    html: passwordResetEmailHtml({
+      name,
+      code,
+      expiresMinutes: 15,
       dashboardUrl: DASHBOARD_URL,
       logoCid: LOGO_CID,
     }),

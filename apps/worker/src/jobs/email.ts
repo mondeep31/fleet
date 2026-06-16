@@ -1,4 +1,4 @@
-import { sendLoginEmail, sendSignupEmail } from "@fleet/email";
+import { sendLoginEmail, sendPasswordResetEmail, sendSignupEmail } from "@fleet/email";
 import type { EmailJobPayload } from "@fleet/queue";
 
 export async function handleEmailJob(payload: EmailJobPayload): Promise<void> {
@@ -11,6 +11,13 @@ export async function handleEmailJob(payload: EmailJobPayload): Promise<void> {
         to: payload.to,
         name: payload.name,
         loginAt: payload.loginAt ? new Date(payload.loginAt) : undefined,
+      });
+      break;
+    case "password-reset":
+      await sendPasswordResetEmail({
+        to: payload.to,
+        name: payload.name,
+        code: payload.code,
       });
       break;
     default: {

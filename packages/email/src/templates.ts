@@ -119,6 +119,34 @@ export function signupEmailHtml({
   });
 }
 
+export function passwordResetEmailHtml({
+  name,
+  code,
+  expiresMinutes,
+  dashboardUrl,
+  logoCid,
+}: {
+  name: string;
+  code: string;
+  expiresMinutes: number;
+  dashboardUrl: string;
+  logoCid: string;
+}): string {
+  return emailLayout({
+    preview: "Your Fleet password reset code.",
+    heading: "Reset your password",
+    body: `<p style="margin: 0 0 10px; color: #f3f1eb;">Hi ${name},</p>
+<p style="margin: 0 0 20px;">We received a request to reset your Fleet account password. Use the code below:</p>
+<p style="margin: 0 0 20px; font-size: 32px; font-weight: 700; letter-spacing: 0.18em; font-family: 'Courier New', Courier, monospace; color: #f3f1eb;">${code}</p>
+<p style="margin: 0 0 10px;">This code expires in <span style="color: #f3f1eb; font-weight: 500;">${expiresMinutes} minutes</span>. You have 3 attempts before the code is invalidated.</p>
+<p style="margin: 0;">If you did not request a password reset, you can ignore this email — your password will not change.</p>`,
+    ctaLabel: "Go to reset page",
+    ctaUrl: `${dashboardUrl}/reset-password`,
+    dashboardUrl,
+    logoCid,
+  });
+}
+
 export function loginEmailHtml({
   name,
   loginTime,

@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +20,12 @@ const loginSchema = z.object({
 
 type LoginForm = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+export default function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string }>;
+}) {
+  const { reset } = use(searchParams);
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [error, setError] = useState<string | null>(null);
@@ -84,9 +90,17 @@ export default function LoginPage() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[var(--text-secondary)]">
-            Password
-          </Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password" className="text-[var(--text-secondary)]">
+              Password
+            </Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-[var(--text-tertiary)] underline underline-offset-4 hover:text-[var(--text-secondary)] transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Input
             id="password"
             type="password"
@@ -102,6 +116,12 @@ export default function LoginPage() {
             </p>
           )}
         </div>
+
+        {reset === "1" && (
+          <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-400">
+            Password updated. Sign in with your new password.
+          </p>
+        )}
 
         {error && (
           <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">

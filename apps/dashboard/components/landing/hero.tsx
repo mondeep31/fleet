@@ -19,6 +19,13 @@ function staticReveal() {
   };
 }
 
+function scrollToSection(id: string, reduceMotion: boolean | null) {
+  document.getElementById(id)?.scrollIntoView({
+    behavior: reduceMotion ? "auto" : "smooth",
+    block: "start",
+  });
+}
+
 export function Hero() {
   const reduceMotion = useReducedMotion();
   const mo = reduceMotion ? staticReveal : fadeUp;
@@ -44,24 +51,25 @@ export function Hero() {
           {...mo(0)}
           className="mb-6 font-mono text-[10px] tracking-[0.22em] text-[var(--text-secondary)] uppercase"
         >
-          Deploy your apps
+          Self-hosted deployment
         </motion.p>
 
         <motion.h1
           {...mo(0.12)}
           className="text-balance text-5xl font-semibold tracking-tight text-[var(--text-primary)] sm:text-6xl lg:text-7xl"
         >
-          Making deployment easy.
+          From GitHub repo
           <br />
-          One click deployment.
+          to live URL.
         </motion.h1>
 
         <motion.p
           {...mo(0.26)}
-          className="mx-auto mt-6 max-w-[480px] text-balance text-base leading-relaxed text-[var(--text-secondary)]"
+          className="mx-auto mt-6 max-w-[520px] text-balance text-base leading-relaxed text-[var(--text-secondary)]"
         >
-          Paste a repository link. Fleet deploys it and gives you a live URL you
-          can open and share.
+          Connect GitHub, pick a repository and branch, and Fleet builds your
+          Docker image and ships a stable URL — with env vars, build logs, and
+          one-click redeploys.
         </motion.p>
 
         <motion.div
@@ -77,6 +85,10 @@ export function Hero() {
           <a
             href="#how-it-works"
             className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+            onClick={(event) => {
+              event.preventDefault();
+              scrollToSection("how-it-works", reduceMotion);
+            }}
           >
             How it works ↓
           </a>

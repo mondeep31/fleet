@@ -94,6 +94,18 @@ export const api = {
       body: JSON.stringify({ name, email, password }),
     }, false),
 
+  requestPasswordReset: (email: string) =>
+    request<null>("/v1/password-reset/request", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    }, false),
+
+  confirmPasswordReset: (email: string, code: string, newPassword: string) =>
+    request<null>("/v1/password-reset/confirm", {
+      method: "POST",
+      body: JSON.stringify({ email, code, newPassword }),
+    }, false),
+
   getUser: () =>
     request<{ userId: string; name: string; email: string }>("/api/v1/users"),
 

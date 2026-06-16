@@ -94,20 +94,23 @@ const figs = [
   {
     label: "FIG 0.1",
     Illustration: Fig01,
-    title: "Submit a URL",
-    description: "Paste a link to your repository. That is all you need to start.",
+    title: "Connect GitHub",
+    description:
+      "Link your account once. Browse and search your repos — no copying URLs.",
   },
   {
     label: "FIG 0.2",
     Illustration: Fig02,
-    title: "Fleet deploys it",
-    description: "Fleet takes it from there and gets your app running.",
+    title: "Configure & deploy",
+    description:
+      "Pick a branch, confirm the Dockerfile, set env vars, and create the project.",
   },
   {
     label: "FIG 0.3",
     Illustration: Fig03,
-    title: "Get your URL",
-    description: "When it is ready, you get a live URL back. Open it, share it, done.",
+    title: "Track & redeploy",
+    description:
+      "Watch build logs stream in, open your live URL, and redeploy whenever you need to.",
   },
 ] as const;
 

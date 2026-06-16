@@ -1,8 +1,17 @@
 import { Router } from "express";
 import { validate } from "@fleet/api-middleware";
-import { loginBodySchema } from "../validators/user";
-import { loginController, createUserController } from "../controller/user";
-import { createUserBodySchema } from "../validators/user";
+import {
+  loginBodySchema,
+  createUserBodySchema,
+  passwordResetRequestSchema,
+  passwordResetConfirmSchema,
+} from "../validators/user";
+import {
+  loginController,
+  createUserController,
+  requestPasswordResetController,
+  confirmPasswordResetController,
+} from "../controller/user";
 
 const router = Router();
 
@@ -11,6 +20,16 @@ router.post(
   "/signup",
   validate({ body: createUserBodySchema }),
   createUserController,
+);
+router.post(
+  "/password-reset/request",
+  validate({ body: passwordResetRequestSchema }),
+  requestPasswordResetController,
+);
+router.post(
+  "/password-reset/confirm",
+  validate({ body: passwordResetConfirmSchema }),
+  confirmPasswordResetController,
 );
 
 export default router;

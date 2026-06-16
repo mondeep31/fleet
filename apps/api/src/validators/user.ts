@@ -67,6 +67,19 @@ export const loginBodySchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
+export const passwordResetRequestSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Invalid email address"),
+});
+
+export const passwordResetConfirmSchema = z.object({
+  email: z.string().trim().toLowerCase().email("Invalid email address"),
+  code: z
+    .string()
+    .trim()
+    .regex(/^\d{6}$/, "Code must be 6 digits"),
+  newPassword: z.string().min(8, "Password must be at least 8 characters"),
+});
+
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;
@@ -74,3 +87,5 @@ export type ProjectVariablesBody = z.infer<typeof projectVariablesBodySchema>;
 export type ProjectIdParams = z.infer<typeof projectIdParamsSchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;
 export type RedeployProjectBody = z.infer<typeof createProjectBodySchema>;
+export type PasswordResetRequestBody = z.infer<typeof passwordResetRequestSchema>;
+export type PasswordResetConfirmBody = z.infer<typeof passwordResetConfirmSchema>;
