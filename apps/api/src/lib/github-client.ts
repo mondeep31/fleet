@@ -42,7 +42,13 @@ export interface GitHubBranch {
 
 export interface DockerfileResult {
   ok: true;
+  buildMethod: "dockerfile";
   dockerfilePath: string;
+}
+
+export interface RailpackResult {
+  ok: true;
+  buildMethod: "railpack";
 }
 
 export interface DockerfileMissing {
@@ -50,7 +56,7 @@ export interface DockerfileMissing {
   reason: string;
 }
 
-export type DockerfileCheckResult = DockerfileResult | DockerfileMissing;
+export type DockerfileCheckResult = DockerfileResult | RailpackResult | DockerfileMissing;
 
 function authHeaders(token: string): Record<string, string> {
   return {
@@ -230,7 +236,7 @@ export async function getRootDockerfile(
     );
 
     if (response.status === 200) {
-      return { ok: true, dockerfilePath: name };
+      return { ok: true, buildMethod: "dockerfile", dockerfilePath: name };
     }
 
     if (response.status !== 404) {
@@ -242,10 +248,7 @@ export async function getRootDockerfile(
     }
   }
 
-  return {
-    ok: false,
-    reason: `No Dockerfile found at the repository root on branch "${branch}". Add a Dockerfile or dockerfile to deploy.`,
-  };
+  return { ok: true, buildMethod: "railpack" };
 }
 
 /** Best-effort token revocation — caller should not throw on failure. */

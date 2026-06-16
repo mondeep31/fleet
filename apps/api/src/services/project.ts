@@ -74,13 +74,15 @@ export const createProject = async ({
   userId,
   variables = [],
 }: CreateProjectParams) => {
-  // Gate: for GitHub repos, verify a Dockerfile exists on the selected branch.
+  // Pre-flight check for GitHub repos: validates the repo is accessible and
+  // determines the build method (Dockerfile or railpack auto-detection).
+  // Only fails on actual GitHub API errors, not on missing Dockerfiles.
   const githubMatch = repoUrl.match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/|$)/);
   if (githubMatch) {
     const [, owner, repo] = githubMatch;
     const validation = await validateRepoDockerfile(userId, owner, repo, branch);
     if (!validation.ok) {
-      throw new AppError(400, validation.reason, "DOCKERFILE_NOT_FOUND");
+      throw new AppError(400, validation.reason, "REPO_VALIDATION_FAILED");
     }
   }
 

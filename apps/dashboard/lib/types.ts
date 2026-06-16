@@ -53,6 +53,7 @@ export interface GitHubBranch {
 
 export interface DockerfileValidation {
   ok: boolean;
+  buildMethod?: "dockerfile" | "railpack";
   dockerfilePath?: string;
   reason?: string;
 }

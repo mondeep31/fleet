@@ -14,6 +14,7 @@ import {
 import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { getDecryptedProjectVariables } from "../services/project-variable";
 import { buildImage } from "../steps/build";
+import { buildRailpack } from "../steps/build-railpack";
 import { cloneRepo } from "../steps/clone";
 import {
   attachContainerToTraefik,
@@ -77,26 +78,32 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     await exitIfStopped(deploymentId);
 
     const dockerfile = await detectDockerfile(cloneDir);
-    if (!dockerfile.found) {
-      throw new Error(
-        "No Dockerfile found at repository root. Add a Dockerfile or dockerfile to deploy.",
-      );
-    }
-    publishLog(
-      deploymentId,
-      `Dockerfile found: ${dockerfile.relativePath}`,
-      "pipeline",
-    );
 
     await updateDeployment(deploymentId, { status: "building" });
-    publishLog(deploymentId, "Building Docker image...", "pipeline");
     const imageTag = `fleet/${deployment.projectId}:${deploymentId}`;
-    await buildImage({
-      cloneDir,
-      imageTag,
-      deploymentId,
-      dockerfile: dockerfile.relativePath,
-    });
+
+    if (dockerfile.found) {
+      publishLog(
+        deploymentId,
+        `Dockerfile found: ${dockerfile.relativePath}`,
+        "pipeline",
+      );
+      publishLog(deploymentId, "Building Docker image...", "pipeline");
+      await buildImage({
+        cloneDir,
+        imageTag,
+        deploymentId,
+        dockerfile: dockerfile.relativePath,
+      });
+    } else {
+      publishLog(
+        deploymentId,
+        "No Dockerfile found, using railpack for auto-detection...",
+        "pipeline",
+      );
+      await buildRailpack({ cloneDir, imageTag, deploymentId });
+    }
+
     await updateDeployment(deploymentId, { imageTag });
     publishLog(deploymentId, `Build complete: ${imageTag}`, "pipeline");
     console.log(`built ${deploymentId} → ${imageTag}`);

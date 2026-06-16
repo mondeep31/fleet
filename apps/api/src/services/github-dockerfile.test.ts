@@ -63,7 +63,11 @@ describe("getRootDockerfile", () => {
   test("returns ok when Dockerfile exists", async () => {
     mockAxiosGet({ "contents/Dockerfile": 200 });
     const result = await getRootDockerfile(TOKEN, OWNER, REPO, BRANCH);
-    expect(result).toEqual({ ok: true, dockerfilePath: "Dockerfile" });
+    expect(result).toEqual({
+      ok: true,
+      buildMethod: "dockerfile",
+      dockerfilePath: "Dockerfile",
+    });
   });
 
   test("falls back to lowercase dockerfile when Dockerfile is absent", async () => {
@@ -82,23 +86,27 @@ describe("getRootDockerfile", () => {
       };
     });
     const result = await getRootDockerfile(TOKEN, OWNER, REPO, BRANCH);
-    expect(result).toEqual({ ok: true, dockerfilePath: "dockerfile" });
+    expect(result).toEqual({
+      ok: true,
+      buildMethod: "dockerfile",
+      dockerfilePath: "dockerfile",
+    });
   });
 
   test("Dockerfile wins over dockerfile when both exist", async () => {
     mockAxiosGet({ "contents/Dockerfile": 200, "contents/dockerfile": 200 });
     const result = await getRootDockerfile(TOKEN, OWNER, REPO, BRANCH);
-    expect(result).toEqual({ ok: true, dockerfilePath: "Dockerfile" });
+    expect(result).toEqual({
+      ok: true,
+      buildMethod: "dockerfile",
+      dockerfilePath: "Dockerfile",
+    });
   });
 
-  test("returns ok: false when neither file exists", async () => {
+  test("returns railpack fallback when neither file exists", async () => {
     mockAxiosGet({});
     const result = await getRootDockerfile(TOKEN, OWNER, REPO, BRANCH);
-    expect(result.ok).toBe(false);
-    if (!result.ok) {
-      expect(result.reason).toMatch(/No Dockerfile found/);
-      expect(result.reason).toContain(BRANCH);
-    }
+    expect(result).toEqual({ ok: true, buildMethod: "railpack" });
   });
 
   test("returns ok: false with API error message on unexpected status", async () => {

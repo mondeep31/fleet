@@ -1,7 +1,7 @@
 /**
  * Tests for the project create service:
  * - branch is persisted on the Project document
- * - create is blocked (400) when Dockerfile validation fails for a GitHub repo
+ * - create is blocked (400) when GitHub repo validation fails
  * - non-GitHub repos skip validation
  */
 import { describe, test, expect, vi, beforeEach } from "vitest";
@@ -87,6 +87,7 @@ describe("createProject", () => {
     );
     mockValidateRepoDockerfile.mockResolvedValue({
       ok: true,
+      buildMethod: "dockerfile",
       dockerfilePath: "Dockerfile",
     });
   });
@@ -104,15 +105,26 @@ describe("createProject", () => {
     expect("id" in project).toBe(false);
   });
 
-  test("blocks create with AppError when Dockerfile is missing on GitHub repo", async () => {
+  test("allows create when no Dockerfile (railpack fallback)", async () => {
+    mockValidateRepoDockerfile.mockResolvedValue({
+      ok: true,
+      buildMethod: "railpack",
+    });
+
+    const project = await createProject(BASE);
+    expect(project.projectId).toBe("proj-abc");
+    expect(mockProjectCreate).toHaveBeenCalled();
+  });
+
+  test("blocks create with AppError when GitHub validation fails", async () => {
     mockValidateRepoDockerfile.mockResolvedValue({
       ok: false,
-      reason: "No Dockerfile found at the repository root on branch \"feat/new-ui\"",
+      reason: "GitHub API error 403: rate limit exceeded",
     });
 
     await expect(createProject(BASE)).rejects.toMatchObject({
       status: 400,
-      code: "DOCKERFILE_NOT_FOUND",
+      code: "REPO_VALIDATION_FAILED",
     });
   });
 

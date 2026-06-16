@@ -433,21 +433,26 @@ export default function NewProjectPage() {
               </div>
             )}
 
-            {/* Dockerfile validation status */}
+            {/* Build method detection status */}
             {selectedRepo && selectedBranch && (
               <div className="rounded-lg border border-border px-4 py-3 text-sm">
                 {validating ? (
                   <span className="flex items-center gap-2 text-muted-foreground">
                     <SpinnerGap className="size-4 animate-spin" />
-                    Checking Dockerfile…
+                    Checking build method…
                   </span>
-                ) : validation?.ok ? (
+                ) : validation?.ok && validation.buildMethod === "dockerfile" ? (
                   <span className="flex items-center gap-2 text-green-500">
                     <CheckCircle className="size-4" weight="fill" />
                     Dockerfile found at{" "}
                     <code className="font-mono text-xs">{validation.dockerfilePath}</code>
                   </span>
-                ) : validation ? (
+                ) : validation?.ok && validation.buildMethod === "railpack" ? (
+                  <span className="flex items-center gap-2 text-muted-foreground">
+                    <CheckCircle className="size-4" weight="fill" />
+                    No Dockerfile — will use railpack for auto-detection
+                  </span>
+                ) : validation && !validation.ok ? (
                   <span className="flex items-center gap-2 text-destructive">
                     <XCircle className="size-4" weight="fill" />
                     {validation.reason}
