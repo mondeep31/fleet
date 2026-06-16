@@ -7,6 +7,7 @@ import { errorHandler, notFoundHandler } from "@fleet/api-middleware";
 import { authMiddleware } from "@fleet/auth";
 import router from "./routes";
 import unauthRoutes from "./routes/unauth";
+import { githubCallbackController } from "./controller/github-integration";
 
 const { PORT } = getEnv();
 
@@ -22,6 +23,8 @@ app.get("/health", (_, res) => {
 });
 app.get("/ping", ping);
 app.use("/v1", unauthRoutes);
+// GitHub OAuth callback is unauthenticated — state nonce ties it to a userId.
+app.get("/api/v1/integrations/github/callback", githubCallbackController);
 app.use("/api/v1", authMiddleware, router);
 app.use(notFoundHandler);
 app.use(errorHandler);

@@ -31,6 +31,11 @@ const apiEnvSchema = sharedEnvSchema.extend({
   AGENT_TOKEN: z.string().min(1),
   PORT: z.coerce.number().int().min(1).max(65535).default(3010),
   API_URL: z.string().min(1).default("http://localhost:3010"),
+  // GitHub OAuth App credentials for connected integration (not login).
+  GITHUB_CLIENT_ID: z.string().min(1),
+  GITHUB_CLIENT_SECRET: z.string().min(1),
+  GITHUB_OAUTH_CALLBACK_URL: z.string().url(),
+  GITHUB_OAUTH_SUCCESS_REDIRECT: z.string().url(),
 });
 
 export type SharedEnv = z.infer<typeof sharedEnvSchema>;

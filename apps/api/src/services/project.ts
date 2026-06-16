@@ -7,10 +7,12 @@ import {
   stopDeployment,
 } from "./deployment";
 import { saveProjectVariables, type VariableInput } from "./project-variable";
+import { validateRepoDockerfile } from "./github-repos";
 
 interface CreateProjectParams {
   name: string;
   repoUrl: string;
+  branch: string;
   userId: string;
   variables?: VariableInput[];
 }
@@ -23,6 +25,7 @@ interface ProjectResponse {
   projectId: string;
   name: string;
   repoUrl: string;
+  branch: string;
   userId: string;
   subdomain: string;
   status: string;
@@ -59,15 +62,27 @@ export async function assertProjectOwnership(projectId: string, userId: string) 
 export const createProject = async ({
   name,
   repoUrl,
+  branch,
   userId,
   variables = [],
 }: CreateProjectParams) => {
+  // Gate: for GitHub repos, verify a Dockerfile exists on the selected branch.
+  const githubMatch = repoUrl.match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?(?:\/|$)/);
+  if (githubMatch) {
+    const [, owner, repo] = githubMatch;
+    const validation = await validateRepoDockerfile(userId, owner, repo, branch);
+    if (!validation.ok) {
+      throw new AppError(400, validation.reason, "DOCKERFILE_NOT_FOUND");
+    }
+  }
+
   const projectId = crypto.randomUUID();
   const subdomain = buildProjectDeploySubdomain(projectId);
 
   const project = await Project.create({
     name,
     repoUrl,
+    branch,
     userId,
     projectId,
     subdomain,
@@ -78,9 +93,10 @@ export const createProject = async ({
   }
 
   return {
-    id: project.projectId,
+    projectId: project.projectId,
     name: project.name,
     repoUrl: project.repoUrl,
+    branch: project.branch,
     userId: project.userId,
     subdomain: project.subdomain,
     status: project.status ?? "active",
@@ -103,6 +119,7 @@ export const getAllProjectsForAUser = async ({
         projectId: project.projectId,
         name: project.name,
         repoUrl: project.repoUrl,
+        branch: project.branch ?? "main",
         userId: project.userId,
         subdomain: project.subdomain,
         status: project.status ?? "active",
@@ -172,5 +189,6 @@ export async function startProjectDeployment(projectId: string, userId: string) 
   return startDeploy({
     projectId: project.projectId,
     repoUrl: project.repoUrl,
+    branch: project.branch ?? "main",
   });
 }

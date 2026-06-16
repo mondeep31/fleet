@@ -25,6 +25,11 @@ const projectSchema = new mongoose.Schema({
     unique: true,
     index: true,
   },
+  branch: {
+    type: String,
+    required: true,
+    default: "main",
+  },
   runtime: {
     type: String,
   },

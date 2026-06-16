@@ -21,6 +21,7 @@ export const projectVariablesBodySchema = z
 export const createProjectBodySchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
   repoUrl: z.string().trim().url("Invalid repository URL"),
+  branch: z.string().trim().min(1, "Branch is required"),
   variables: projectVariablesBodySchema.optional().default([]),
 });
 
@@ -50,3 +51,4 @@ export type CreateProjectBody = z.infer<typeof createProjectBodySchema>;
 export type ProjectVariablesBody = z.infer<typeof projectVariablesBodySchema>;
 export type ProjectIdParams = z.infer<typeof projectIdParamsSchema>;
 export type LoginBody = z.infer<typeof loginBodySchema>;
+export type RedeployProjectBody = z.infer<typeof createProjectBodySchema>;

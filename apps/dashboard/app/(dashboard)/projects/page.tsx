@@ -1,13 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { MagnifyingGlass, RocketLaunch } from "@phosphor-icons/react";
+import Link from "next/link";
+import { MagnifyingGlass, Plus, RocketLaunch } from "@phosphor-icons/react";
 import { Header } from "@/components/layout/header";
-import { NewProjectDialog } from "@/components/projects/new-project-dialog";
 import { ProjectCard } from "@/components/projects/project-card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/use-projects";
+
+function NewProjectButton() {
+  return (
+    <Button render={<Link href="/projects/new" />} nativeButton={false}>
+      <Plus data-icon="inline-start" />
+      New project
+    </Button>
+  );
+}
 
 export default function ProjectsPage() {
   const { projects, isLoading, error, mutate } = useProjects();
@@ -42,7 +52,7 @@ export default function ProjectsPage() {
             className="pl-9"
           />
         </div>
-        <NewProjectDialog onCreated={() => mutate()} />
+        <NewProjectButton />
       </div>
 
       <div className="flex-1 px-4 py-4 md:px-6 md:py-6">
@@ -83,7 +93,7 @@ export default function ProjectsPage() {
               infrastructure.
             </p>
             <div className="mt-6">
-              <NewProjectDialog onCreated={() => mutate()} />
+              <NewProjectButton />
             </div>
           </div>
         )}

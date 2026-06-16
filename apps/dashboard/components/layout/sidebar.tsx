@@ -8,6 +8,7 @@ import {
   CaretRight,
   Folder,
   Gear,
+  Plugs,
   SignOut,
   Sidebar as SidebarIcon,
   X,
@@ -18,7 +19,10 @@ import { FleetLogo } from "@/components/brand/fleet-logo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
-const navItems = [{ href: "/projects", label: "Projects", icon: Folder }];
+const navItems = [
+  { href: "/projects", label: "Projects", icon: Folder },
+  { href: "/connections", label: "Connections", icon: Plugs },
+];
 
 function AccountMenu({
   user,
@@ -171,7 +175,7 @@ function MobileSidebarOverlay({
 
         <div className="pb-3">
           <Link
-            href="/projects"
+            href="/connections"
             onClick={() => onOpenChange(false)}
             className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
           >
@@ -234,7 +238,7 @@ export function Sidebar() {
 
       <div className="p-3">
         <Link
-          href="/projects"
+          href="/connections"
           className="mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
         >
           <Gear className="size-4" />

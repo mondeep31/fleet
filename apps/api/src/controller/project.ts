@@ -14,12 +14,13 @@ import {
 import type { CreateProjectBody, ProjectVariablesBody } from "../validators/user";
 
 const createProjectController: RequestHandler = async (req, res) => {
-  const { name, repoUrl, variables } = req.body as CreateProjectBody;
+  const { name, repoUrl, branch, variables } = req.body as CreateProjectBody;
   const userId = req.user!.userId;
-  const project = await createProject({ name, repoUrl, userId, variables });
+  const project = await createProject({ name, repoUrl, branch, userId, variables });
   const deployment = await startDeploy({
-    projectId: project.id,
+    projectId: project.projectId,
     repoUrl: project.repoUrl,
+    branch: project.branch,
   });
   res.status(201).json({
     message: "Project created successfully",

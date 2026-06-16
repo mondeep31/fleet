@@ -31,12 +31,39 @@ export interface AuthUser {
   token: string;
 }
 
+export interface GitHubStatus {
+  connected: boolean;
+  username?: string;
+}
+
+export interface GitHubRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  owner: { login: string };
+  private: boolean;
+  description: string | null;
+  default_branch: string;
+  updated_at: string;
+}
+
+export interface GitHubBranch {
+  name: string;
+}
+
+export interface DockerfileValidation {
+  ok: boolean;
+  dockerfilePath?: string;
+  reason?: string;
+}
+
 export interface Project {
   projectId: string;
   name: string;
   repoUrl: string;
   userId: string;
   subdomain: string;
+  branch: string;
   status?: ProjectStatus;
 }
 

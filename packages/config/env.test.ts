@@ -9,6 +9,10 @@ const REQUIRED_ENV = {
   GITHUB_WEBHOOK_SECRET: "github-secret",
   AGENT_TOKEN: "agent-token",
   FLEET_SECRETS_ENCRYPTION_KEY: randomBytes(32).toString("base64"),
+  GITHUB_CLIENT_ID: "test-client-id",
+  GITHUB_CLIENT_SECRET: "test-client-secret",
+  GITHUB_OAUTH_CALLBACK_URL: "http://localhost:3010/api/v1/integrations/github/callback",
+  GITHUB_OAUTH_SUCCESS_REDIRECT: "http://localhost:3000/connections",
 } as const;
 
 const ORIGINAL_ENV = { ...process.env };

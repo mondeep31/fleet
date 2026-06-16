@@ -1,0 +1,137 @@
+/**
+ * Tests for the project create service:
+ * - branch is persisted on the Project document
+ * - create is blocked (400) when Dockerfile validation fails for a GitHub repo
+ * - non-GitHub repos skip validation
+ */
+import { describe, test, expect, vi, beforeEach } from "vitest";
+
+// ---------------------------------------------------------------------------
+// Mocks
+// ---------------------------------------------------------------------------
+
+const mockProjectCreate = vi.fn();
+const mockValidateRepoDockerfile = vi.fn();
+const mockSaveProjectVariables = vi.fn();
+
+vi.mock("@fleet/db", () => ({
+  Project: {
+    create: (...args: unknown[]) => mockProjectCreate(...args),
+    find: vi.fn().mockReturnValue({ lean: () => Promise.resolve([]) }),
+  },
+}));
+
+vi.mock("@fleet/config", () => ({
+  buildProjectDeploySubdomain: (id: string) => `depl-fleet-${id}`,
+  getSharedEnv: () => ({ FLEET_SECRETS_ENCRYPTION_KEY: "a".repeat(44) }),
+}));
+
+vi.mock("@fleet/errors", () => ({
+  AppError: class extends Error {
+    constructor(
+      public status: number,
+      message: string,
+      public code: string,
+    ) {
+      super(message);
+    }
+  },
+}));
+
+// Mock the dockerfile validation in github-repos service
+vi.mock("./github-repos", () => ({
+  validateRepoDockerfile: (...args: unknown[]) => mockValidateRepoDockerfile(...args),
+}));
+
+// Stub out deployment and variable side effects
+vi.mock("./deployment", () => ({
+  startDeploy: vi.fn().mockResolvedValue({ deploymentId: "d1", status: "queued" }),
+  listDeploymentsByProjectId: vi.fn().mockResolvedValue([]),
+  stopDeployment: vi.fn(),
+}));
+
+vi.mock("./project-variable", () => ({
+  saveProjectVariables: (...args: unknown[]) => mockSaveProjectVariables(...args),
+}));
+
+// ---------------------------------------------------------------------------
+// Subject
+// ---------------------------------------------------------------------------
+
+import { createProject } from "./project";
+
+// ---------------------------------------------------------------------------
+// Tests
+// ---------------------------------------------------------------------------
+
+describe("createProject", () => {
+  const BASE = {
+    name: "my-app",
+    repoUrl: "https://github.com/acme/app",
+    branch: "feat/new-ui",
+    userId: "user-1",
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockProjectCreate.mockImplementation((doc: Record<string, unknown>) =>
+      Promise.resolve({
+        projectId: "proj-abc",
+        name: doc.name,
+        repoUrl: doc.repoUrl,
+        branch: doc.branch,
+        userId: doc.userId,
+        subdomain: doc.subdomain,
+        status: "active",
+      }),
+    );
+    mockValidateRepoDockerfile.mockResolvedValue({
+      ok: true,
+      dockerfilePath: "Dockerfile",
+    });
+  });
+
+  test("persists the supplied branch on the Project document", async () => {
+    const project = await createProject(BASE);
+    const [doc] = mockProjectCreate.mock.calls[0] as [Record<string, unknown>][];
+    expect(doc.branch).toBe("feat/new-ui");
+    expect(project.branch).toBe("feat/new-ui");
+  });
+
+  test("returns projectId (not id) for downstream deploy kickoff", async () => {
+    const project = await createProject(BASE);
+    expect(project.projectId).toBe("proj-abc");
+    expect("id" in project).toBe(false);
+  });
+
+  test("blocks create with AppError when Dockerfile is missing on GitHub repo", async () => {
+    mockValidateRepoDockerfile.mockResolvedValue({
+      ok: false,
+      reason: "No Dockerfile found at the repository root on branch \"feat/new-ui\"",
+    });
+
+    await expect(createProject(BASE)).rejects.toMatchObject({
+      status: 400,
+      code: "DOCKERFILE_NOT_FOUND",
+    });
+  });
+
+  test("skips Dockerfile check for non-GitHub repo URLs", async () => {
+    const project = await createProject({
+      ...BASE,
+      repoUrl: "https://gitlab.com/acme/app",
+    });
+    expect(mockValidateRepoDockerfile).not.toHaveBeenCalled();
+    expect(project.repoUrl).toBe("https://gitlab.com/acme/app");
+  });
+
+  test("calls validateRepoDockerfile with correct owner/repo/branch", async () => {
+    await createProject(BASE);
+    expect(mockValidateRepoDockerfile).toHaveBeenCalledWith(
+      "user-1",
+      "acme",
+      "app",
+      "feat/new-ui",
+    );
+  });
+});

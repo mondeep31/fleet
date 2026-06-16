@@ -4,7 +4,11 @@ import type {
   ApiResponse,
   AuthUser,
   Deployment,
+  DockerfileValidation,
   EnvVariableRow,
+  GitHubBranch,
+  GitHubRepo,
+  GitHubStatus,
   Project,
   ProjectVariable,
   ProjectWithLatestDeploy,
@@ -92,14 +96,48 @@ export const api = {
   getProjects: () =>
     request<{ projects: Project[] }>("/api/v1/projects"),
 
-  createProject: (name: string, repoUrl: string, variables: EnvVariableRow[] = []) =>
+  createProject: (
+    name: string,
+    repoUrl: string,
+    branch: string,
+    variables: EnvVariableRow[] = [],
+  ) =>
     request<Project & { deploymentId: string; deploymentStatus: string }>(
       "/api/v1/projects",
       {
         method: "POST",
-        body: JSON.stringify({ name, repoUrl, variables }),
+        body: JSON.stringify({ name, repoUrl, branch, variables }),
       },
     ),
+
+  getGitHubStatus: () =>
+    request<GitHubStatus>("/api/v1/integrations/github/status"),
+
+  disconnectGitHub: () =>
+    request<null>("/api/v1/integrations/github", { method: "DELETE" }),
+
+  listGitHubRepos: (params?: { page?: number; per_page?: number; q?: string }) => {
+    const qs = new URLSearchParams();
+    if (params?.page) qs.set("page", String(params.page));
+    if (params?.per_page) qs.set("per_page", String(params.per_page));
+    if (params?.q) qs.set("q", params.q);
+    const query = qs.toString() ? `?${qs.toString()}` : "";
+    return request<GitHubRepo[]>(`/api/v1/integrations/github/repos${query}`);
+  },
+
+  getGitHubRepo: (owner: string, repo: string) =>
+    request<GitHubRepo>(`/api/v1/integrations/github/repos/${owner}/${repo}`),
+
+  listGitHubBranches: (owner: string, repo: string) =>
+    request<GitHubBranch[]>(
+      `/api/v1/integrations/github/repos/${owner}/${repo}/branches`,
+    ),
+
+  validateGitHubRepo: (owner: string, repo: string, branch: string) =>
+    request<DockerfileValidation>("/api/v1/integrations/github/repos/validate", {
+      method: "POST",
+      body: JSON.stringify({ owner, repo, branch }),
+    }),
 
   getProjectVariables: (projectId: string) =>
     request<{ variables: ProjectVariable[] }>(

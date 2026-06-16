@@ -20,6 +20,7 @@ export interface Project {
   repoUrl: string;
   userId: string;
   subdomain: string;
+  branch: string;
   status?: ProjectStatus;
   runtime?: string;
 }
