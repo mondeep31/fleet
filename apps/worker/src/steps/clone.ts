@@ -2,7 +2,7 @@ import { dirname } from "node:path";
 import fs from "fs-extra";
 import simpleGit from "simple-git";
 import { getCloneDir } from "../lib/paths";
-import { redactSecrets } from "../lib/github-repo";
+import { buildAuthenticatedGitHubRepoUrl, redactSecrets } from "../lib/github-repo";
 
 interface CloneRepoParams {
   repoUrl: string;
@@ -31,16 +31,18 @@ export async function cloneRepo({
 
   const git = simpleGit().env("GIT_TERMINAL_PROMPT", "0");
 
+  const cloneUrl = githubToken
+    ? buildAuthenticatedGitHubRepoUrl(repoUrl, githubToken)
+    : repoUrl;
   const cloneArgs = ["--branch", branch, "--single-branch"];
-  if (githubToken) {
-    cloneArgs.push("-c", `http.extraHeader=Authorization: Bearer ${githubToken}`);
-  }
 
   try {
-    await git.clone(repoUrl, cloneDir, cloneArgs);
+    await git.clone(cloneUrl, cloneDir, cloneArgs);
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
-    const redacted = githubToken ? redactSecrets(message, githubToken) : message;
+    const redacted = githubToken
+      ? redactSecrets(message, githubToken, cloneUrl)
+      : message;
     throw new Error(redacted);
   }
 

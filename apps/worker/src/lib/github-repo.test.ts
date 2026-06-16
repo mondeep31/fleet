@@ -1,5 +1,9 @@
 import { describe, test, expect } from "vitest";
-import { isGitHubRepoUrl, redactSecrets } from "./github-repo";
+import {
+  buildAuthenticatedGitHubRepoUrl,
+  isGitHubRepoUrl,
+  redactSecrets,
+} from "./github-repo";
 
 describe("isGitHubRepoUrl", () => {
   test("returns true for https github.com URL", () => {
@@ -20,6 +24,23 @@ describe("isGitHubRepoUrl", () => {
 
   test("returns false for an invalid URL", () => {
     expect(isGitHubRepoUrl("not-a-url")).toBe(false);
+  });
+});
+
+describe("buildAuthenticatedGitHubRepoUrl", () => {
+  test("embeds token as x-access-token userinfo", () => {
+    expect(
+      buildAuthenticatedGitHubRepoUrl("https://github.com/acme/app", "ghp_secret"),
+    ).toBe("https://x-access-token:ghp_secret@github.com/acme/app");
+  });
+
+  test("preserves .git suffix and path", () => {
+    expect(
+      buildAuthenticatedGitHubRepoUrl(
+        "https://github.com/acme/app.git",
+        "ghp_secret",
+      ),
+    ).toBe("https://x-access-token:ghp_secret@github.com/acme/app.git");
   });
 });
 

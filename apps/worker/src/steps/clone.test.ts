@@ -54,7 +54,7 @@ describe("cloneRepo", () => {
     expect(result.commitSha).toBe("abc1234def5678");
   });
 
-  test("includes Bearer auth header when githubToken is provided", async () => {
+  test("uses x-access-token authenticated URL when githubToken is provided", async () => {
     await cloneRepo({
       repoUrl: "https://github.com/acme/private-app",
       deploymentId: "dep2",
@@ -63,15 +63,9 @@ describe("cloneRepo", () => {
     });
 
     expect(mockClone).toHaveBeenCalledWith(
-      "https://github.com/acme/private-app",
+      "https://x-access-token:ghp_testtoken@github.com/acme/private-app",
       "/tmp/fleet-builds/dep2",
-      [
-        "--branch",
-        "main",
-        "--single-branch",
-        "-c",
-        "http.extraHeader=Authorization: Bearer ghp_testtoken",
-      ],
+      ["--branch", "main", "--single-branch"],
     );
   });
 
