@@ -142,9 +142,10 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 When a GitHub project is created Fleet automatically registers a push webhook on the repo via the user's OAuth token. On every `git push` to the tracked branch, GitHub delivers a `POST /webhooks/github` to the API which verifies the `X-Hub-Signature-256` signature, matches the payload to active projects, and enqueues a new deployment.
 
 **Requirements:**
-- `API_URL` must be a publicly reachable HTTPS URL in production (Fleet uses `{API_URL}/webhooks/github` as the webhook delivery URL).
+- `API_URL` must be a publicly reachable HTTPS URL in production (Fleet uses `{API_URL}/webhooks/github` as the webhook delivery URL). When the dashboard and API share a host (e.g. `https://fleet.mondeep.xyz`), the dashboard rewrites `/webhooks/*` to the API on port 3010.
 - `GITHUB_WEBHOOK_SECRET` must match the secret used when the hook was created.
 - GitHub OAuth must be connected with `admin:repo_hook` scope. If a user connected before this feature shipped, they must **reconnect GitHub** on the Connections page. `GET /api/v1/integrations/github/status` returns `needsReconnect: true` when the stored token lacks the required scope.
+- **Cloudflare:** if webhook deliveries show error 1000 ("DNS points to prohibited IP"), the DNS A record origin must be a public IP — not `127.0.0.1` or a LAN address. Use Cloudflare Tunnel if the host is behind NAT.
 
 **Local dev:** GitHub cannot reach `localhost`. Use [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to expose the API, then set `API_URL` to the tunnel URL and restart the API.
 

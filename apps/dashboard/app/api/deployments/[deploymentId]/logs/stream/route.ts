@@ -1,6 +1,5 @@
 import type { NextRequest } from "next/server";
-
-const API_URL = process.env.API_URL ?? "http://localhost:3010";
+import { apiInternalUrl } from "@/lib/urls";
 
 export async function GET(
   request: NextRequest,
@@ -16,7 +15,7 @@ export async function GET(
   let upstream: Response;
   try {
     upstream = await fetch(
-      `${API_URL}/api/v1/deployments/${deploymentId}/logs/stream`,
+      apiInternalUrl(`/api/v1/deployments/${deploymentId}/logs/stream`),
       {
         headers: { Authorization: authorization },
       },

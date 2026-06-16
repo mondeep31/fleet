@@ -16,6 +16,14 @@ In `app_env/.env` on the server:
 FLEET_APPS_DOMAIN=mondeep.xyz
 FLEET_PUBLIC_URL_SCHEME=https
 FLEET_TRAEFIK_PUBLIC_PORT=
+# Public — used by the API for GitHub webhook registration and OAuth callbacks
+API_URL=https://fleet.mondeep.xyz
+GITHUB_OAUTH_CALLBACK_URL=https://fleet.mondeep.xyz/api-proxy/api/v1/integrations/github/callback
+GITHUB_OAUTH_SUCCESS_REDIRECT=https://fleet.mondeep.xyz/projects
+# Dashboard — used for login redirects and links in emails
+DASHBOARD_URL=https://fleet.mondeep.xyz
+# Loopback — dashboard rewrites and server routes talk to the API directly
+API_INTERNAL_URL=http://127.0.0.1:3010
 ```
 
 Redeploy Fleet after changing env so the dashboard rebuild picks up any related config.
@@ -58,6 +66,10 @@ Cert path: `/etc/letsencrypt/live/mondeep.xyz/fullchain.pem`
 ## 4. nginx
 
 Dashboard block (`fleet.mondeep.xyz` → Next.js `:3000`) — keep your existing config, but point SSL at the wildcard cert above.
+
+Next.js rewrites `/api-proxy/*` and `/webhooks/*` to the API on `:3010`, so set `API_URL=https://fleet.mondeep.xyz` in `app_env/.env`. GitHub webhooks hit `https://fleet.mondeep.xyz/webhooks/github` and are proxied to the API.
+
+**Cloudflare DNS:** the origin IP behind the orange-cloud proxy must be your server's **public** IP. Private IPs (`192.168.x`, `10.x`, `127.0.0.1`) cause Cloudflare error 1000 ("DNS points to prohibited IP") and GitHub deliveries fail before they reach Fleet. If the server is behind NAT, use a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) instead of an A record to a private address.
 
 Deploy block (Traefik):
 

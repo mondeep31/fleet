@@ -83,7 +83,10 @@ describe("handleGitHubWebhookDelivery", () => {
 
     const result = await handleGitHubWebhookDelivery("push", pushBody());
     expect(result).toEqual({ handled: true, deploys: 1 });
-    expect(mockTriggerDeployForProject).toHaveBeenCalledWith("proj-1");
+    expect(mockTriggerDeployForProject).toHaveBeenCalledWith("proj-1", {
+      commitSha: "abc123",
+      commitMessage: "fix bug",
+    });
   });
 
   test("push on different branch finds no projects (query uses branch)", async () => {
