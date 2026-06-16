@@ -67,7 +67,7 @@ export function NewProjectDialog({
     }
 
     try {
-      await api.createProject(values.name, values.repoUrl, validVariables);
+      await api.createProject(values.name, values.repoUrl, "main", validVariables);
       reset();
       setVariables([]);
       setOpen(false);
