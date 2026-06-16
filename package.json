@@ -29,6 +29,7 @@
     "vitest": "^3.2.4"
   },
   "dependencies": {
+    "@next/third-parties": "^16.2.9",
     "dotenv": "^17.4.2",
     "zod": "^4.4.3"
   }
