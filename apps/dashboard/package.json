@@ -12,7 +12,6 @@
     "@base-ui/react": "^1.5.0",
     "@fleet/brand": "workspace:*",
     "@hookform/resolvers": "^5.4.0",
-    "@next/third-parties": "^16.2.9",
     "@phosphor-icons/react": "^2.1.10",
     "@tanstack/react-virtual": "^3.14.2",
     "class-variance-authority": "^0.7.1",
