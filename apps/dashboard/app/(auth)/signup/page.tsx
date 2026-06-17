@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,6 +66,26 @@ export default function SignupPage() {
         />
       }
     >
+      <div className="space-y-4">
+        <a href="/api/auth/github/login" className="block">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full gap-2"
+            asChild={false}
+          >
+            <Github className="h-4 w-4" />
+            Continue with GitHub
+          </Button>
+        </a>
+
+        <div className="relative flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-[var(--text-tertiary)]">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name" className="text-[var(--text-secondary)]">

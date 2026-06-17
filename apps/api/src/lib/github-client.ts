@@ -23,6 +23,13 @@ export const DOCKERFILE_NAMES = ["Dockerfile", "dockerfile"] as const;
 export interface GitHubUser {
   id: number;
   login: string;
+  name: string | null;
+}
+
+export interface GitHubEmail {
+  email: string;
+  primary: boolean;
+  verified: boolean;
 }
 
 export interface GitHubRepo {
@@ -141,6 +148,17 @@ export async function exchangeCode(
 
 export async function getAuthenticatedUser(token: string): Promise<GitHubUser> {
   return ghFetch<GitHubUser>("/user", token);
+}
+
+export async function getUserEmails(token: string): Promise<GitHubEmail[]> {
+  return ghFetch<GitHubEmail[]>("/user/emails", token);
+}
+
+/** Returns the verified primary email, or null if none exists. */
+export async function getPrimaryEmail(token: string): Promise<string | null> {
+  const emails = await getUserEmails(token);
+  const primary = emails.find((e) => e.primary && e.verified);
+  return primary?.email ?? null;
 }
 
 export function repoMatchesQuery(repo: GitHubRepo, query: string): boolean {

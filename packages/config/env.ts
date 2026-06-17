@@ -39,6 +39,10 @@ const apiEnvSchema = sharedEnvSchema.extend({
   GITHUB_CLIENT_SECRET: z.string().min(1),
   GITHUB_OAUTH_CALLBACK_URL: z.string().url(),
   GITHUB_OAUTH_SUCCESS_REDIRECT: z.string().url(),
+  // GitHub OAuth App credentials for login/signup.
+  GITHUB_LOGIN_CLIENT_ID: z.string().min(1),
+  GITHUB_LOGIN_CLIENT_SECRET: z.string().min(1),
+  GITHUB_LOGIN_CALLBACK_URL: z.string().url(),
 });
 
 export type SharedEnv = z.infer<typeof sharedEnvSchema>;

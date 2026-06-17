@@ -9,6 +9,10 @@ import router from "./routes";
 import unauthRoutes from "./routes/unauth";
 import { githubCallbackController } from "./controller/github-integration";
 import { githubWebhookController } from "./controller/github-webhook";
+import {
+  githubLoginAuthorizeController,
+  githubLoginCallbackController,
+} from "./controller/github-auth";
 
 const { PORT } = getEnv();
 
@@ -34,6 +38,9 @@ app.get("/ping", ping);
 app.use("/v1", unauthRoutes);
 // GitHub OAuth callback is unauthenticated — state nonce ties it to a userId.
 app.get("/api/v1/integrations/github/callback", githubCallbackController);
+// GitHub login OAuth — unauthenticated flows (no Bearer token needed).
+app.get("/v1/auth/github/authorize", githubLoginAuthorizeController);
+app.get("/v1/auth/github/callback", githubLoginCallbackController);
 app.use("/api/v1", authMiddleware, router);
 app.use(notFoundHandler);
 app.use(errorHandler);
