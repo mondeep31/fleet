@@ -44,7 +44,6 @@ export const metadata: Metadata = {
 };
 
 const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-console.log("gaId", gaId);
 
 export default function RootLayout({
   children,
