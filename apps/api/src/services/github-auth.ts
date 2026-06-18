@@ -2,6 +2,7 @@ import { User } from "@fleet/db";
 import { signJWT } from "@fleet/auth";
 import { getEnv } from "@fleet/config";
 import { AppError } from "@fleet/errors";
+import { enqueueEmail } from "@fleet/queue";
 import {
   exchangeCode,
   getAuthenticatedUser,
@@ -69,6 +70,7 @@ export async function handleLoginCallback(
 
   // 1. Existing user already linked to this GitHub account.
   let user = await User.findOne({ githubId });
+  let isNewUser = false;
 
   if (!user) {
     // 2. Existing email/password user — link the GitHub account.
@@ -82,6 +84,7 @@ export async function handleLoginCallback(
   if (!user) {
     // 3. Brand new user — create via GitHub OAuth.
     user = await User.create({ name, email: primaryEmail, githubId });
+    isNewUser = true;
   }
 
   await upsertGitHubIntegration(
@@ -90,6 +93,12 @@ export async function handleLoginCallback(
     ghUser,
     "login",
     LOGIN_INTEGRATION_SCOPES,
+  );
+
+  await enqueueEmail(
+    isNewUser
+      ? { type: "signup", to: user.email, name: user.name }
+      : { type: "login", to: user.email, name: user.name },
   );
 
   const token = signJWT(user.userId);
