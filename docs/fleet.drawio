@@ -1,0 +1,313 @@
+<mxfile host="app.diagrams.net" modified="2026-06-19T00:10:00.000Z" agent="Fleet Architecture" version="21.0.0" type="device">
+  <diagram id="fleet-dark-arch" name="Fleet Architecture">
+    <mxGraphModel dx="1800" dy="900" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="0" pageScale="1" pageWidth="2480" pageHeight="1754" math="0" shadow="0" background="#0f172a">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ===== TITLE ===== -->
+        <mxCell id="title" value="Fleet — Self-Hosted PaaS: System Architecture" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=22;fontStyle=1;fontColor=#f1f5f9;" vertex="1" parent="1">
+          <mxGeometry x="100" y="18" width="1950" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ZONE: EXTERNAL SERVICES ===== -->
+        <mxCell id="zone-ext" value="EXTERNAL SERVICES" style="swimlane;startSize=26;fillColor=#1e293b;strokeColor=#475569;strokeWidth=1;fontColor=#94a3b8;fontSize=10;fontStyle=1;rounded=1;arcSize=3;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="20" y="70" width="210" height="620" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ZONE: APPLICATION LAYER ===== -->
+        <mxCell id="zone-app" value="APPLICATION LAYER" style="swimlane;startSize=26;fillColor=#1e1b4b;strokeColor=#4338ca;strokeWidth=1;fontColor=#a5b4fc;fontSize=10;fontStyle=1;rounded=1;arcSize=3;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="250" y="70" width="600" height="620" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ZONE: DATA LAYER ===== -->
+        <mxCell id="zone-data" value="DATA LAYER" style="swimlane;startSize=26;fillColor=#052e16;strokeColor=#16a34a;strokeWidth=1;fontColor=#86efac;fontSize=10;fontStyle=1;rounded=1;arcSize=3;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="870" y="70" width="310" height="620" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ZONE: WORKER / PROCESSING ===== -->
+        <mxCell id="zone-worker" value="WORKER / PROCESSING" style="swimlane;startSize=26;fillColor=#1c0a00;strokeColor=#b45309;strokeWidth=1;fontColor=#fbbf24;fontSize=10;fontStyle=1;rounded=1;arcSize=3;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="20" y="710" width="1460" height="310" as="geometry" />
+        </mxCell>
+
+        <!-- Deploy Pipeline sub-label -->
+        <mxCell id="worker-sub-label" value="Deploy Worker (BullMQ deploy queue)" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;fontSize=11;fontColor=#fbbf24;fontStyle=3;" vertex="1" parent="1">
+          <mxGeometry x="38" y="720" width="320" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ===== ZONE: INFRASTRUCTURE ===== -->
+        <mxCell id="zone-infra" value="INFRASTRUCTURE" style="swimlane;startSize=26;fillColor=#170a2e;strokeColor=#7c3aed;strokeWidth=1;fontColor=#c084fc;fontSize=10;fontStyle=1;rounded=1;arcSize=3;align=center;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="20" y="1040" width="2040" height="360" as="geometry" />
+        </mxCell>
+
+        <!-- ===== Deployed Apps sub-zone ===== -->
+        <mxCell id="zone-deployed" value="DEPLOYED APP CONTAINERS" style="swimlane;startSize=26;fillColor=#130a2a;strokeColor=#6d28d9;strokeWidth=1;fontColor=#a78bfa;fontSize=10;fontStyle=1;rounded=1;arcSize=3;" vertex="1" parent="zone-infra">
+          <mxGeometry x="510" y="35" width="1500" height="295" as="geometry" />
+        </mxCell>
+
+        <!-- Deployed URL -->
+        <mxCell id="deployed-url" value="URL: depl-fleet-{projectId}.{FLEET_APPS_DOMAIN}:{TRAEFIK_PORT}" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#a78bfa;fontSize=12;fontStyle=1;" vertex="1" parent="zone-deployed">
+          <mxGeometry x="20" y="36" width="1460" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Blue-green deploy box -->
+        <mxCell id="deployed-bg-box" value="&lt;b&gt;Blue-Green Deploy Flow&lt;/b&gt;&lt;br/&gt;1. Build + start new container (not yet routed)&lt;br/&gt;2. Remove all other project containers&lt;br/&gt;3. Connect Traefik → fleet-project-{pid} bridge network&lt;br/&gt;4. Previous &quot;live&quot; deployments → &quot;stopped&quot;&lt;br/&gt;5. New deployment → &quot;live&quot; + stable URL set" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a0533;strokeColor=#7c3aed;fontColor=#c084fc;fontSize=11;align=left;verticalAlign=middle;" vertex="1" parent="zone-deployed">
+          <mxGeometry x="20" y="65" width="580" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Plan limits box -->
+        <mxCell id="deployed-plans-box" value="&lt;b&gt;Plan Compute Limits&lt;/b&gt;&lt;br/&gt;&lt;br/&gt;free:       256 MB  ·  0.25 CPU  ·  128 PIDs  ·  /tmp 32 MB&lt;br/&gt;pro:        1 GB    ·  1 CPU     ·  256 PIDs  ·  /tmp 64 MB&lt;br/&gt;team:       4 GB    ·  4 CPU     ·  512 PIDs  ·  /tmp 128 MB&lt;br/&gt;unlimited:  no resource caps applied" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1a0533;strokeColor=#7c3aed;fontColor=#c084fc;fontSize=11;align=left;verticalAlign=middle;" vertex="1" parent="zone-deployed">
+          <mxGeometry x="630" y="65" width="600" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Isolation note -->
+        <mxCell id="deployed-isolation" value="Per-project Docker bridge network — no cross-project container access" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#7c3aed;fontSize=10;" vertex="1" parent="zone-deployed">
+          <mxGeometry x="20" y="220" width="1460" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- SERVICE ICONS                                                    -->
+        <!-- ================================================================ -->
+
+        <!-- BROWSER / USER -->
+        <mxCell id="svc-browser" value="Browser / User" style="shape=mxgraph.cisco.computers_and_peripherals.pc;fillColor=#3b82f6;strokeColor=#1d4ed8;fontColor=#bfdbfe;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="75" y="155" width="64" height="64" as="geometry" />
+        </mxCell>
+
+        <!-- GITHUB -->
+        <mxCell id="svc-github" value="GitHub" style="shape=mxgraph.logos.github;fillColor=#f1f5f9;strokeColor=none;fontColor=#f1f5f9;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="75" y="375" width="64" height="64" as="geometry" />
+        </mxCell>
+
+        <!-- GitHub detail sub-box -->
+        <mxCell id="svc-github-sub" value="OAuth Login App&lt;br/&gt;OAuth Connect App&lt;br/&gt;Push Webhooks (HMAC)&lt;br/&gt;Repos + Branches API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f172a;strokeColor=#334155;fontColor=#94a3b8;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="32" y="455" width="150" height="70" as="geometry" />
+        </mxCell>
+
+        <!-- RESEND (floating, beside worker zone) -->
+        <mxCell id="svc-resend" value="Resend" style="ellipse;fillColor=#c2410c;strokeColor=#9a3412;fontColor=#fff7ed;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1550" y="782" width="80" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-resend-sub" value="Transactional Email API" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#94a3b8;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1520" y="868" width="140" height="18" as="geometry" />
+        </mxCell>
+
+        <!-- NEXT.JS DASHBOARD -->
+        <mxCell id="svc-dashboard" value="Next.js Dashboard" style="shape=mxgraph.logos.nextjs2;fillColor=#ffffff;strokeColor=none;fontColor=#ede9fe;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="300" y="145" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-dashboard-sub" value="Port :3000&lt;br/&gt;SWR · Zustand&lt;br/&gt;shadcn/ui · Framer Motion&lt;br/&gt;JWT in localStorage + cookie" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#4338ca;fontColor=#a5b4fc;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="260" y="225" width="144" height="68" as="geometry" />
+        </mxCell>
+        <!-- Dashboard route detail -->
+        <mxCell id="svc-dashboard-routes" value="/login · /signup&lt;br/&gt;/auth/github/callback&lt;br/&gt;/projects · /projects/new&lt;br/&gt;/projects/[id]&lt;br/&gt;/deployments/[id]&lt;br/&gt;/connections · /settings" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f0a2a;strokeColor=#4338ca;fontColor=#818cf8;fontSize=10;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="255" y="310" width="154" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- EXPRESS API -->
+        <mxCell id="svc-api" value="Express API" style="shape=mxgraph.logos.nodejs;fillColor=#83cd29;strokeColor=none;fontColor=#e2e8f0;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="630" y="145" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-api-sub" value="Port :3010&lt;br/&gt;JWT · Zod · bcryptjs&lt;br/&gt;SSE log streaming" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e1b4b;strokeColor=#4338ca;fontColor=#a5b4fc;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="598" y="225" width="128" height="55" as="geometry" />
+        </mxCell>
+        <!-- API route list -->
+        <mxCell id="svc-api-routes" value="POST /v1/signup&lt;br/&gt;POST /v1/login&lt;br/&gt;GET /v1/auth/github/*&lt;br/&gt;POST /v1/password-reset/*&lt;br/&gt;CRUD /api/v1/projects&lt;br/&gt;GET|DEL /api/v1/deployments&lt;br/&gt;GET /api/v1/integrations&lt;br/&gt;POST /webhooks/github" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#0f0a2a;strokeColor=#4338ca;fontColor=#818cf8;fontSize=10;align=left;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="586" y="295" width="178" height="130" as="geometry" />
+        </mxCell>
+
+        <!-- MONGODB -->
+        <mxCell id="svc-mongodb" value="MongoDB" style="shape=mxgraph.logos.mongodb;fillColor=#4db33d;strokeColor=none;fontColor=#bbf7d0;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="130" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-mongodb-sub" value="User · Project&lt;br/&gt;Deployment (status lifecycle)&lt;br/&gt;ProjectVariable (AES-256-GCM)&lt;br/&gt;Integration (GitHub token enc.)&lt;br/&gt;Environment · Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#052e16;strokeColor=#166534;fontColor=#86efac;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="890" y="210" width="260" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- REDIS -->
+        <mxCell id="svc-redis" value="Redis  :16379" style="shape=mxgraph.logos.redis;fillColor=#d82c20;strokeColor=none;fontColor=#fca5a5;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="980" y="400" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-redis-sub" value="BullMQ: deploy queue&lt;br/&gt;BullMQ: email queue&lt;br/&gt;Log Streams (24h TTL)&lt;br/&gt;OAuth state nonces (10 min)&lt;br/&gt;Password-reset OTP (15 min)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#450a0a;strokeColor=#7f1d1d;fontColor=#fca5a5;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="890" y="480" width="260" height="85" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- WORKER PIPELINE STEPS                                            -->
+        <!-- ================================================================ -->
+
+        <!-- Step 1: Clone -->
+        <mxCell id="step-clone" value="1. Clone" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#d97706;strokeWidth=1;fontColor=#fef3c7;fontSize=13;fontStyle=1;align=center;verticalAlign=top;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="748" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step-clone-sub" value="simple-git&lt;br/&gt;/tmp/fleet-builds/{id}&lt;br/&gt;status: cloning → cloned&lt;br/&gt;commitSha saved" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#fde68a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="30" y="815" width="180" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Step 2: Detect Runtime -->
+        <mxCell id="step-detect" value="2. Detect Runtime" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#d97706;strokeWidth=1;fontColor=#fef3c7;fontSize=13;fontStyle=1;align=center;verticalAlign=top;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="255" y="748" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step-detect-sub" value="Dockerfile at root?&lt;br/&gt;→ docker build&lt;br/&gt;No Dockerfile?&lt;br/&gt;→ railpack + BuildKit" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#fde68a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="248" y="815" width="194" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Step 3: Build -->
+        <mxCell id="step-build" value="3. Build" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#d97706;strokeWidth=1;fontColor=#fef3c7;fontSize=13;fontStyle=1;align=center;verticalAlign=top;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="492" y="748" width="160" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step-build-sub" value="docker build via tar-fs&lt;br/&gt;OR railpack + BuildKit&lt;br/&gt;fleet/{pid}:{did}&lt;br/&gt;status: building" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#fde68a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="482" y="815" width="180" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Step 4: Run Container -->
+        <mxCell id="step-run" value="4. Run Container" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#451a03;strokeColor=#d97706;strokeWidth=1;fontColor=#fef3c7;fontSize=13;fontStyle=1;align=center;verticalAlign=top;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="710" y="748" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step-run-sub" value="decrypt env vars&lt;br/&gt;get plan limits&lt;br/&gt;sandbox + Traefik labels&lt;br/&gt;status: deploying → live" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#fde68a;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="815" width="200" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- Email Worker -->
+        <mxCell id="step-email" value="Email Worker" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#500724;strokeColor=#be185d;strokeWidth=1;fontColor=#fce7f3;fontSize=13;fontStyle=1;align=center;verticalAlign=top;arcSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="748" width="180" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="step-email-sub" value="signup welcome&lt;br/&gt;login notification&lt;br/&gt;password-reset OTP&lt;br/&gt;3 retries · exp. backoff" style="text;html=1;strokeColor=none;fillColor=none;align=center;fontColor=#f9a8d4;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="815" width="200" height="65" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- INFRASTRUCTURE ICONS                                             -->
+        <!-- ================================================================ -->
+
+        <!-- DOCKER ENGINE -->
+        <mxCell id="svc-docker" value="Docker Engine" style="shape=mxgraph.logos.docker;fillColor=#1793d1;strokeColor=none;fontColor=#bfdbfe;fontSize=11;fontStyle=1;verticalLabelPosition=bottom;verticalAlign=top;labelPosition=center;align=center;" vertex="1" parent="1">
+          <mxGeometry x="80" y="1100" width="64" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-docker-sub" value="dockerode (Node client)&lt;br/&gt;Build: tarball → image&lt;br/&gt;Tag: fleet/{pid}:{did}&lt;br/&gt;Network: fleet-project-{pid}&lt;br/&gt;CapDrop ALL · no-new-privs&lt;br/&gt;Plan limits: RAM · CPU · PIDs" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#1e3a8a;strokeColor=#1d4ed8;fontColor=#bfdbfe;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="30" y="1180" width="164" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- TRAEFIK -->
+        <mxCell id="svc-traefik" value="Traefik v3" style="ellipse;fillColor=#24b2b2;strokeColor=#0d9488;fontColor=#f0fdfa;fontSize=14;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="294" y="1100" width="80" height="64" as="geometry" />
+        </mxCell>
+        <mxCell id="svc-traefik-sub" value=":18080 (apps HTTP)&lt;br/&gt;:18081 (admin UI)&lt;br/&gt;fleet-proxy network&lt;br/&gt;docker.sock mount&lt;br/&gt;{sub}.{domain}:18080&lt;br/&gt;Host-label routing" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#022c22;strokeColor=#059669;fontColor=#6ee7b7;fontSize=10;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="250" y="1180" width="168" height="105" as="geometry" />
+        </mxCell>
+
+        <!-- ================================================================ -->
+        <!-- CONNECTIONS                                                       -->
+        <!-- ================================================================ -->
+
+        <!-- Browser → Dashboard -->
+        <mxCell id="e-browser-dashboard" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#60a5fa;strokeWidth=1.5;fontColor=#94a3b8;fontSize=10;fontStyle=0;endArrow=block;endFill=1;" edge="1" source="svc-browser" target="svc-dashboard" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Dashboard ↔ API -->
+        <mxCell id="e-dashboard-api" value="REST + JWT / SSE logs" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#a5b4fc;strokeWidth=1.5;fontColor=#94a3b8;fontSize=10;startArrow=block;startFill=1;endArrow=block;endFill=1;" edge="1" source="svc-dashboard" target="svc-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- GitHub ↔ API -->
+        <mxCell id="e-github-api" value="OAuth callbacks + Webhooks (HMAC)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#94a3b8;strokeWidth=1.5;fontColor=#94a3b8;fontSize=10;startArrow=block;startFill=1;endArrow=block;endFill=1;" edge="1" source="svc-github" target="svc-api" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API → MongoDB -->
+        <mxCell id="e-api-mongodb" value="read / write" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#4ade80;strokeWidth=1.5;fontColor=#94a3b8;fontSize=10;endArrow=block;endFill=1;" edge="1" source="svc-api" target="svc-mongodb" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- API → Redis -->
+        <mxCell id="e-api-redis" value="enqueue + cache + log pub" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#f87171;strokeWidth=1.5;fontColor=#94a3b8;fontSize=10;endArrow=block;endFill=1;" edge="1" source="svc-api" target="svc-redis" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Redis → Clone (long path, going left and down) -->
+        <mxCell id="e-redis-clone" value="consume deploy job" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#fbbf24;strokeWidth=1.5;fontColor=#fbbf24;fontSize=10;fontStyle=3;endArrow=block;endFill=1;" edge="1" source="svc-redis" target="step-clone" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1012" y="675" />
+              <mxPoint x="120" y="675" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Redis → Email Worker -->
+        <mxCell id="e-redis-email" value="consume email job" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#f472b6;strokeWidth=1.5;fontColor=#f472b6;fontSize=10;fontStyle=3;endArrow=block;endFill=1;" edge="1" source="svc-redis" target="step-email" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1012" y="688" />
+              <mxPoint x="1150" y="688" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Clone → Detect -->
+        <mxCell id="e-clone-detect" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d97706;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="step-clone" target="step-detect" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Detect → Build -->
+        <mxCell id="e-detect-build" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d97706;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="step-detect" target="step-build" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Build → Run -->
+        <mxCell id="e-build-run" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d97706;strokeWidth=1.5;endArrow=block;endFill=1;" edge="1" source="step-build" target="step-run" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Run → Docker Engine -->
+        <mxCell id="e-run-docker" value="docker build + docker run" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#60a5fa;strokeWidth=1.5;fontColor=#60a5fa;fontSize=10;fontStyle=3;endArrow=block;endFill=1;" edge="1" source="step-run" target="svc-docker" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="800" y="1010" />
+              <mxPoint x="112" y="1010" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Email Worker → Resend -->
+        <mxCell id="e-email-resend" value="Resend API" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#fb923c;strokeWidth=1.5;fontColor=#fb923c;fontSize=10;fontStyle=3;endArrow=block;endFill=1;" edge="1" source="step-email" target="svc-resend" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Run → Redis (log publish, dashed) -->
+        <mxCell id="e-logs-redis" value="publish logs (Redis Streams)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;dashPattern=8 4;strokeColor=#f87171;strokeWidth=1.5;fontColor=#f87171;fontSize=10;fontStyle=3;endArrow=open;endFill=0;" edge="1" source="step-run" target="svc-redis" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="980" y="778" />
+              <mxPoint x="1170" y="778" />
+              <mxPoint x="1170" y="460" />
+              <mxPoint x="1044" y="460" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Docker ↔ Traefik -->
+        <mxCell id="e-docker-traefik" value="network attach" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#34d399;strokeWidth=1.5;fontColor=#34d399;fontSize=10;fontStyle=3;startArrow=block;startFill=1;endArrow=block;endFill=1;" edge="1" source="svc-docker" target="svc-traefik" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Traefik → Deployed Apps zone -->
+        <mxCell id="e-traefik-deployed" value="route traffic" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#a78bfa;strokeWidth=1.5;fontColor=#a78bfa;fontSize=10;fontStyle=3;endArrow=block;endFill=1;" edge="1" source="svc-traefik" target="zone-deployed" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Browser → Deployed Apps (dashed, app traffic) -->
+        <mxCell id="e-browser-app" value="app traffic (direct to subdomain)" style="edgeStyle=orthogonalEdgeStyle;rounded=1;dashed=1;dashPattern=8 4;strokeColor=#475569;strokeWidth=1;fontColor=#64748b;fontSize=10;endArrow=block;endFill=1;opacity=60;" edge="1" source="svc-browser" target="zone-deployed" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="112" y="1005" />
+              <mxPoint x="1200" y="1005" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
