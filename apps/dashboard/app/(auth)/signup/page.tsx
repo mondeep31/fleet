@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Github } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -74,7 +73,12 @@ export default function SignupPage() {
             className="h-10 w-full gap-2"
             asChild={false}
           >
-            <Github className="h-4 w-4" />
+            <img
+              src="/github-svgrepo-com.svg"
+              alt=""
+              aria-hidden
+              className="h-4 w-4 dark:invert"
+            />
             Continue with GitHub
           </Button>
         </a>

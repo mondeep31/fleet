@@ -7,29 +7,40 @@ import {
   exchangeCode,
   getAuthenticatedUser,
   revokeToken,
+  type GitHubUser,
 } from "../lib/github-client";
 import { createOAuthState, consumeOAuthState } from "../lib/github-oauth-state";
 
-export async function getConnectRedirectUrl(userId: string): Promise<string> {
-  const { GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL } = getEnv();
-  const state = await createOAuthState(userId);
-  return buildAuthorizeUrl(GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL, state);
+export const GITHUB_CONNECT_SCOPES = [
+  "read:user",
+  "repo",
+  "admin:repo_hook",
+] as const;
+
+type GitHubOAuthApp = "login" | "connect";
+
+function getGitHubOAuthCredentials(oauthApp: GitHubOAuthApp) {
+  const env = getEnv();
+  if (oauthApp === "login") {
+    return {
+      clientId: env.GITHUB_LOGIN_CLIENT_ID,
+      clientSecret: env.GITHUB_LOGIN_CLIENT_SECRET,
+    };
+  }
+  return {
+    clientId: env.GITHUB_CLIENT_ID,
+    clientSecret: env.GITHUB_CLIENT_SECRET,
+  };
 }
 
-export async function handleOAuthCallback(
-  code: string,
-  state: string,
-): Promise<string> {
-  const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_OAUTH_SUCCESS_REDIRECT } = getEnv();
+export async function upsertGitHubIntegration(
+  userId: string,
+  accessToken: string,
+  ghUser: GitHubUser,
+  oauthApp: GitHubOAuthApp,
+  scopes: readonly string[],
+): Promise<void> {
   const { FLEET_SECRETS_ENCRYPTION_KEY } = getSharedEnv();
-
-  const userId = await consumeOAuthState(state);
-  if (!userId) {
-    throw new AppError(400, "Invalid or expired OAuth state", "INVALID_OAUTH_STATE");
-  }
-
-  const accessToken = await exchangeCode(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, code);
-  const ghUser = await getAuthenticatedUser(accessToken);
   const encrypted = encryptSecret(accessToken, FLEET_SECRETS_ENCRYPTION_KEY);
 
   await Integration.findOneAndUpdate(
@@ -42,10 +53,39 @@ export async function handleOAuthCallback(
       authTag: encrypted.authTag,
       githubUserId: String(ghUser.id),
       githubUsername: ghUser.login,
-      scopes: ["read:user", "repo", "admin:repo_hook"],
+      scopes: [...scopes],
+      oauthApp,
       connectedAt: new Date(),
     },
     { upsert: true, new: true },
+  );
+}
+
+export async function getConnectRedirectUrl(userId: string): Promise<string> {
+  const { GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL } = getEnv();
+  const state = await createOAuthState(userId);
+  return buildAuthorizeUrl(GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL, state);
+}
+
+export async function handleOAuthCallback(
+  code: string,
+  state: string,
+): Promise<string> {
+  const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_OAUTH_SUCCESS_REDIRECT } = getEnv();
+
+  const userId = await consumeOAuthState(state);
+  if (!userId) {
+    throw new AppError(400, "Invalid or expired OAuth state", "INVALID_OAUTH_STATE");
+  }
+
+  const accessToken = await exchangeCode(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, code);
+  const ghUser = await getAuthenticatedUser(accessToken);
+  await upsertGitHubIntegration(
+    userId,
+    accessToken,
+    ghUser,
+    "connect",
+    GITHUB_CONNECT_SCOPES,
   );
 
   return GITHUB_OAUTH_SUCCESS_REDIRECT;
@@ -70,13 +110,14 @@ export async function disconnectGitHub(userId: string): Promise<void> {
 
   // Best-effort revoke on GitHub side.
   try {
-    const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET } = getEnv();
+    const oauthApp = integration.oauthApp === "login" ? "login" : "connect";
+    const { clientId, clientSecret } = getGitHubOAuthCredentials(oauthApp);
     const { FLEET_SECRETS_ENCRYPTION_KEY } = getSharedEnv();
     const token = decryptSecret(
       { ciphertext: integration.ciphertext, iv: integration.iv, authTag: integration.authTag },
       FLEET_SECRETS_ENCRYPTION_KEY,
     );
-    await revokeToken(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, token);
+    await revokeToken(clientId, clientSecret, token);
   } catch {
     // Ignore revocation errors — always delete locally.
   }
