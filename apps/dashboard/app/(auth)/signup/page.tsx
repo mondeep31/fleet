@@ -71,7 +71,6 @@ export default function SignupPage() {
             type="button"
             variant="outline"
             className="h-10 w-full gap-2"
-            asChild={false}
           >
             <img
               src="/github-svgrepo-com.svg"
