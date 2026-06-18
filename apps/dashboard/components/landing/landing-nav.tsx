@@ -40,7 +40,7 @@ export function LandingNav() {
           href="/login"
           className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
         >
-          Sign in →
+          Log in →
         </Link>
       </div>
     </header>
