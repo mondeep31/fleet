@@ -34,6 +34,12 @@ const integrationSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    // Which OAuth app issued the stored token — used for revocation on disconnect.
+    oauthApp: {
+      type: String,
+      enum: ["login", "connect"],
+      default: "connect",
+    },
     connectedAt: {
       type: Date,
       default: () => new Date(),

@@ -23,9 +23,9 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string }>;
+  searchParams: Promise<{ reset?: string; error?: string }>;
 }) {
-  const { reset } = use(searchParams);
+  const { reset, error: oauthError } = use(searchParams);
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [error, setError] = useState<string | null>(null);
@@ -70,6 +70,31 @@ export default function LoginPage({
         />
       }
     >
+      <div className="space-y-4">
+        <a href="/api/auth/github/login" className="block">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-10 w-full gap-2"
+            asChild={false}
+          >
+            <img
+              src="/github-svgrepo-com.svg"
+              alt=""
+              aria-hidden
+              className="h-4 w-4 dark:invert"
+            />
+            Continue with GitHub
+          </Button>
+        </a>
+
+        <div className="relative flex items-center gap-3">
+          <div className="h-px flex-1 bg-border" />
+          <span className="text-xs text-[var(--text-tertiary)]">or</span>
+          <div className="h-px flex-1 bg-border" />
+        </div>
+      </div>
+
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="email" className="text-[var(--text-secondary)]">
@@ -120,6 +145,13 @@ export default function LoginPage({
         {reset === "1" && (
           <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-400">
             Password updated. Sign in with your new password.
+          </p>
+        )}
+
+        {oauthError && (
+          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+            GitHub sign-in is temporarily unavailable. Please sign in with your
+            email and password.
           </p>
         )}
 
