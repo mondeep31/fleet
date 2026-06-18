@@ -72,6 +72,7 @@ export const getUserById = async ({ id }: GetUserByIdParams) => {
     userId: user.userId,
     name: user.name,
     email: user.email,
+    plan: user.plan ?? "free",
   };
 };
 

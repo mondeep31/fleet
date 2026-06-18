@@ -24,12 +24,20 @@ vi.mock("@fleet/db", () => ({
     updateOne: vi.fn().mockResolvedValue({}),
   },
   Integration: {},
+  User: {
+    findOne: vi.fn().mockReturnValue({
+      select: () => ({
+        lean: () => Promise.resolve({ plan: "free" }),
+      }),
+    }),
+  },
 }));
 
 vi.mock("@fleet/config", () => ({
   buildProjectDeploySubdomain: (id: string) => `depl-fleet-${id}`,
   getSharedEnv: () => ({ FLEET_APPS_DOMAIN: "localhost:8080" }),
   buildAppUrlFromEnv: (subdomain: string) => `http://${subdomain}.localhost:8080`,
+  isUnlimitedPlan: (limits: { unlimited?: boolean }) => limits.unlimited === true,
 }));
 
 vi.mock("@fleet/errors", () => ({
@@ -72,6 +80,15 @@ vi.mock("../services/project-variable", () => ({
   getDecryptedProjectVariables: vi.fn().mockResolvedValue({ FOO: "bar" }),
 }));
 
+vi.mock("../services/user-plan", () => ({
+  getComputeLimitsForUser: vi.fn().mockResolvedValue({
+    memoryMb: 256,
+    nanoCpus: 250_000_000,
+    pidsLimit: 128,
+    tmpfsMb: 32,
+  }),
+}));
+
 vi.mock("../services/github-integration", () => ({
   getDecryptedGitHubToken: vi.fn().mockResolvedValue("ghp_test_token"),
 }));
@@ -92,16 +109,16 @@ vi.mock("../steps/build", () => ({
 const mockRemoveAllProjectContainers = vi.fn().mockImplementation(async () => {
   callOrder.push("removeAll");
 });
-const mockAttachContainerToTraefik = vi.fn().mockImplementation(async () => {
-  callOrder.push("attachTraefik");
+const mockEnsureTraefikOnProjectNetwork = vi.fn().mockImplementation(async () => {
+  callOrder.push("ensureTraefik");
 });
 const mockRemoveContainerById = vi.fn().mockResolvedValue(undefined);
 
 vi.mock("../lib/docker", () => ({
   removeAllProjectContainers: (...args: unknown[]) =>
     mockRemoveAllProjectContainers(...args),
-  attachContainerToTraefik: (...args: unknown[]) =>
-    mockAttachContainerToTraefik(...args),
+  ensureTraefikOnProjectNetwork: (...args: unknown[]) =>
+    mockEnsureTraefikOnProjectNetwork(...args),
   removeContainerById: (...args: unknown[]) =>
     mockRemoveContainerById(...args),
   // Not used by deploy.ts but exported from the module
@@ -111,15 +128,17 @@ vi.mock("../lib/docker", () => ({
 
 const NEW_CONTAINER_ID = "new-container-id-abc";
 
+const mockRunContainer = vi.fn().mockImplementation(async () => {
+  callOrder.push("runContainer");
+  return {
+    containerId: NEW_CONTAINER_ID,
+    networkName: "fleet-project-proj1",
+    url: "http://depl-fleet-proj1.localhost:8080",
+  };
+});
+
 vi.mock("../steps/run", () => ({
-  runContainer: vi.fn().mockImplementation(async () => {
-    callOrder.push("runContainer");
-    return {
-      containerId: NEW_CONTAINER_ID,
-      networkName: "fleet-project-proj1",
-      url: "http://depl-fleet-proj1.localhost:8080",
-    };
-  }),
+  runContainer: (...args: unknown[]) => mockRunContainer(...args),
 }));
 
 // ── Subject ──────────────────────────────────────────────────────────────────
@@ -132,23 +151,30 @@ describe("handleDeployJob — cutover sequence", () => {
   beforeEach(() => {
     callOrder.length = 0;
     vi.clearAllMocks();
-    // Re-attach implementations after clearAllMocks (they are cleared too).
     mockRemoveAllProjectContainers.mockImplementation(async () => {
       callOrder.push("removeAll");
     });
-    mockAttachContainerToTraefik.mockImplementation(async () => {
-      callOrder.push("attachTraefik");
+    mockEnsureTraefikOnProjectNetwork.mockImplementation(async () => {
+      callOrder.push("ensureTraefik");
+    });
+    mockRunContainer.mockImplementation(async () => {
+      callOrder.push("runContainer");
+      return {
+        containerId: NEW_CONTAINER_ID,
+        networkName: "fleet-project-proj1",
+        url: "http://depl-fleet-proj1.localhost:8080",
+      };
     });
   });
 
-  test("removeAllProjectContainers is called before attachContainerToTraefik", async () => {
+  test("removeAllProjectContainers is called before ensureTraefikOnProjectNetwork", async () => {
     await handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" });
 
     const removeIdx = callOrder.indexOf("removeAll");
-    const attachIdx = callOrder.indexOf("attachTraefik");
+    const traefikIdx = callOrder.indexOf("ensureTraefik");
     expect(removeIdx).toBeGreaterThanOrEqual(0);
-    expect(attachIdx).toBeGreaterThanOrEqual(0);
-    expect(removeIdx).toBeLessThan(attachIdx);
+    expect(traefikIdx).toBeGreaterThanOrEqual(0);
+    expect(removeIdx).toBeLessThan(traefikIdx);
   });
 
   test("removeAllProjectContainers is called with the new container ID as the exclusion", async () => {
@@ -157,15 +183,16 @@ describe("handleDeployJob — cutover sequence", () => {
     expect(mockRemoveAllProjectContainers).toHaveBeenCalledWith("proj1", NEW_CONTAINER_ID);
   });
 
-  test("attachContainerToTraefik is called with the new container ID", async () => {
+  test("ensureTraefikOnProjectNetwork is called with the project network name", async () => {
     await handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" });
 
-    expect(mockAttachContainerToTraefik).toHaveBeenCalledWith(NEW_CONTAINER_ID);
+    expect(mockEnsureTraefikOnProjectNetwork).toHaveBeenCalledWith(
+      "fleet-project-proj1",
+    );
   });
 
   test("on runContainer failure, removeContainerById is NOT called (no orphan to clean)", async () => {
-    const { runContainer } = await import("../steps/run");
-    vi.mocked(runContainer).mockRejectedValueOnce(new Error("container start failed"));
+    mockRunContainer.mockRejectedValueOnce(new Error("container start failed"));
 
     await expect(
       handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" }),
@@ -174,7 +201,7 @@ describe("handleDeployJob — cutover sequence", () => {
     // newContainerId was never set, so cleanup should not run
     expect(mockRemoveContainerById).not.toHaveBeenCalled();
     // Traefik should never have been touched
-    expect(mockAttachContainerToTraefik).not.toHaveBeenCalled();
+    expect(mockEnsureTraefikOnProjectNetwork).not.toHaveBeenCalled();
   });
 
   test("on cutover failure after runContainer, orphan container is removed", async () => {
@@ -186,6 +213,6 @@ describe("handleDeployJob — cutover sequence", () => {
 
     expect(mockRemoveContainerById).toHaveBeenCalledWith(NEW_CONTAINER_ID);
     // Traefik attach must not have been reached
-    expect(mockAttachContainerToTraefik).not.toHaveBeenCalled();
+    expect(mockEnsureTraefikOnProjectNetwork).not.toHaveBeenCalled();
   });
 });

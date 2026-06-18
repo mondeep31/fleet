@@ -3,6 +3,11 @@ import { getSharedEnv } from "@fleet/config";
 
 let docker: Docker | null = null;
 
+/** Clears the cached Docker client (for tests). */
+export function resetDockerClientForTests(): void {
+  docker = null;
+}
+
 export function getDocker() {
   if (!docker) {
     docker = new Docker();
@@ -140,16 +145,29 @@ export async function removeAllProjectContainers(
 }
 
 /**
- * Connect a running container to the Traefik network so it starts receiving
- * traffic. Called after all sibling containers have been removed, ensuring
- * exactly one container is live behind the router at any time.
+ * Connect Traefik to the project network so it can route traffic without
+ * placing user containers on the shared proxy network (tenant isolation).
+ * Idempotent — ignores "already exists" if Traefik is already attached.
  */
-export async function attachContainerToTraefik(containerId: string): Promise<void> {
+export async function ensureTraefikOnProjectNetwork(
+  projectNetworkName: string,
+): Promise<void> {
   const env = getSharedEnv();
   const docker = getDocker();
-  const traefikNetworkName = env.FLEET_TRAEFIK_NETWORK;
-  const network = docker.getNetwork(traefikNetworkName);
-  await network.connect({ Container: containerId });
+  const traefikContainer = env.FLEET_TRAEFIK_CONTAINER;
+  const network = docker.getNetwork(projectNetworkName);
+
+  try {
+    await network.connect({ Container: traefikContainer });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const alreadyAttached =
+      message.toLowerCase().includes("already exists") ||
+      message.toLowerCase().includes("already connected");
+    if (!alreadyAttached) {
+      throw err;
+    }
+  }
 }
 
 /** Remove a container by its Docker container ID. Silently ignores 404 (already gone). */

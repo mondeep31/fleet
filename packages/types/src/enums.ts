@@ -26,3 +26,6 @@ export type ServerStatus = "connected" | "disconnected";
 
 /** Matches Environment.type in the API DB model (prod, staging, dev). */
 export type EnvironmentType = "prod" | "staging" | "dev";
+
+/** Billing tier — stored on User.plan; limits resolved via @fleet/config/plans. */
+export type PlanId = "free" | "pro" | "team" | "unlimited";

@@ -12,3 +12,13 @@ export {
   resolveUniqueSubdomain,
   slugifyProjectName,
 } from "./subdomain";
+export {
+  DEFAULT_PLAN_LIMITS,
+  getPlanComputeLimits,
+  getPlanLimitsRegistry,
+  loadPlanLimitsFromEnv,
+  isUnlimitedPlan,
+  normalizePlanId,
+  resetPlanLimitsCache,
+  type PlanComputeLimits,
+} from "./plans";

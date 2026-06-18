@@ -10,6 +10,8 @@ import {
   getProjectNetworkName,
 } from "../lib/docker";
 import { resolveContainerPortFromImageConfig } from "../lib/container-port";
+import type { PlanComputeLimits } from "@fleet/config";
+import { buildSandboxHostConfig } from "../lib/sandbox";
 
 interface RunContainerParams {
   imageTag: string;
@@ -17,6 +19,7 @@ interface RunContainerParams {
   deploymentId: string;
   subdomain: string;
   env?: Record<string, string>;
+  computeLimits: PlanComputeLimits;
 }
 
 interface RunContainerResult {
@@ -36,10 +39,12 @@ async function getContainerPort(
 
 function buildTraefikLabels({
   projectId,
+  projectNetworkName,
   subdomain,
   containerPort,
 }: {
   projectId: string;
+  projectNetworkName: string;
   subdomain: string;
   containerPort: string;
 }) {
@@ -49,7 +54,7 @@ function buildTraefikLabels({
 
   return {
     "traefik.enable": "true",
-    "traefik.docker.network": sharedEnv.FLEET_TRAEFIK_NETWORK,
+    "traefik.docker.network": projectNetworkName,
     [`traefik.http.routers.${routerName}.rule`]: `Host(\`${host}\`)`,
     [`traefik.http.routers.${routerName}.entrypoints`]: "web",
     [`traefik.http.routers.${routerName}.service`]: routerName,
@@ -59,10 +64,9 @@ function buildTraefikLabels({
 }
 
 /**
- * Starts a new deployment container on the project network ONLY.
- * The container is NOT attached to Traefik yet — the caller must call
- * attachContainerToTraefik() after removing all sibling containers to ensure
- * exactly one container is routable at any time.
+ * Starts a new deployment container on the project network only.
+ * The caller must call ensureTraefikOnProjectNetwork() after removing sibling
+ * containers so Traefik can route to the sole live backend.
  */
 export async function runContainer({
   imageTag,
@@ -70,6 +74,7 @@ export async function runContainer({
   deploymentId,
   subdomain,
   env = {},
+  computeLimits,
 }: RunContainerParams): Promise<RunContainerResult> {
   const docker = getDocker();
   const sharedEnv = getSharedEnv();
@@ -86,12 +91,16 @@ export async function runContainer({
       [containerPort]: {},
     },
     Env: Object.entries(env).map(([k, v]) => `${k}=${v}`),
+    HostConfig: buildSandboxHostConfig(computeLimits),
     Labels: {
-      ...buildTraefikLabels({ projectId, subdomain, containerPort }),
+      ...buildTraefikLabels({
+        projectId,
+        projectNetworkName,
+        subdomain,
+        containerPort,
+      }),
       ...buildFleetLabels(projectId, deploymentId),
     },
-    // Only attach to the project network on create. Traefik network is
-    // connected later by the deploy job, after old containers are removed.
     NetworkingConfig: {
       EndpointsConfig: {
         [projectNetworkName]: {

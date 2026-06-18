@@ -20,6 +20,11 @@ const sharedEnvSchema = z.object({
     .transform((value) => value.trim())
     .optional(),
   FLEET_TRAEFIK_NETWORK: z.string().min(1).default("fleet-proxy"),
+  // Docker container name of the Traefik reverse proxy (must match docker-compose).
+  FLEET_TRAEFIK_CONTAINER: z.string().min(1).default("fleet-traefik"),
+  // Optional JSON map of plan → compute limits; merges over packages/config/plans defaults.
+  // Example: {"pro":{"memoryMb":2048,"nanoCpus":2000000000,"pidsLimit":512,"tmpfsMb":128}}
+  FLEET_PLAN_LIMITS_JSON: z.string().optional(),
   // Base64-encoded 32-byte key used to encrypt project env vars at rest.
   // Generate with: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
   FLEET_SECRETS_ENCRYPTION_KEY: z.string().min(44),

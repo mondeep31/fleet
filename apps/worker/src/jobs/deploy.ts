@@ -1,5 +1,5 @@
 import { Project } from "@fleet/db";
-import { buildProjectDeploySubdomain } from "@fleet/config";
+import { buildProjectDeploySubdomain, isUnlimitedPlan } from "@fleet/config";
 import { getErrorMessage } from "@fleet/errors";
 import type { DeployJobPayload } from "@fleet/queue";
 import { detectDockerfile } from "@fleet/runtime-detector";
@@ -14,12 +14,13 @@ import {
 import { finalizeDeploymentLogs, publishLog } from "../services/logs";
 import { getDecryptedGitHubToken } from "../services/github-integration";
 import { getDecryptedProjectVariables } from "../services/project-variable";
+import { getComputeLimitsForUser } from "../services/user-plan";
 import { buildImage } from "../steps/build";
 import { buildRailpack } from "../steps/build-railpack";
 import { cloneRepo } from "../steps/clone";
 import { isGitHubRepoUrl } from "../lib/github-repo";
 import {
-  attachContainerToTraefik,
+  ensureTraefikOnProjectNetwork,
   removeAllProjectContainers,
   removeContainerById,
 } from "../lib/docker";
@@ -135,6 +136,15 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       publishLog(deploymentId, `Injecting ${envCount} environment variable${envCount === 1 ? "" : "s"}`, "pipeline");
     }
 
+    const computeLimits = await getComputeLimitsForUser(project.userId);
+    publishLog(
+      deploymentId,
+      isUnlimitedPlan(computeLimits)
+        ? "Container limits: unlimited"
+        : `Container limits: ${computeLimits.memoryMb}MB RAM, ${computeLimits.nanoCpus / 1_000_000_000} CPU`,
+      "pipeline",
+    );
+
     // Phase 1: Start the new container on the project network only (not yet
     // connected to Traefik). If this fails, nothing has changed for the user.
     const { containerId, networkName, url } = await runContainer({
@@ -143,6 +153,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       deploymentId,
       subdomain,
       env: envVars,
+      computeLimits,
     });
     newContainerId = containerId;
 
@@ -151,9 +162,9 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     // one container for this project — the new one, not yet routable.
     await removeAllProjectContainers(projectId, containerId);
 
-    // Phase 3: Attach the new container to Traefik. From this moment it is the
-    // sole backend for the project URL — no overlap, no load-balancing.
-    await attachContainerToTraefik(containerId);
+    // Phase 3: Attach Traefik to the project network so it can route traffic
+    // without placing the app on the shared proxy network (tenant isolation).
+    await ensureTraefikOnProjectNetwork(networkName);
 
     // Phase 4: Bookkeeping — mark old DB records stopped, new one live.
     await supersedeLiveDeployments(projectId, deploymentId);
