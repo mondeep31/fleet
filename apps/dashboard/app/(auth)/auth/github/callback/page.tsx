@@ -1,38 +1,34 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuthStore } from "@/stores/auth-store";
 
-export default function GitHubCallbackPage({
-  searchParams,
-}: {
-  searchParams: Promise<{
-    token?: string;
-    userId?: string;
-    name?: string;
-    email?: string;
-    error?: string;
-    message?: string;
-  }>;
-}) {
-  const params = use(searchParams);
+function GitHubCallbackContent() {
+  const searchParams = useSearchParams();
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (params.error || !params.token) {
+    const error = searchParams.get("error");
+    const token = searchParams.get("token");
+    const message = searchParams.get("message");
+
+    if (error || !token) {
       setErrorMessage(
-        params.message
-          ? decodeURIComponent(params.message)
+        message
+          ? decodeURIComponent(message)
           : "GitHub sign-in failed. Please try again.",
       );
       return;
     }
 
-    const { token, userId, name, email } = params;
+    const userId = searchParams.get("userId");
+    const name = searchParams.get("name");
+    const email = searchParams.get("email");
+
     if (!userId || !name || !email) {
       setErrorMessage("Incomplete response from GitHub. Please try again.");
       return;
@@ -40,7 +36,7 @@ export default function GitHubCallbackPage({
 
     setSession(token, { userId, name, email });
     router.replace("/projects");
-  }, [params, setSession, router]);
+  }, [searchParams, setSession, router]);
 
   if (errorMessage) {
     return (
@@ -64,5 +60,19 @@ export default function GitHubCallbackPage({
     <div className="flex min-h-dvh items-center justify-center bg-background">
       <p className="text-sm text-(--text-tertiary)">Signing you in…</p>
     </div>
+  );
+}
+
+export default function GitHubCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-dvh items-center justify-center bg-background">
+          <p className="text-sm text-(--text-tertiary)">Signing you in…</p>
+        </div>
+      }
+    >
+      <GitHubCallbackContent />
+    </Suspense>
   );
 }
