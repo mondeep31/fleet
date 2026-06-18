@@ -62,8 +62,8 @@ const PLANS: Plan[] = [
 const FEATURES = [
   "GitHub push-to-deploy",
   "Build & runtime logs",
-  "Encrypted environment variables",
-  "Custom domains",
+  "Environment variables",
+  "Stable live URLs",
   "Zero-downtime redeploys",
 ];
 
