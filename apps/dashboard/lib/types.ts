@@ -29,6 +29,7 @@ export interface AuthUser {
   name: string;
   email: string;
   token: string;
+  plan?: string;
 }
 
 export interface GitHubStatus {

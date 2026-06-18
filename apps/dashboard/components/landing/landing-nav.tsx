@@ -36,9 +36,31 @@ export function LandingNav() {
           <FleetLogo className="size-4" />
           <span className="text-sm font-medium tracking-tight">fleet</span>
         </Link>
+
+        <nav className="hidden items-center gap-6 sm:flex">
+          <a
+            href="#features"
+            className="text-sm text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+          >
+            Features
+          </a>
+          <a
+            href="#how-it-works"
+            className="text-sm text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+          >
+            How it works
+          </a>
+          <a
+            href="#pricing"
+            className="text-sm text-(--text-secondary) transition-colors hover:text-(--text-primary)"
+          >
+            Pricing
+          </a>
+        </nav>
+
         <Link
           href="/login"
-          className="text-sm text-[var(--text-secondary)] transition-colors hover:text-[var(--text-primary)]"
+          className="text-sm text-(--text-secondary) transition-colors hover:text-(--text-primary)"
         >
           Log in →
         </Link>

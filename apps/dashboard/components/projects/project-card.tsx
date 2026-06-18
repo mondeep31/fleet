@@ -4,7 +4,8 @@ import Link from "next/link";
 import { ArrowSquareOut, GitBranch } from "@phosphor-icons/react";
 import { ProjectCardMenu } from "@/components/projects/project-card-menu";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { extractRepoDomain, formatRelativeTime } from "@/lib/format";
+import { extractRepoDomain } from "@/lib/format";
+import { RelativeTime } from "@/components/ui/relative-time";
 import { isActiveStatus, type ProjectWithLatestDeploy } from "@/lib/types";
 
 function displayCommitMessage(
@@ -97,9 +98,13 @@ export function ProjectCard({
             {displayCommitMessage(latest)}
           </p>
           <p className="mt-1 truncate text-muted-foreground">
-            {latest?.createdAt
-              ? `${formatRelativeTime(latest.createdAt)} on ${project.branch}`
-              : "Waiting for first deployment"}
+            {latest?.createdAt ? (
+              <>
+                <RelativeTime date={latest.createdAt} /> on {project.branch}
+              </>
+            ) : (
+              "Waiting for first deployment"
+            )}
           </p>
         </Link>
       </div>

@@ -4,6 +4,7 @@ import { DeployedSection } from "./deployed-section";
 import { Figs } from "./figs";
 import { CicdSection } from "./cicd-section";
 import { Workflow } from "./workflow";
+import { Pricing } from "./pricing";
 import { LandingFooter } from "./landing-footer";
 
 export function LandingPage() {
@@ -16,6 +17,7 @@ export function LandingPage() {
         <Figs />
         <CicdSection />
         <Workflow />
+        <Pricing />
       </main>
       <LandingFooter />
     </div>

@@ -185,7 +185,7 @@ function MobileSidebarOverlay({
             )}
           >
             <Gear className="size-4" />
-            Settings
+            Profile
             <CaretRight className="ml-auto size-4" />
           </Link>
 
@@ -252,7 +252,7 @@ export function Sidebar() {
           )}
         >
           <Gear className="size-4" />
-          Settings
+          Profile
         </Link>
 
         <Separator className="my-3" />

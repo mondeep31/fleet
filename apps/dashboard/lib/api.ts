@@ -107,7 +107,9 @@ export const api = {
     }, false),
 
   getUser: () =>
-    request<{ userId: string; name: string; email: string }>("/api/v1/users"),
+    request<{ userId: string; name: string; email: string; plan: string }>(
+      "/api/v1/users",
+    ),
 
   updateUser: (body: {
     name?: string;

@@ -170,7 +170,7 @@ export function Figs() {
   const reduceMotion = useReducedMotion();
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-24">
+    <section id="features" className="mx-auto max-w-5xl px-6 py-24">
       <div className="grid grid-cols-1 gap-16 sm:grid-cols-2 lg:grid-cols-4 sm:gap-12">
         {figs.map(({ label, Illustration, title, description }, i) => (
           <motion.div

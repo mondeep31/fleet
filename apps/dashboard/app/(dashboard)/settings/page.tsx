@@ -4,7 +4,8 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CheckCircle, Warning } from "@phosphor-icons/react";
+import { CheckCircle, CreditCard, Warning } from "@phosphor-icons/react";
+import useSWR from "swr";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -153,6 +154,67 @@ function ProfileCard() {
   );
 }
 
+const PLAN_DISPLAY: Record<
+  string,
+  { label: string; ram: string; cpu: string }
+> = {
+  free: { label: "Free", ram: "256 MB", cpu: "0.25 cores" },
+  pro: { label: "Pro", ram: "1 GB", cpu: "1 core" },
+  team: { label: "Team", ram: "4 GB", cpu: "4 cores" },
+  unlimited: { label: "Unlimited", ram: "Unlimited", cpu: "Unlimited" },
+};
+
+function PlanCard() {
+  const { data, isLoading } = useSWR("getUser", () => api.getUser());
+  const planId = data?.plan ?? "free";
+  const planInfo = PLAN_DISPLAY[planId] ?? PLAN_DISPLAY.free;
+
+  return (
+    <div className="rounded-lg border border-border bg-card p-5">
+      <h2 className="mb-1 text-base font-semibold">Plan</h2>
+      <p className="mb-5 text-sm text-muted-foreground">
+        Your current subscription and resource limits.
+      </p>
+
+      {isLoading ? (
+        <div className="h-16 animate-pulse rounded-md bg-muted/40" />
+      ) : (
+        <div className="mb-5 rounded-md border border-border bg-muted/20 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <span className="text-sm font-medium">{planInfo.label}</span>
+            <span className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+              Active
+            </span>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground">RAM</p>
+              <p className="font-mono text-xs">{planInfo.ram}</p>
+            </div>
+            <div className="space-y-0.5">
+              <p className="text-xs text-muted-foreground">CPU</p>
+              <p className="font-mono text-xs">{planInfo.cpu}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="rounded-md border border-border bg-muted/10 p-4">
+        <div className="mb-2 flex items-center gap-2">
+          <CreditCard className="size-4 text-muted-foreground" />
+          <h3 className="text-sm font-medium">Billing</h3>
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Manage your subscription and payment details.
+        </p>
+        <Button size="sm" variant="outline" disabled className="opacity-60">
+          Upgrade — Coming soon
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 function SecurityCard() {
   const [notice, setNotice] = useState<Notice | null>(null);
 
@@ -277,10 +339,11 @@ function SecurityCard() {
 export default function SettingsPage() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <Header title="Settings" />
+      <Header title="Profile" />
       <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
         <div className="mx-auto max-w-lg space-y-6">
           <ProfileCard />
+          <PlanCard />
           <SecurityCard />
         </div>
       </div>
