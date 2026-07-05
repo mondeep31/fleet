@@ -1,4 +1,5 @@
 import tar from "tar-fs";
+import { BUILD_TIMEOUT_MS, buildTimeoutErrorMessage } from "../lib/build-timeout";
 import { getDocker } from "../lib/docker";
 import { flushLogs, publishLog } from "../services/logs";
 
@@ -22,7 +23,7 @@ export async function buildImage({
     dockerfile,
   });
 
-  await new Promise<void>((resolve, reject) => {
+  const buildPromise = new Promise<void>((resolve, reject) => {
     let failed = false;
 
     docker.modem.followProgress(
@@ -46,6 +47,15 @@ export async function buildImage({
       },
     );
   });
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    setTimeout(() => {
+      stream.destroy();
+      reject(new Error(`Docker ${buildTimeoutErrorMessage().toLowerCase()}`));
+    }, BUILD_TIMEOUT_MS);
+  });
+
+  await Promise.race([buildPromise, timeoutPromise]);
 
   await flushLogs(deploymentId);
   return imageTag;

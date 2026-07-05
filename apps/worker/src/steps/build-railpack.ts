@@ -1,5 +1,6 @@
-import { flushLogs, publishLog } from "../services/logs";
+import { BUILD_TIMEOUT_MS, buildTimeoutErrorMessage } from "../lib/build-timeout";
 import { ensureBuildKit, ensureRailpackBin } from "../lib/railpack";
+import { flushLogs, publishLog } from "../services/logs";
 
 interface BuildRailpackParams {
   cloneDir: string;
@@ -54,14 +55,27 @@ export async function buildRailpack({
     }
   }
 
-  await Promise.all([
-    streamLines(proc.stdout),
-    streamLines(proc.stderr),
-  ]);
+  let timedOut = false;
+  const timeout = setTimeout(() => {
+    timedOut = true;
+    proc.kill();
+  }, BUILD_TIMEOUT_MS);
 
-  const exitCode = await proc.exited;
-  if (exitCode !== 0) {
-    throw new Error(`railpack build failed with exit code ${exitCode}`);
+  try {
+    await Promise.all([
+      streamLines(proc.stdout),
+      streamLines(proc.stderr),
+    ]);
+
+    const exitCode = await proc.exited;
+    if (timedOut) {
+      throw new Error(buildTimeoutErrorMessage());
+    }
+    if (exitCode !== 0) {
+      throw new Error(`railpack build failed with exit code ${exitCode}`);
+    }
+  } finally {
+    clearTimeout(timeout);
   }
 
   await flushLogs(deploymentId);

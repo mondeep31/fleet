@@ -22,7 +22,12 @@ const deployWorker = new Worker<DeployJobPayload>(
   async (job) => {
     await handleDeployJob(job.data);
   },
-  { connection },
+  {
+    connection,
+    lockDuration: 5 * 60 * 1000,
+    stalledInterval: 30 * 1000,
+    maxStalledCount: 2,
+  },
 );
 
 const emailWorker = new Worker<EmailJobPayload>(
