@@ -285,17 +285,9 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
                 </div>
               </div>
 
-              {/*
-                RoutingRecord stays visible even once "active" — Cloudflare's
-                active status only means ownership+SSL passed, not that the
-                routing CNAME exists. A domain can be "active" here and still
-                not resolve at all if that CNAME was never added.
-              */}
-              {(domain.status === "pending" || domain.status === "active") && (
-                <RoutingRecord domain={domain.domain} />
-              )}
               {domain.status === "pending" && (
                 <>
+                  <RoutingRecord domain={domain.domain} />
                   <VerificationRecord domain={domain} />
                   <SslValidationRecords domain={domain} />
                 </>
