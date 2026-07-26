@@ -404,21 +404,30 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
         )}
       </CardContent>
 
-      <CardFooter className="gap-2">
-        <Input
-          placeholder="app.example.com"
-          value={newDomain}
-          onChange={(e) => setNewDomain(e.target.value)}
-          disabled={isAdding}
-        />
-        <Button
-          onClick={handleAdd}
-          disabled={isAdding || !newDomain.trim()}
-          size="sm"
-        >
-          {isAdding ? "Adding…" : "Add domain"}
-        </Button>
-      </CardFooter>
+      {domains && domains.length > 0 ? (
+        <CardFooter>
+          <p className="text-xs text-muted-foreground">
+            Only one custom domain is allowed per project — remove the
+            existing one above to connect a different domain.
+          </p>
+        </CardFooter>
+      ) : (
+        <CardFooter className="gap-2">
+          <Input
+            placeholder="app.example.com"
+            value={newDomain}
+            onChange={(e) => setNewDomain(e.target.value)}
+            disabled={isAdding}
+          />
+          <Button
+            onClick={handleAdd}
+            disabled={isAdding || !newDomain.trim()}
+            size="sm"
+          >
+            {isAdding ? "Adding…" : "Add domain"}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }

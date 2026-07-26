@@ -1,6 +1,7 @@
-import { Project } from "@fleet/db";
+import { Domain, Project } from "@fleet/db";
 import { buildProjectDeploySubdomain } from "@fleet/config";
 import { AppError } from "@fleet/errors";
+import { deleteCustomHostname, syncActiveDomainRouting } from "@fleet/domains";
 import {
   listDeploymentsByProjectId,
   getLatestDeploymentsForProjects,
@@ -10,6 +11,25 @@ import {
 import { saveProjectVariables, type VariableInput } from "./project-variable";
 import { validateRepoDockerfile } from "./github-repos";
 import { ensureRepoWebhook, removeRepoWebhookIfUnused } from "./github-hooks";
+
+/**
+ * Best-effort — a project being archived shouldn't fail because Cloudflare's
+ * API had a hiccup. Orphaned Cloudflare hostnames don't route anywhere once
+ * their Traefik router disappears; the DB records are what actually matter
+ * and those are removed unconditionally below.
+ */
+async function removeDomainsForProject(projectId: string): Promise<void> {
+  const domains = await Domain.find({ projectId });
+  if (domains.length === 0) return;
+
+  await Promise.all(
+    domains.map((domain) =>
+      deleteCustomHostname(domain.cloudflareHostnameId).catch(() => {}),
+    ),
+  );
+  await Domain.deleteMany({ projectId });
+  await syncActiveDomainRouting();
+}
 
 interface CreateProjectParams {
   name: string;
@@ -195,6 +215,8 @@ export async function archiveProject(projectId: string, userId: string) {
     project.repoUrl,
     project.githubHookId as number | undefined,
   );
+
+  await removeDomainsForProject(projectId);
 
   return {
     projectId: updated.projectId,

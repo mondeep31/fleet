@@ -21,6 +21,15 @@ export async function addCustomDomain(
     throw new AppError(409, "This domain is already connected to a project", "DOMAIN_TAKEN");
   }
 
+  const existingForProject = await Domain.findOne({ projectId });
+  if (existingForProject) {
+    throw new AppError(
+      409,
+      "This project already has a custom domain. Remove it before adding another.",
+      "DOMAIN_LIMIT_REACHED",
+    );
+  }
+
   const hostname = await createCustomHostname(domain);
 
   try {
