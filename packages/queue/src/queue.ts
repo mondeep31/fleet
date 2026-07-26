@@ -1,6 +1,6 @@
 import { Queue } from "bullmq";
 import { createRedisConnection } from "./connection";
-import { DEPLOY_QUEUE, EMAIL_QUEUE } from "./names";
+import { DEPLOY_QUEUE, DOMAIN_VERIFY_QUEUE, EMAIL_QUEUE } from "./names";
 import type { DeployJobPayload, EmailJobPayload } from "./types";
 
 let deployQueue: Queue<DeployJobPayload> | null = null;
@@ -41,6 +41,18 @@ export function createEmailQueue() {
 export async function enqueueEmail(payload: EmailJobPayload): Promise<void> {
   const queue = createEmailQueue();
   await queue.add("email", payload);
+}
+
+let domainVerifyQueue: Queue | null = null;
+
+/** No job payload — it's a no-arg sweep over all pending Domain docs. */
+export function createDomainVerifyQueue() {
+  if (!domainVerifyQueue) {
+    domainVerifyQueue = new Queue(DOMAIN_VERIFY_QUEUE, {
+      connection: createRedisConnection(),
+    });
+  }
+  return domainVerifyQueue;
 }
 
 export async function cancelDeployJob(deploymentId: string): Promise<boolean> {

@@ -11,6 +11,7 @@
     "@fleet/auth": "workspace:*",
     "@fleet/config": "workspace:*",
     "@fleet/db": "workspace:*",
+    "@fleet/domains": "workspace:*",
     "@fleet/errors": "workspace:*",
     "@fleet/logs": "workspace:*",
     "@fleet/queue": "workspace:*",

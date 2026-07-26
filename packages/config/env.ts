@@ -22,6 +22,15 @@ const sharedEnvSchema = z.object({
   FLEET_TRAEFIK_NETWORK: z.string().min(1).default("fleet-proxy"),
   // Docker container name of the Traefik reverse proxy (must match docker-compose).
   FLEET_TRAEFIK_CONTAINER: z.string().min(1).default("fleet-traefik"),
+  // Host directory bind-mounted into Traefik's file provider (see docker-compose.yml)
+  // for custom-domain routing. Must resolve to the same path Traefik sees at /dynamic.
+  FLEET_TRAEFIK_DYNAMIC_DIR: z.string().min(1).default("/tmp/fleet-traefik-dynamic"),
+  // Cloudflare for SaaS — custom hostnames for user-connected custom domains.
+  // Optional: only required to use the custom domain feature. Token needs
+  // Zone:SSL and Certificates:Edit + Zone:Custom Hostnames:Edit on the zone below.
+  // Shared (not API-only) because the worker's domain-verification sweep needs it too.
+  CLOUDFLARE_API_TOKEN: z.string().min(1).optional(),
+  CLOUDFLARE_ZONE_ID: z.string().min(1).optional(),
   // Optional JSON map of plan → compute limits; merges over packages/config/plans defaults.
   // Example: {"pro":{"memoryMb":2048,"nanoCpus":2000000000,"pidsLimit":512,"tmpfsMb":128}}
   FLEET_PLAN_LIMITS_JSON: z.string().optional(),

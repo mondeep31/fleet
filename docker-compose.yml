@@ -14,6 +14,7 @@ services:
       - "127.0.0.1:${TRAEFIK_DASHBOARD_HOST_PORT:-18081}:8080"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ${FLEET_TRAEFIK_DYNAMIC_DIR:-/tmp/fleet-traefik-dynamic}:/dynamic:ro
     networks:
       - fleet-proxy
     command:
@@ -21,6 +22,8 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--providers.docker.network=fleet-proxy"
+      - "--providers.file.directory=/dynamic"
+      - "--providers.file.watch=true"
       - "--entrypoints.web.address=:80"
 
 networks:

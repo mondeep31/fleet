@@ -3,6 +3,27 @@ export interface ProjectVariable {
   hasValue: boolean;
 }
 
+export type DomainStatus = "pending" | "active" | "error" | "deleted";
+
+export interface Domain {
+  _id: string;
+  projectId: string;
+  domain: string;
+  status: DomainStatus;
+  sslStatus?: string;
+  ownershipVerification?: {
+    type?: string;
+    name?: string;
+    value?: string;
+    http_url?: string;
+    http_body?: string;
+  };
+  error?: string;
+  lastCheckedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface EnvVariableRow {
   key: string;
   value: string;

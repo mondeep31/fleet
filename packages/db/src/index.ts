@@ -6,4 +6,5 @@ export { Server } from "./models/server";
 export { Deployment } from "./models/deployment";
 export { ProjectVariable } from "./models/project-variable";
 export { Integration } from "./models/integration";
+export { Domain } from "./models/domain";
 export { isDuplicateKeyError } from "./utils/mongo";

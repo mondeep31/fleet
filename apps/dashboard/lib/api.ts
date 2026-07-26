@@ -5,6 +5,7 @@ import type {
   AuthUser,
   Deployment,
   DockerfileValidation,
+  Domain,
   EnvVariableRow,
   GitHubBranch,
   GitHubRepo,
@@ -183,6 +184,26 @@ export const api = {
         body: JSON.stringify(variables),
       },
     ),
+
+  getProjectDomains: (projectId: string) =>
+    request<Domain[]>(`/api/v1/projects/${projectId}/domains`),
+
+  addProjectDomain: (projectId: string, domain: string) =>
+    request<Domain>(`/api/v1/projects/${projectId}/domains`, {
+      method: "POST",
+      body: JSON.stringify({ domain }),
+    }),
+
+  verifyProjectDomain: (projectId: string, domainId: string) =>
+    request<Domain>(
+      `/api/v1/projects/${projectId}/domains/${domainId}/verify`,
+      { method: "POST" },
+    ),
+
+  deleteProjectDomain: (projectId: string, domainId: string) =>
+    request<null>(`/api/v1/projects/${projectId}/domains/${domainId}`, {
+      method: "DELETE",
+    }),
 
   getDeploymentsByProject: (projectId: string) =>
     request<{ deployments: Deployment[] }>(

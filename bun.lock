@@ -42,6 +42,7 @@
         "@fleet/auth": "workspace:*",
         "@fleet/config": "workspace:*",
         "@fleet/db": "workspace:*",
+        "@fleet/domains": "workspace:*",
         "@fleet/errors": "workspace:*",
         "@fleet/logs": "workspace:*",
         "@fleet/queue": "workspace:*",
@@ -119,6 +120,7 @@
       "dependencies": {
         "@fleet/config": "workspace:*",
         "@fleet/db": "workspace:*",
+        "@fleet/domains": "workspace:*",
         "@fleet/email": "workspace:*",
         "@fleet/errors": "workspace:*",
         "@fleet/logs": "workspace:*",
@@ -197,6 +199,20 @@
         "@fleet/config": "workspace:*",
         "mongoose": "^9.6.2",
         "uuid": "^14.0.0",
+      },
+      "devDependencies": {
+        "@types/node": "^25.6.2",
+        "typescript": "^6.0.3",
+      },
+    },
+    "packages/domains": {
+      "name": "@fleet/domains",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fleet/config": "workspace:*",
+        "@fleet/db": "workspace:*",
+        "@fleet/errors": "workspace:*",
+        "axios": "^1.18.0",
       },
       "devDependencies": {
         "@types/node": "^25.6.2",
@@ -440,6 +456,8 @@
     "@fleet/config": ["@fleet/config@workspace:packages/config"],
 
     "@fleet/db": ["@fleet/db@workspace:packages/db"],
+
+    "@fleet/domains": ["@fleet/domains@workspace:packages/domains"],
 
     "@fleet/email": ["@fleet/email@workspace:packages/email"],
 
@@ -2194,6 +2212,8 @@
     "@fleet/config/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@fleet/db/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
+
+    "@fleet/domains/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@fleet/email/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 

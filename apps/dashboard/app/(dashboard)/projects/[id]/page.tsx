@@ -6,6 +6,7 @@ import { ArrowCounterClockwise } from "@phosphor-icons/react";
 import { Header } from "@/components/layout/header";
 import { VirtualDeploymentList } from "@/components/deployments/virtual-deployment-list";
 import { EnvVariablesCard } from "@/components/projects/env-variables-card";
+import { DomainsCard } from "@/components/projects/domains-card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useDeploymentsByProject } from "@/hooks/use-deployments";
@@ -98,6 +99,7 @@ export default function ProjectDetailPage() {
         {!isLoading && project && (
           <>
             <EnvVariablesCard projectId={projectId} onDeployStarted={() => mutate()} />
+            <DomainsCard projectId={projectId} />
 
             {deployments.length === 0 && !error && (
               <div className="rounded-xl border border-border bg-card px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">

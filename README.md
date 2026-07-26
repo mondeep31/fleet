@@ -1,8 +1,10 @@
 # Fleet
 
-Fleet is a self-hosted PaaS built as a Bun monorepo. Connect a Git repository, trigger a deployment, and Fleet clones the code, builds a Docker image, runs the container, and gives you a URL to hit.
+Fleet is a self-hosted PaaS built as a Bun monorepo. Connect a GitHub repo, push to a branch, and Fleet clones the code, builds a Docker image, runs the container behind Traefik, and gives you a stable URL — auto-redeploying on every push.
 
-The current milestone is a **local end-to-end deploy pipeline** — no dashboard, no GitHub OAuth, no remote agent yet. The goal is proven: API call → repo cloned → image built → container running → `curl` the app.
+**What's real today:** GitHub OAuth (login + repo connect), webhook-driven auto-deploy on push, a working dashboard (project CRUD, live SSE deployment logs, encrypted env var management, connections page), blue/green container cutover with no downtime on redeploy, and per-plan compute sandboxing.
+
+**What's not built yet:** a remote agent for running deploys on a server other than the one running the worker (`apps/agent` — types only), a CLI (`apps/cli` — deps only), and deployment rollback. Custom domains are built (via Cloudflare for SaaS — see below), pending a one-time Cloudflare zone setup the operator has to do outside this repo. See [`docs/architecture.md`](docs/architecture.md#roadmap--not-yet-implemented) for the full gap list and [`docs/CONTEXT.md`](docs/CONTEXT.md) for the current planning/decision log on where this is headed next.
 
 ## How it works
 
@@ -34,7 +36,7 @@ Each project gets a deterministic **subdomain** of `depl-fleet-{projectId}`. Tra
 |------|------|--------|
 | [`apps/api`](apps/api) | Express REST API — auth, projects, deployments | **Active** |
 | [`apps/worker`](apps/worker) | BullMQ worker — clone, build, run | **Active** |
-| [`apps/dashboard`](apps/dashboard) | Next.js UI | Scaffold (boilerplate) |
+| [`apps/dashboard`](apps/dashboard) | Next.js UI — auth, projects, live deploy logs, env vars, GitHub connections | **Active** |
 | [`apps/agent`](apps/agent) | Remote server agent (WebSocket + Docker) | Planned (deps only) |
 | [`apps/cli`](apps/cli) | CLI tool | Planned (deps only) |
 | [`packages/db`](packages/db) | Mongoose models — User, Project, Environment, Server, Deployment | **Active** |
@@ -173,6 +175,12 @@ When a GitHub project is created Fleet automatically registers a push webhook on
 | `GET` | `/api/v1/deployments/:deploymentId/logs/stream` | SSE log stream (build via Redis, runtime via Docker tail) |
 | `GET` | `/api/v1/deployments/:deploymentId/logs` | Deprecated (410) — use `/logs/stream` |
 | `DELETE` | `/api/v1/deployments/:deploymentId` | Stop/cancel deployment (removes container, cancels queued jobs) |
+| `GET`/`PUT` | `/api/v1/projects/:projectId/variables` | Read/write encrypted env vars for a project (saving triggers a redeploy) |
+| `GET` | `/api/v1/integrations/github/connect` | Start GitHub "Connect" OAuth flow (link repos, separate from login) |
+| `GET`/`DELETE` | `/api/v1/integrations/github` | Connection status (incl. `needsReconnect`) / disconnect |
+| `GET` | `/api/v1/integrations/github/repos` | List repos for the connected GitHub account |
+| `GET` | `/api/v1/integrations/github/repos/:owner/:repo/branches` | List branches for a repo |
+| `POST` | `/api/v1/integrations/github/repos/validate` | Check a repo/branch for a root Dockerfile before creating a project |
 
 ## Deployment lifecycle
 
@@ -257,11 +265,20 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 
 | Task | Notes |
 |------|-------|
-| **Runtime detector** | Detect stack; generate Dockerfile when repo has none |
+| ~~GitHub integration~~ | Done — OAuth (login + connect apps), repo/branch picker, webhook auto-deploy on push |
+| ~~Dashboard~~ | Done — auth, project CRUD, live SSE deploy logs, env var management, connections page |
 | **Registry push** | Push images to GHCR before run (needed for remote servers) |
-| **Agent** | WebSocket agent on managed servers ([`packages/types/src/agent.ts`](packages/types/src/agent.ts)) |
-| **GitHub integration** | Webhooks, OAuth, auto-deploy on push |
-| **Dashboard** | Projects, deployments, logs UI |
+| **Agent** | WebSocket agent on managed/user-owned servers ([`packages/types/src/agent.ts`](packages/types/src/agent.ts)); `Server` model already exists but is unused — see [`docs/CONTEXT.md`](docs/CONTEXT.md) |
+| **Runtime detector improvements** | Dockerfile in subdirectories; generate a Dockerfile when repo has none beyond the current Railpack fallback |
+
+### Phase 4 — Public showcase readiness
+
+| Task | Notes |
+|------|-------|
+| ~~Custom domains~~ | Done in-app, via Cloudflare for SaaS (not self-issued ACME — the box is tunnel-only, no public inbound port for Let's Encrypt to reach). `Domain` model, background verification sweep, Traefik dynamic routing, and dashboard UI all built. One-time Cloudflare zone/tunnel setup still required outside this repo — checklist in [`docs/CONTEXT.md`](docs/CONTEXT.md) |
+| **Deployment rollback** | `rolled_back` status is defined but no code path ever sets it |
+| **Health checks** | "Live" currently only means "container reported Running"; no HTTP-level check |
+| **Build isolation hardening** | All user Dockerfiles currently build/run on one shared Docker daemon; sandboxing exists (`CapDrop`, resource limits) but isn't full isolation |
 
 ## Architecture decisions
 

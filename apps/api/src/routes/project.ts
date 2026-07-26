@@ -9,10 +9,17 @@ import {
   updateProjectVariablesController,
 } from "../controller/project";
 import {
+  addDomainController,
+  deleteDomainController,
+  listDomainsController,
+  verifyDomainController,
+} from "../controller/domain";
+import {
   createProjectBodySchema,
   projectIdParamsSchema,
   projectVariablesBodySchema,
 } from "../validators/user";
+import { addDomainBodySchema, domainIdParamsSchema } from "../validators/domain";
 
 const router = Router();
 
@@ -46,6 +53,30 @@ router.put(
   "/:projectId/variables",
   validate({ params: projectIdParamsSchema, body: projectVariablesBodySchema }),
   updateProjectVariablesController,
+);
+
+router.get(
+  "/:projectId/domains",
+  validate({ params: projectIdParamsSchema }),
+  listDomainsController,
+);
+
+router.post(
+  "/:projectId/domains",
+  validate({ params: projectIdParamsSchema, body: addDomainBodySchema }),
+  addDomainController,
+);
+
+router.post(
+  "/:projectId/domains/:domainId/verify",
+  validate({ params: domainIdParamsSchema }),
+  verifyDomainController,
+);
+
+router.delete(
+  "/:projectId/domains/:domainId",
+  validate({ params: domainIdParamsSchema }),
+  deleteDomainController,
 );
 
 export default router;
