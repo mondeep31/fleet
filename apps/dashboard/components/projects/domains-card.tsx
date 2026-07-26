@@ -1,7 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Clock, Trash, WarningCircle } from "@phosphor-icons/react";
+import {
+  CheckCircle,
+  Clock,
+  Trash,
+  WarningCircle,
+} from "@phosphor-icons/react";
 import useSWR from "swr";
 import { api, ApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +26,10 @@ interface DomainsCardProps {
   projectId: string;
 }
 
-const STATUS_CONFIG: Record<DomainStatus, { label: string; className: string; icon: typeof Clock }> = {
+const STATUS_CONFIG: Record<
+  DomainStatus,
+  { label: string; className: string; icon: typeof Clock }
+> = {
   pending: {
     label: "Pending",
     className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
@@ -65,7 +73,11 @@ const CNAME_TARGET = process.env.NEXT_PUBLIC_FLEET_DOMAIN_CNAME_TARGET;
  * that does NOT mean the routing CNAME exists, so show both unconditionally.
  */
 function RoutingRecord({ domain }: { domain: string }) {
-  if (!CNAME_TARGET) return null;
+  console.log("CNAME_TARGET", CNAME_TARGET);
+  if (!CNAME_TARGET) {
+    console.log("No CNAME_TARGET");
+    return null;
+  }
   return (
     <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
       <p className="text-muted-foreground">
@@ -128,17 +140,22 @@ function VerificationRecord({ domain }: { domain: Domain }) {
  * Add all of them; only one needs to resolve for the cert to issue.
  */
 function SslValidationRecords({ domain }: { domain: Domain }) {
-  const records = domain.sslValidationRecords?.filter((r) => r.txt_name && r.txt_value);
+  const records = domain.sslValidationRecords?.filter(
+    (r) => r.txt_name && r.txt_value,
+  );
   if (!records || records.length === 0) return null;
 
   return (
     <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
       <p className="text-muted-foreground">
-        3. Add this TXT record so the SSL certificate can be issued (add any
-        one if multiple are listed):
+        3. Add this TXT record so the SSL certificate can be issued (add any one
+        if multiple are listed):
       </p>
       {records.map((record, i) => (
-        <div key={i} className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}>
+        <div
+          key={i}
+          className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}
+        >
           <p className="mt-1 break-all">
             <span className="text-muted-foreground">Name: </span>
             {record.txt_name}
@@ -154,7 +171,11 @@ function SslValidationRecords({ domain }: { domain: Domain }) {
 }
 
 export function DomainsCard({ projectId }: DomainsCardProps) {
-  const { data: domains, isLoading, mutate } = useSWR<Domain[]>(
+  const {
+    data: domains,
+    isLoading,
+    mutate,
+  } = useSWR<Domain[]>(
     `project-domains-${projectId}`,
     () => api.getProjectDomains(projectId),
     {
@@ -195,7 +216,11 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
       await api.verifyProjectDomain(projectId, domainId);
       await mutate();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to check domain status.");
+      setError(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to check domain status.",
+      );
     } finally {
       setCheckingId(null);
     }
@@ -208,7 +233,9 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
       await api.deleteProjectDomain(projectId, domainId);
       await mutate();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to remove domain.");
+      setError(
+        err instanceof ApiError ? err.message : "Failed to remove domain.",
+      );
     } finally {
       setRemovingId(null);
     }
@@ -299,7 +326,11 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
           onChange={(e) => setNewDomain(e.target.value)}
           disabled={isAdding}
         />
-        <Button onClick={handleAdd} disabled={isAdding || !newDomain.trim()} size="sm">
+        <Button
+          onClick={handleAdd}
+          disabled={isAdding || !newDomain.trim()}
+          size="sm"
+        >
           {isAdding ? "Adding…" : "Add domain"}
         </Button>
       </CardFooter>
