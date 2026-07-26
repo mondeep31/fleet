@@ -71,6 +71,32 @@ public showcase:
   "default"`. This is relevant to the BYO-server idea below: the schema
   already anticipates it.
 
+## Decision: TypeScript 7 — upgraded everywhere except `apps/dashboard` (2026-07-27)
+
+TS 7.0 GA'd 2026-07-08 (Go-native compiler, ~10x faster). Root
+`package.json` and every workspace except `apps/dashboard` are now on
+`typescript@^7.0.2` — `apps/api`, `apps/worker`, `apps/agent`, `apps/cli`,
+and all of `packages/*`. These only ever used the `typescript` package for
+editor/language-server checking (Bun does its own TS type-stripping to
+run/build them, with no `tsc`/typecheck step anywhere in CI or git hooks),
+so there was nothing at risk.
+
+**`apps/dashboard` stays on `typescript@^5` deliberately** — two things
+block it:
+- TS 7.0 shipped without the old Compiler API (a new one is slated for
+  7.1, still unreleased). `next build`'s type-checking pass depends on
+  that API; Next.js only has an experimental workaround
+  (`experimental.useTypeScriptCli`), added in the 16.3 preview line, and
+  the dashboard is on Next 16.2.6.
+- `typescript-eslint` (pulled in via `eslint-config-next`) has a hard peer
+  range of `typescript: ">=4.8.4 <6.1.0"` — installing TS 7 for the
+  dashboard breaks `bun run lint` outright, with no workaround until
+  typescript-eslint ships support (itself blocked on the same 7.1 API).
+
+Revisit once either typescript-eslint adds TS 7 support or Next's
+`useTypeScriptCli` mode graduates out of experimental — whichever comes
+first.
+
 ## Decision: custom domains — build it, via Cloudflare for SaaS
 
 Scoped, self-contained, doesn't depend on the BYO-server question below.
