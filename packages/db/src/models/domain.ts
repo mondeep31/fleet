@@ -26,6 +26,12 @@ const domainSchema = new mongoose.Schema(
     sslStatus: {
       type: String,
     },
+    // Raw hostname.status from Cloudflare (ownership/activation) — kept
+    // separate from sslStatus so the dashboard can show ownership vs
+    // certificate progress independently instead of one combined status.
+    hostnameStatus: {
+      type: String,
+    },
     // Raw ownership_verification / ownership_verification_http block from Cloudflare,
     // shown to the user as the DNS record they need to add.
     ownershipVerification: {

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import {
   CheckCircle,
+  CircleNotch,
   Clock,
   Trash,
   WarningCircle,
@@ -21,6 +22,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useDnsResolves } from "@/hooks/use-dns-resolves";
+import { cn } from "@/lib/utils";
 import type { Domain, DomainStatus } from "@/lib/types";
 
 interface DomainsCardProps {
@@ -77,27 +80,59 @@ function DnsRecordLine({ label, value }: { label: string; value: string }) {
 }
 
 /**
- * Two separate DNS records are required, and it's easy to add only one:
- * a routing CNAME (makes the domain resolve at all, via Cloudflare's edge)
- * and an ownership-verification record (proves control, unlocks the cert).
- * Cloudflare reports the hostname "active" once ownership + SSL are done —
- * that does NOT mean the routing CNAME exists, so show both unconditionally.
+ * One row of the per-domain setup checklist. Instructions collapse once
+ * `done` — the point is to always show overall progress (not hide everything
+ * until fully done, and not show everything at once with no sense of what's
+ * left), and to distinguish "still waiting on you" from "actively checking"
+ * so a check-in-progress doesn't read the same as a stalled pending state.
  */
-function RoutingRecord({ domain }: { domain: string }) {
-  if (!CNAME_TARGET) return null;
+function ChecklistItem({
+  done,
+  checking,
+  label,
+  children,
+}: {
+  done: boolean;
+  checking?: boolean;
+  label: string;
+  children?: React.ReactNode;
+}) {
   return (
-    <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
-      <p className="text-muted-foreground">
-        1. Add this CNAME record at your DNS provider (this makes the domain
-        resolve — without it, the domain will not load even once verified):
-      </p>
-      <DnsRecordLine label="Name" value={domain} />
-      <DnsRecordLine label="Value" value={CNAME_TARGET} />
+    <div className="mt-3 first:mt-0">
+      <div className="flex items-center gap-2 text-sm">
+        {checking ? (
+          <CircleNotch className="size-4 shrink-0 animate-spin text-muted-foreground" />
+        ) : done ? (
+          <CheckCircle className="size-4 shrink-0 text-emerald-400" />
+        ) : (
+          <Clock className="size-4 shrink-0 text-amber-400" />
+        )}
+        <span className={cn(done && "text-muted-foreground")}>{label}</span>
+      </div>
+      {!done && children && (
+        <div className="mt-1 ml-6 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
 
-function VerificationRecord({ domain }: { domain: Domain }) {
+function RoutingRecordContent({ domain }: { domain: string }) {
+  if (!CNAME_TARGET) return null;
+  return (
+    <>
+      <p className="text-muted-foreground">
+        Add this CNAME record at your DNS provider — without it, the domain
+        will not load even once verified:
+      </p>
+      <DnsRecordLine label="Name" value={domain} />
+      <DnsRecordLine label="Value" value={CNAME_TARGET} />
+    </>
+  );
+}
+
+function VerificationRecordContent({ domain }: { domain: Domain }) {
   const record = domain.ownershipVerification;
   if (!record) return null;
 
@@ -105,24 +140,24 @@ function VerificationRecord({ domain }: { domain: Domain }) {
   // challenge (http_url/http_body) depending on the hostname's ssl settings.
   if (record.name && record.value) {
     return (
-      <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+      <>
         <p className="text-muted-foreground">
-          2. Add this {record.type ?? "TXT"} record to verify ownership:
+          Add this {record.type ?? "TXT"} record to verify ownership:
         </p>
         <DnsRecordLine label="Name" value={record.name} />
         <DnsRecordLine label="Value" value={record.value} />
-      </div>
+      </>
     );
   }
 
   if (record.http_url) {
     return (
-      <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+      <>
         <p className="text-muted-foreground">
-          2. Cloudflare is verifying ownership via HTTP at:
+          Cloudflare is verifying ownership via HTTP at:
         </p>
         <DnsRecordLine label="URL" value={record.http_url} />
-      </div>
+      </>
     );
   }
 
@@ -134,7 +169,7 @@ function VerificationRecord({ domain }: { domain: Domain }) {
  * ownership — Cloudflare can list more than one (it tries multiple CAs).
  * Add all of them; only one needs to resolve for the cert to issue.
  */
-function SslValidationRecords({ domain }: { domain: Domain }) {
+function SslValidationRecordsContent({ domain }: { domain: Domain }) {
   const records = domain.sslValidationRecords?.filter(
     (r): r is { txt_name: string; txt_value: string } =>
       Boolean(r.txt_name && r.txt_value),
@@ -142,20 +177,60 @@ function SslValidationRecords({ domain }: { domain: Domain }) {
   if (!records || records.length === 0) return null;
 
   return (
-    <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+    <>
       <p className="text-muted-foreground">
-        3. Add this TXT record so the SSL certificate can be issued (add any one
+        Add this TXT record so the SSL certificate can be issued (add any one
         if multiple are listed):
       </p>
       {records.map((record, i) => (
-        <div
-          key={i}
-          className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}
-        >
+        <div key={i} className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}>
           <DnsRecordLine label="Name" value={record.txt_name} />
           <DnsRecordLine label="Value" value={record.txt_value} />
         </div>
       ))}
+    </>
+  );
+}
+
+function DomainChecklist({
+  domain,
+  checkingNow,
+}: {
+  domain: Domain;
+  checkingNow: boolean;
+}) {
+  const { resolves: routingDone, checking: routingChecking } = useDnsResolves(
+    domain.domain,
+    Boolean(CNAME_TARGET),
+  );
+  const ownershipDone = domain.hostnameStatus === "active";
+  const certDone = domain.sslStatus === "active";
+
+  return (
+    <div className="mt-3">
+      {CNAME_TARGET && (
+        <ChecklistItem
+          done={routingDone}
+          checking={routingChecking}
+          label="Domain resolves (routing CNAME)"
+        >
+          <RoutingRecordContent domain={domain.domain} />
+        </ChecklistItem>
+      )}
+      <ChecklistItem
+        done={ownershipDone}
+        checking={checkingNow && !ownershipDone}
+        label="Ownership verified"
+      >
+        <VerificationRecordContent domain={domain} />
+      </ChecklistItem>
+      <ChecklistItem
+        done={certDone}
+        checking={checkingNow && !certDone}
+        label="SSL certificate issued"
+      >
+        <SslValidationRecordsContent domain={domain} />
+      </ChecklistItem>
     </div>
   );
 }
@@ -275,12 +350,11 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
                 </div>
               </div>
 
-              {domain.status === "pending" && (
-                <>
-                  <RoutingRecord domain={domain.domain} />
-                  <VerificationRecord domain={domain} />
-                  <SslValidationRecords domain={domain} />
-                </>
+              {domain.status !== "error" && (
+                <DomainChecklist
+                  domain={domain}
+                  checkingNow={checkingId === domain._id}
+                />
               )}
 
               {domain.status === "error" && domain.error && (

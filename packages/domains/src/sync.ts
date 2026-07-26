@@ -33,6 +33,7 @@ export async function refreshCloudflareStatus(domain: DomainDoc): Promise<Domain
   const hostname = await getCustomHostname(domain.cloudflareHostnameId);
 
   domain.status = toDomainStatus(hostname.status, hostname.ssl?.status);
+  domain.hostnameStatus = hostname.status;
   domain.sslStatus = hostname.ssl?.status;
   domain.ownershipVerification =
     hostname.ownership_verification ?? hostname.ownership_verification_http;

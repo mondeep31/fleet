@@ -29,6 +29,7 @@ export async function addCustomDomain(
       domain,
       cloudflareHostnameId: hostname.id,
       status: toDomainStatus(hostname.status, hostname.ssl?.status),
+      hostnameStatus: hostname.status,
       sslStatus: hostname.ssl?.status,
       ownershipVerification:
         hostname.ownership_verification ?? hostname.ownership_verification_http,

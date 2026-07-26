@@ -10,6 +10,7 @@ export interface Domain {
   projectId: string;
   domain: string;
   status: DomainStatus;
+  hostnameStatus?: string;
   sslStatus?: string;
   ownershipVerification?: {
     type?: string;
