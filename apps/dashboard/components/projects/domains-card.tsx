@@ -215,7 +215,7 @@ function DomainChecklist({
           checking={routingChecking}
           label="Domain resolves (routing CNAME)"
         >
-          <RoutingRecordContent domain={domain.domain} />
+          {RoutingRecordContent({ domain: domain.domain })}
         </ChecklistItem>
       )}
       <ChecklistItem
@@ -223,14 +223,14 @@ function DomainChecklist({
         checking={checkingNow && !ownershipDone}
         label="Ownership verified"
       >
-        <VerificationRecordContent domain={domain} />
+        {VerificationRecordContent({ domain })}
       </ChecklistItem>
       <ChecklistItem
         done={certDone}
         checking={checkingNow && !certDone}
         label="SSL certificate issued"
       >
-        <SslValidationRecordsContent domain={domain} />
+        {SslValidationRecordsContent({ domain })}
       </ChecklistItem>
     </div>
   );
@@ -341,7 +341,12 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
                       <ArrowSquareOut className="size-3.5" />
                     </a>
                   )}
-                  {domain.status === "pending" && (
+                  {domain.status !== "error" && (
+                    // Not gated to "pending" — a domain can already be
+                    // "active" overall (ownership + cert both done) while a
+                    // later-added field like hostnameStatus never got
+                    // backfilled, since the background sweep only revisits
+                    // pending domains. Always allow a manual refresh.
                     <Button
                       variant="outline"
                       size="xs"
