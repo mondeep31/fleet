@@ -5,6 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   CaretDown,
+  CaretLineLeft,
+  CaretLineRight,
   CaretRight,
   Folder,
   Gear,
@@ -13,11 +15,18 @@ import {
   Sidebar as SidebarIcon,
   X,
 } from "@phosphor-icons/react";
-import { cn } from "@/lib/utils";
+import { cn, isActivePath } from "@/lib/utils";
 import { useAuthStore } from "@/stores/auth-store";
+import { useSidebarCollapsed } from "@/hooks/use-sidebar-collapsed";
 import { FleetLogo } from "@/components/brand/fleet-logo";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const navItems = [
   { href: "/projects", label: "Projects", icon: Folder },
@@ -152,8 +161,7 @@ function MobileSidebarOverlay({
         <nav className="flex-1 space-y-1 py-3">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const active =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
+            const active = isActivePath(pathname, item.href);
             return (
               <Link
                 key={item.href}
@@ -198,67 +206,173 @@ function MobileSidebarOverlay({
   );
 }
 
+function CollapsedNavLink({
+  href,
+  active,
+  label,
+  icon: Icon,
+}: {
+  href: string;
+  active: boolean;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Link
+            href={href}
+            className={cn(
+              "flex items-center justify-center rounded-lg px-2 py-2 text-sm transition-all",
+              active
+                ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
+                : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+            )}
+          />
+        }
+      >
+        <Icon className="size-4" />
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 export function Sidebar() {
   const pathname = usePathname();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
+  const { collapsed, toggle } = useSidebarCollapsed();
 
   function handleLogout() {
     logout();
   }
 
   return (
-    <aside className="sticky top-0 hidden h-[100dvh] w-60 shrink-0 flex-col border-r border-border bg-[var(--bg-surface)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)] md:flex">
-      <div className="flex h-16 items-center gap-2 px-4">
-        <div className="flex size-8 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-          <FleetLogo className="size-4" />
+    <TooltipProvider>
+      <aside
+        className={cn(
+          "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[var(--bg-surface)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)] transition-[width] duration-150 md:flex",
+          collapsed ? "w-14" : "w-60",
+        )}
+      >
+        <div
+          className={cn(
+            "flex h-16 items-center gap-2",
+            collapsed ? "justify-center px-2" : "px-4",
+          )}
+        >
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+            <FleetLogo className="size-4" />
+          </div>
+          {!collapsed && (
+            <span className="text-sm font-semibold tracking-tight">fleet</span>
+          )}
         </div>
-        <span className="text-sm font-semibold tracking-tight">fleet</span>
-      </div>
 
-      <Separator />
+        <Separator />
 
-      <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const active =
-            pathname === item.href || pathname.startsWith(`${item.href}/`);
-          return (
+        <nav
+          className={cn(
+            "flex-1 space-y-1",
+            collapsed ? "px-2 py-3" : "p-3",
+          )}
+        >
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active = isActivePath(pathname, item.href);
+
+            if (collapsed) {
+              return (
+                <CollapsedNavLink
+                  key={item.href}
+                  href={item.href}
+                  active={active}
+                  label={item.label}
+                  icon={Icon}
+                />
+              );
+            }
+
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
+                    : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                )}
+              >
+                <Icon className="size-4" />
+                {item.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className={cn(collapsed ? "px-2 py-3" : "p-3")}>
+          {collapsed ? (
+            <CollapsedNavLink
+              href="/settings"
+              active={pathname.startsWith("/settings")}
+              label="Profile"
+              icon={Gear}
+            />
+          ) : (
             <Link
-              key={item.href}
-              href={item.href}
+              href="/settings"
               className={cn(
-                "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
-                active
+                "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+                pathname.startsWith("/settings")
                   ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
                   : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
               )}
             >
-              <Icon className="size-4" />
-              {item.label}
+              <Gear className="size-4" />
+              Profile
             </Link>
-          );
-        })}
-      </nav>
-
-      <div className="p-3">
-        <Link
-          href="/settings"
-          className={cn(
-            "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
-            pathname.startsWith("/settings")
-              ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-              : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
           )}
-        >
-          <Gear className="size-4" />
-          Profile
-        </Link>
 
-        <Separator className="my-3" />
+          <Separator className="my-3" />
 
-        <AccountMenu user={user} onSignOut={handleLogout} />
-      </div>
-    </aside>
+          {collapsed ? (
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    aria-label="Sign out"
+                    className="flex w-full items-center justify-center rounded-lg bg-[var(--bg-elevated)] py-2 text-muted-foreground transition-colors hover:bg-[#3a3a37] hover:text-foreground"
+                  />
+                }
+              >
+                <SignOut className="size-4" />
+              </TooltipTrigger>
+              <TooltipContent side="right">Sign out</TooltipContent>
+            </Tooltip>
+          ) : (
+            <AccountMenu user={user} onSignOut={handleLogout} />
+          )}
+
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={toggle}
+            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            className="mt-2 w-full justify-center"
+          >
+            {collapsed ? (
+              <CaretLineRight className="size-4" />
+            ) : (
+              <CaretLineLeft className="size-4" />
+            )}
+          </Button>
+        </div>
+      </aside>
+    </TooltipProvider>
   );
 }

@@ -11,6 +11,7 @@ import useSWR from "swr";
 import { api, ApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CopyButton } from "@/components/ui/copy-button";
 import {
   Card,
   CardContent,
@@ -65,6 +66,16 @@ function DomainStatusBadge({ status }: { status: DomainStatus }) {
 
 const CNAME_TARGET = process.env.NEXT_PUBLIC_FLEET_DOMAIN_CNAME_TARGET;
 
+function DnsRecordLine({ label, value }: { label: string; value: string }) {
+  return (
+    <p className="mt-1 flex items-center gap-1.5">
+      <span className="shrink-0 text-muted-foreground">{label}: </span>
+      <span className="min-w-0 flex-1 break-all">{value}</span>
+      <CopyButton value={value} />
+    </p>
+  );
+}
+
 /**
  * Two separate DNS records are required, and it's easy to add only one:
  * a routing CNAME (makes the domain resolve at all, via Cloudflare's edge)
@@ -73,25 +84,15 @@ const CNAME_TARGET = process.env.NEXT_PUBLIC_FLEET_DOMAIN_CNAME_TARGET;
  * that does NOT mean the routing CNAME exists, so show both unconditionally.
  */
 function RoutingRecord({ domain }: { domain: string }) {
-  console.log("CNAME_TARGET", CNAME_TARGET);
-  if (!CNAME_TARGET) {
-    console.log("No CNAME_TARGET");
-    return null;
-  }
+  if (!CNAME_TARGET) return null;
   return (
     <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
       <p className="text-muted-foreground">
         1. Add this CNAME record at your DNS provider (this makes the domain
         resolve — without it, the domain will not load even once verified):
       </p>
-      <p className="mt-1 break-all">
-        <span className="text-muted-foreground">Name: </span>
-        {domain}
-      </p>
-      <p className="mt-1 break-all">
-        <span className="text-muted-foreground">Value: </span>
-        {CNAME_TARGET}
-      </p>
+      <DnsRecordLine label="Name" value={domain} />
+      <DnsRecordLine label="Value" value={CNAME_TARGET} />
     </div>
   );
 }
@@ -108,14 +109,8 @@ function VerificationRecord({ domain }: { domain: Domain }) {
         <p className="text-muted-foreground">
           2. Add this {record.type ?? "TXT"} record to verify ownership:
         </p>
-        <p className="mt-1 break-all">
-          <span className="text-muted-foreground">Name: </span>
-          {record.name}
-        </p>
-        <p className="mt-1 break-all">
-          <span className="text-muted-foreground">Value: </span>
-          {record.value}
-        </p>
+        <DnsRecordLine label="Name" value={record.name} />
+        <DnsRecordLine label="Value" value={record.value} />
       </div>
     );
   }
@@ -126,7 +121,7 @@ function VerificationRecord({ domain }: { domain: Domain }) {
         <p className="text-muted-foreground">
           2. Cloudflare is verifying ownership via HTTP at:
         </p>
-        <p className="mt-1 break-all">{record.http_url}</p>
+        <DnsRecordLine label="URL" value={record.http_url} />
       </div>
     );
   }
@@ -141,7 +136,8 @@ function VerificationRecord({ domain }: { domain: Domain }) {
  */
 function SslValidationRecords({ domain }: { domain: Domain }) {
   const records = domain.sslValidationRecords?.filter(
-    (r) => r.txt_name && r.txt_value,
+    (r): r is { txt_name: string; txt_value: string } =>
+      Boolean(r.txt_name && r.txt_value),
   );
   if (!records || records.length === 0) return null;
 
@@ -156,14 +152,8 @@ function SslValidationRecords({ domain }: { domain: Domain }) {
           key={i}
           className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}
         >
-          <p className="mt-1 break-all">
-            <span className="text-muted-foreground">Name: </span>
-            {record.txt_name}
-          </p>
-          <p className="mt-1 break-all">
-            <span className="text-muted-foreground">Value: </span>
-            {record.txt_value}
-          </p>
+          <DnsRecordLine label="Name" value={record.txt_name} />
+          <DnsRecordLine label="Value" value={record.txt_value} />
         </div>
       ))}
     </div>
