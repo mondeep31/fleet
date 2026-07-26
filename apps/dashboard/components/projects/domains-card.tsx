@@ -124,8 +124,8 @@ function RoutingRecordContent({ domain }: { domain: string }) {
   return (
     <>
       <p className="text-muted-foreground">
-        Add this CNAME record at your DNS provider — without it, the domain
-        will not load even once verified:
+        Add this CNAME record at your DNS provider — without it, the domain will
+        not load even once verified:
       </p>
       <DnsRecordLine label="Name" value={domain} />
       <DnsRecordLine label="Value" value={CNAME_TARGET} />
@@ -180,11 +180,14 @@ function SslValidationRecordsContent({ domain }: { domain: Domain }) {
   return (
     <>
       <p className="text-muted-foreground">
-        Add this TXT record so the SSL certificate can be issued (add any one
-        if multiple are listed):
+        Add this TXT record so the SSL certificate can be issued (add any one if
+        multiple are listed):
       </p>
       {records.map((record, i) => (
-        <div key={i} className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}>
+        <div
+          key={i}
+          className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}
+        >
           <DnsRecordLine label="Name" value={record.txt_name} />
           <DnsRecordLine label="Value" value={record.txt_value} />
         </div>
@@ -321,64 +324,73 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
         {isLoading ? (
           <div className="h-9 animate-pulse rounded-lg bg-muted" />
         ) : domains && domains.length > 0 ? (
-          domains.map((domain) => (
-            <div
-              key={domain._id}
-              className="rounded-lg border border-border p-3"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="font-medium">{domain.domain}</span>
-                <div className="flex items-center gap-2">
-                  <DomainStatusBadge status={domain.status} />
-                  {domain.status === "active" && (
-                    <a
-                      href={`https://${domain.domain}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={`Open ${domain.domain}`}
-                      className="flex size-6 shrink-0 items-center justify-center rounded-[min(var(--radius-md),10px)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
-                    >
-                      <ArrowSquareOut className="size-3.5" />
-                    </a>
-                  )}
-                  {domain.status !== "error" && (
-                    // Not gated to "pending" — a domain can already be
-                    // "active" overall (ownership + cert both done) while a
-                    // later-added field like hostnameStatus never got
-                    // backfilled, since the background sweep only revisits
-                    // pending domains. Always allow a manual refresh.
+          domains.map((domain) => {
+            // Not domain.status === "active" — that's a coarser summary and
+            // can lag behind these two specific fields (e.g. a field added
+            // after a domain was already active, never backfilled since the
+            // sweep only revisits "pending" domains). Check the actual
+            // fields the button would refresh, so it only disappears once
+            // there is genuinely nothing left to check.
+            const fullyVerified =
+              domain.hostnameStatus === "active" &&
+              domain.sslStatus === "active";
+
+            return (
+              <div
+                key={domain._id}
+                className="rounded-lg border border-border p-3"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium">{domain.domain}</span>
+                  <div className="flex items-center gap-2">
+                    <DomainStatusBadge status={domain.status} />
+                    {domain.status === "active" && (
+                      <a
+                        href={`https://${domain.domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label={`Open ${domain.domain}`}
+                        className="flex size-6 shrink-0 items-center justify-center rounded-[min(var(--radius-md),10px)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+                      >
+                        <ArrowSquareOut className="size-3.5" />
+                      </a>
+                    )}
+                    {domain.status !== "error" && !fullyVerified && (
+                      <Button
+                        variant="outline"
+                        size="xs"
+                        disabled={checkingId === domain._id}
+                        onClick={() => handleVerifyNow(domain._id)}
+                      >
+                        {checkingId === domain._id ? "Checking…" : "Check now"}
+                      </Button>
+                    )}
                     <Button
-                      variant="outline"
-                      size="xs"
-                      disabled={checkingId === domain._id}
-                      onClick={() => handleVerifyNow(domain._id)}
+                      variant="ghost"
+                      size="icon-xs"
+                      disabled={removingId === domain._id}
+                      onClick={() => handleRemove(domain._id)}
                     >
-                      {checkingId === domain._id ? "Checking…" : "Check now"}
+                      <Trash className="size-3.5" />
                     </Button>
-                  )}
-                  <Button
-                    variant="ghost"
-                    size="icon-xs"
-                    disabled={removingId === domain._id}
-                    onClick={() => handleRemove(domain._id)}
-                  >
-                    <Trash className="size-3.5" />
-                  </Button>
+                  </div>
                 </div>
+
+                {domain.status !== "error" && (
+                  <DomainChecklist
+                    domain={domain}
+                    checkingNow={checkingId === domain._id}
+                  />
+                )}
+
+                {domain.status === "error" && domain.error && (
+                  <p className="mt-2 text-xs text-destructive">
+                    {domain.error}
+                  </p>
+                )}
               </div>
-
-              {domain.status !== "error" && (
-                <DomainChecklist
-                  domain={domain}
-                  checkingNow={checkingId === domain._id}
-                />
-              )}
-
-              {domain.status === "error" && domain.error && (
-                <p className="mt-2 text-xs text-destructive">{domain.error}</p>
-              )}
-            </div>
-          ))
+            );
+          })
         ) : (
           <p className="text-sm text-muted-foreground">
             No custom domains connected yet.
