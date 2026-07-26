@@ -6,6 +6,37 @@ Purpose: a running decision log for where Fleet goes next, separate from
 as decisions get made or superseded — don't let it silently rot like the
 README did.
 
+## Operational hazard: recreating the Traefik container drops live routing
+
+`ensureTraefikOnProjectNetwork()` (`apps/worker/src/lib/docker.ts`) attaches
+the running `fleet-traefik` container to each project's isolated network
+(`fleet-project-{projectId}`) **imperatively, at deploy time** — this
+attachment is not declared in `docker-compose.yml` and is not restored
+automatically. If the Traefik container is ever recreated (explicit
+`--force-recreate`, or Compose silently recreating it because it detected
+the service definition changed after a `git pull` picked up a
+`docker-compose.yml` edit — a plain `docker compose up -d` for *anything*
+is enough to trigger this), the new container starts with **no
+attachment to any project's network**, and every currently-live
+deployment starts 504ing at Traefik even though DNS/tunnel/Cloudflare are
+all fine. Only redeploying a project (which re-runs
+`ensureTraefikOnProjectNetwork`) restores it — this bit us for real when
+deploying the custom-domains Traefik change (2026-07-26).
+
+**Recovery**, if this happens again:
+```bash
+for net in $(docker network ls --format '{{.Name}}' | grep '^fleet-project-'); do
+  docker network connect "$net" fleet-traefik 2>/dev/null && echo "connected: $net"
+done
+```
+Reconnects every live project's network to Traefik in one pass, without
+needing to redeploy each one individually.
+
+**Before touching anything in `docker-compose.yml`'s `traefik` service
+definition in the future**: assume it will recreate the container, and
+run the reconnect loop above immediately afterward as a matter of course
+— don't wait to notice something's broken.
+
 ## Current goal
 
 Get Fleet to a state that can be shown publicly (portfolio/showcase, and
@@ -107,6 +138,51 @@ private. Cloudflare owns the entire TLS/cert/DNS-ownership problem.
   wired into the project detail page next to `EnvVariablesCard`. Add/list/
   manual-"check now"/remove, polls while any domain is `pending` (same
   conditional-`refreshInterval` pattern as `use-projects.ts`).
+
+**Bug found + fixed during first live test (2026-07-26)**: Cloudflare
+Custom Hostnames require *two* separate DNS records, and the dashboard
+originally only showed one. `ownershipVerification` (a TXT record) proves
+domain control and is what Cloudflare's `active` status actually reflects
+— it does **not** mean the domain resolves anywhere. A second, unrelated
+**routing CNAME** (`<customer domain> → <fallback origin hostname>`,
+e.g. `saas-fallback.mondeep.xyz`) is required for the domain to resolve at
+all. Missing this produces exactly the confusing state we hit: Fleet shows
+`Active`, but the domain 404s in the browser with `ERR_NAME_NOT_RESOLVED`
+because DNS for it doesn't exist. Fixed by adding `RoutingRecord` to
+`domains-card.tsx`, driven by a new dashboard-only env var
+`NEXT_PUBLIC_FLEET_DOMAIN_CNAME_TARGET` (build-time inlined, must match the
+fallback-origin hostname from the Cloudflare Tunnel setup) — shown
+alongside the ownership record while pending, and kept visible even once
+`active` since Cloudflare's status can't confirm the CNAME exists.
+
+**Second bug found + fixed in the same live test**: created custom
+hostnames with `ssl: { method: "http" }`. That makes Cloudflare validate
+certificate issuance by requesting
+`http://<domain>/.well-known/acme-challenge/<token>` — which, in our setup,
+routes through Cloudflare → the tunnel → Traefik → straight into the
+**customer's own app container**, which obviously can't answer it. This
+can never complete as originally wired. Switched to
+`ssl: { method: "txt" }` (`packages/domains/src/cloudflare-client.ts`) so
+certificate validation is fully DNS-based and never needs a request to
+reach the origin at all.
+
+Also found: Cloudflare reports **hostname activation** (ownership) and
+**certificate issuance** as two independent statuses — a hostname can show
+`active` while its cert is still `pending_validation`. Our `toDomainStatus`
+originally only checked the hostname status, so Fleet reported a domain as
+`active`/ready before HTTPS actually worked. Fixed in
+`packages/domains/src/sync.ts` — now requires both `hostname.status ===
+"active"` and `ssl.status === "active"` before reporting `active`.
+Cloudflare's `ssl.validation_records` (the TXT challenge for the cert
+itself — separate from `ownership_verification`) is now stored on `Domain`
+(`sslValidationRecords`) and shown in the dashboard as a third, distinct
+instruction.
+
+So the full, correct set of things a user must add per custom domain,
+now all surfaced in `domains-card.tsx`:
+1. Routing CNAME → the fallback origin (makes the domain resolve at all)
+2. Ownership TXT record (`ownership_verification`)
+3. Certificate TXT record (`ssl.validation_records`)
 
 **Remaining — outside this repo, operator-only** (Cloudflare account
 access required, can't be automated from the codebase):

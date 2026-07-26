@@ -28,12 +28,20 @@ export interface CloudflareOwnershipVerificationHttp {
   http_body?: string;
 }
 
+export interface CloudflareSslValidationRecord {
+  txt_name?: string;
+  txt_value?: string;
+  http_url?: string;
+  http_body?: string;
+}
+
 export interface CloudflareCustomHostname {
   id: string;
   hostname: string;
   status: string;
   ssl?: {
     status?: string;
+    validation_records?: CloudflareSslValidationRecord[];
     validation_errors?: Array<{ message?: string }>;
   };
   ownership_verification?: CloudflareOwnershipVerification;
@@ -107,10 +115,14 @@ async function cfRequest<T>(
 export async function createCustomHostname(
   hostname: string,
 ): Promise<CloudflareCustomHostname> {
+  // "txt" (not "http"): the HTTP-01-style challenge would route through
+  // Cloudflare -> the tunnel -> Traefik -> the customer's own app container,
+  // which has no way to answer it. TXT validation is fully self-contained
+  // in DNS and never needs a request to reach the origin at all.
   return cfRequest<CloudflareCustomHostname>(
     "post",
     `/zones/${getZoneId()}/custom_hostnames`,
-    { hostname, ssl: { method: "http", type: "dv" } },
+    { hostname, ssl: { method: "txt", type: "dv" } },
   );
 }
 

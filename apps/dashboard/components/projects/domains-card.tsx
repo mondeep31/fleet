@@ -55,6 +55,35 @@ function DomainStatusBadge({ status }: { status: DomainStatus }) {
   );
 }
 
+const CNAME_TARGET = process.env.NEXT_PUBLIC_FLEET_DOMAIN_CNAME_TARGET;
+
+/**
+ * Two separate DNS records are required, and it's easy to add only one:
+ * a routing CNAME (makes the domain resolve at all, via Cloudflare's edge)
+ * and an ownership-verification record (proves control, unlocks the cert).
+ * Cloudflare reports the hostname "active" once ownership + SSL are done —
+ * that does NOT mean the routing CNAME exists, so show both unconditionally.
+ */
+function RoutingRecord({ domain }: { domain: string }) {
+  if (!CNAME_TARGET) return null;
+  return (
+    <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+      <p className="text-muted-foreground">
+        1. Add this CNAME record at your DNS provider (this makes the domain
+        resolve — without it, the domain will not load even once verified):
+      </p>
+      <p className="mt-1 break-all">
+        <span className="text-muted-foreground">Name: </span>
+        {domain}
+      </p>
+      <p className="mt-1 break-all">
+        <span className="text-muted-foreground">Value: </span>
+        {CNAME_TARGET}
+      </p>
+    </div>
+  );
+}
+
 function VerificationRecord({ domain }: { domain: Domain }) {
   const record = domain.ownershipVerification;
   if (!record) return null;
@@ -65,7 +94,7 @@ function VerificationRecord({ domain }: { domain: Domain }) {
     return (
       <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
         <p className="text-muted-foreground">
-          Add this {record.type ?? "TXT"} record at your DNS provider:
+          2. Add this {record.type ?? "TXT"} record to verify ownership:
         </p>
         <p className="mt-1 break-all">
           <span className="text-muted-foreground">Name: </span>
@@ -83,7 +112,7 @@ function VerificationRecord({ domain }: { domain: Domain }) {
     return (
       <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
         <p className="text-muted-foreground">
-          Cloudflare is validating via HTTP at:
+          2. Cloudflare is verifying ownership via HTTP at:
         </p>
         <p className="mt-1 break-all">{record.http_url}</p>
       </div>
@@ -91,6 +120,37 @@ function VerificationRecord({ domain }: { domain: Domain }) {
   }
 
   return null;
+}
+
+/**
+ * The certificate itself needs separate DV validation from hostname
+ * ownership — Cloudflare can list more than one (it tries multiple CAs).
+ * Add all of them; only one needs to resolve for the cert to issue.
+ */
+function SslValidationRecords({ domain }: { domain: Domain }) {
+  const records = domain.sslValidationRecords?.filter((r) => r.txt_name && r.txt_value);
+  if (!records || records.length === 0) return null;
+
+  return (
+    <div className="mt-2 rounded-lg border border-border bg-[var(--bg-elevated)] p-3 font-mono text-xs">
+      <p className="text-muted-foreground">
+        3. Add this TXT record so the SSL certificate can be issued (add any
+        one if multiple are listed):
+      </p>
+      {records.map((record, i) => (
+        <div key={i} className={i > 0 ? "mt-3 border-t border-border pt-3" : ""}>
+          <p className="mt-1 break-all">
+            <span className="text-muted-foreground">Name: </span>
+            {record.txt_name}
+          </p>
+          <p className="mt-1 break-all">
+            <span className="text-muted-foreground">Value: </span>
+            {record.txt_value}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export function DomainsCard({ projectId }: DomainsCardProps) {
@@ -198,7 +258,21 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
                 </div>
               </div>
 
-              {domain.status === "pending" && <VerificationRecord domain={domain} />}
+              {/*
+                RoutingRecord stays visible even once "active" — Cloudflare's
+                active status only means ownership+SSL passed, not that the
+                routing CNAME exists. A domain can be "active" here and still
+                not resolve at all if that CNAME was never added.
+              */}
+              {(domain.status === "pending" || domain.status === "active") && (
+                <RoutingRecord domain={domain.domain} />
+              )}
+              {domain.status === "pending" && (
+                <>
+                  <VerificationRecord domain={domain} />
+                  <SslValidationRecords domain={domain} />
+                </>
+              )}
 
               {domain.status === "error" && domain.error && (
                 <p className="mt-2 text-xs text-destructive">{domain.error}</p>

@@ -31,6 +31,13 @@ const domainSchema = new mongoose.Schema(
     ownershipVerification: {
       type: mongoose.Schema.Types.Mixed,
     },
+    // Raw ssl.validation_records from Cloudflare (TXT DV challenge, one per
+    // CA it attempts) — a separate record from ownershipVerification, needed
+    // for the SSL certificate itself to be issued.
+    sslValidationRecords: {
+      type: [mongoose.Schema.Types.Mixed],
+      default: [],
+    },
     error: {
       type: String,
     },

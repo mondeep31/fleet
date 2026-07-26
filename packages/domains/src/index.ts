@@ -6,4 +6,4 @@ export {
   type CloudflareOwnershipVerification,
   type CloudflareOwnershipVerificationHttp,
 } from "./cloudflare-client";
-export { refreshCloudflareStatus, syncActiveDomainRouting } from "./sync";
+export { refreshCloudflareStatus, syncActiveDomainRouting, toDomainStatus } from "./sync";

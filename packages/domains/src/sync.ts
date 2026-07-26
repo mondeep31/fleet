@@ -6,12 +6,22 @@ import { getCustomHostname } from "./cloudflare-client";
 
 type DomainDoc = NonNullable<Awaited<ReturnType<typeof Domain.findOne>>>;
 
-function toDomainStatus(cloudflareStatus: string): "pending" | "active" | "error" {
-  if (cloudflareStatus === "active") return "active";
-  if (cloudflareStatus === "pending" || cloudflareStatus === "pending_deployment") {
-    return "pending";
+/**
+ * Cloudflare reports hostname activation (ownership) and certificate
+ * issuance as two independent statuses — a hostname can be "active" while
+ * its cert is still "pending_validation". Only report our own domain as
+ * `active` once both are done; otherwise the dashboard would claim a domain
+ * is ready when HTTPS doesn't actually work yet.
+ */
+export function toDomainStatus(
+  hostnameStatus: string,
+  sslStatus: string | undefined,
+): "pending" | "active" | "error" {
+  if (hostnameStatus !== "active" && hostnameStatus !== "pending" && hostnameStatus !== "pending_deployment") {
+    return "error";
   }
-  return "error";
+  if (hostnameStatus === "active" && sslStatus === "active") return "active";
+  return "pending";
 }
 
 /**
@@ -22,10 +32,11 @@ function toDomainStatus(cloudflareStatus: string): "pending" | "active" | "error
 export async function refreshCloudflareStatus(domain: DomainDoc): Promise<DomainDoc> {
   const hostname = await getCustomHostname(domain.cloudflareHostnameId);
 
-  domain.status = toDomainStatus(hostname.status);
+  domain.status = toDomainStatus(hostname.status, hostname.ssl?.status);
   domain.sslStatus = hostname.ssl?.status;
   domain.ownershipVerification =
     hostname.ownership_verification ?? hostname.ownership_verification_http;
+  domain.sslValidationRecords = hostname.ssl?.validation_records ?? [];
   domain.error =
     hostname.verification_errors?.join("; ") ??
     hostname.ssl?.validation_errors?.map((e) => e.message).filter(Boolean).join("; ");

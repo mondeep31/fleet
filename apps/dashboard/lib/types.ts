@@ -18,6 +18,12 @@ export interface Domain {
     http_url?: string;
     http_body?: string;
   };
+  sslValidationRecords?: Array<{
+    txt_name?: string;
+    txt_value?: string;
+    http_url?: string;
+    http_body?: string;
+  }>;
   error?: string;
   lastCheckedAt?: string;
   createdAt?: string;

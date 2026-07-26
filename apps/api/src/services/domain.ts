@@ -5,14 +5,9 @@ import {
   deleteCustomHostname,
   refreshCloudflareStatus,
   syncActiveDomainRouting,
+  toDomainStatus,
 } from "@fleet/domains";
 import { assertProjectOwnership } from "./project";
-
-function toDomainStatus(status: string): "pending" | "active" | "error" {
-  if (status === "active") return "active";
-  if (status === "pending" || status === "pending_deployment") return "pending";
-  return "error";
-}
 
 export async function addCustomDomain(
   projectId: string,
@@ -33,10 +28,11 @@ export async function addCustomDomain(
       projectId,
       domain,
       cloudflareHostnameId: hostname.id,
-      status: toDomainStatus(hostname.status),
+      status: toDomainStatus(hostname.status, hostname.ssl?.status),
       sslStatus: hostname.ssl?.status,
       ownershipVerification:
         hostname.ownership_verification ?? hostname.ownership_verification_http,
+      sslValidationRecords: hostname.ssl?.validation_records ?? [],
       lastCheckedAt: new Date(),
     });
   } catch (error) {
