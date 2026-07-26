@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import {
+  ArrowSquareOut,
   CheckCircle,
   CircleNotch,
   Clock,
@@ -329,6 +330,17 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
                 <span className="font-medium">{domain.domain}</span>
                 <div className="flex items-center gap-2">
                   <DomainStatusBadge status={domain.status} />
+                  {domain.status === "active" && (
+                    <a
+                      href={`https://${domain.domain}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`Open ${domain.domain}`}
+                      className="flex size-6 shrink-0 items-center justify-center rounded-[min(var(--radius-md),10px)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground"
+                    >
+                      <ArrowSquareOut className="size-3.5" />
+                    </a>
+                  )}
                   {domain.status === "pending" && (
                     <Button
                       variant="outline"

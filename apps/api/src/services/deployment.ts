@@ -2,6 +2,7 @@ import { cancelDeployJob, enqueueDeploy } from "@fleet/queue";
 import { Deployment, Project } from "@fleet/db";
 import { AppError } from "@fleet/errors";
 import { getProjectContainerName, removeProjectContainer } from "../lib/containers";
+import { getPrimaryCustomUrl, getPrimaryCustomUrls } from "../lib/custom-domain-url";
 
 const MVP_COMMIT_SHA = "pending";
 const MVP_COMMIT_MESSAGE = "Initial deploy";
@@ -50,24 +51,30 @@ export async function startDeploy({
   };
 }
 
-function toDeploymentResponse(deployment: {
-  deploymentId: string;
-  projectId: string;
-  environmentId: string;
-  commitSha: string;
-  commitMessage: string;
-  branch: string;
-  serverId: string;
-  status: string;
-  clonePath?: string | null;
-  imageTag?: string | null;
-  containerId?: string | null;
-  networkName?: string | null;
-  url?: string | null;
-  error?: string | null;
-  createdAt?: Date;
-  updatedAt?: Date;
-}) {
+function toDeploymentResponse(
+  deployment: {
+    deploymentId: string;
+    projectId: string;
+    environmentId: string;
+    commitSha: string;
+    commitMessage: string;
+    branch: string;
+    serverId: string;
+    status: string;
+    clonePath?: string | null;
+    imageTag?: string | null;
+    containerId?: string | null;
+    networkName?: string | null;
+    url?: string | null;
+    error?: string | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+  },
+  // A project's own custom domain (once active) takes priority over the
+  // fixed depl-fleet-{projectId} wildcard URL — but only when the deployment
+  // actually has a URL at all (stopped/queued/etc. deployments stay urlless).
+  customUrl?: string | null,
+) {
   return {
     deploymentId: deployment.deploymentId,
     projectId: deployment.projectId,
@@ -81,7 +88,7 @@ function toDeploymentResponse(deployment: {
     imageTag: deployment.imageTag ?? undefined,
     containerId: deployment.containerId ?? undefined,
     networkName: deployment.networkName ?? undefined,
-    url: deployment.url ?? undefined,
+    url: deployment.url ? (customUrl ?? deployment.url) : undefined,
     error: deployment.error ?? undefined,
     createdAt: deployment.createdAt,
     updatedAt: deployment.updatedAt,
@@ -93,14 +100,16 @@ export async function getDeploymentById(deploymentId: string) {
   if (!deployment) {
     throw new AppError(404, "Deployment not found", "DEPLOYMENT_NOT_FOUND");
   }
-  return toDeploymentResponse(deployment);
+  const customUrl = await getPrimaryCustomUrl(deployment.projectId);
+  return toDeploymentResponse(deployment, customUrl);
 }
 
 export async function listDeploymentsByProjectId(projectId: string) {
   const deployments = await Deployment.find({ projectId }).sort({
     createdAt: -1,
   });
-  return deployments.map(toDeploymentResponse);
+  const customUrl = await getPrimaryCustomUrl(projectId);
+  return deployments.map((deployment) => toDeploymentResponse(deployment, customUrl));
 }
 
 export async function getLatestDeploymentsForProjects(projectIds: string[]) {
@@ -111,11 +120,15 @@ export async function getLatestDeploymentsForProjects(projectIds: string[]) {
   const deployments = await Deployment.find({
     projectId: { $in: projectIds },
   }).sort({ createdAt: -1 });
+  const customUrls = await getPrimaryCustomUrls(projectIds);
 
   const latestByProject = new Map<string, ReturnType<typeof toDeploymentResponse>>();
   for (const deployment of deployments) {
     if (!latestByProject.has(deployment.projectId)) {
-      latestByProject.set(deployment.projectId, toDeploymentResponse(deployment));
+      latestByProject.set(
+        deployment.projectId,
+        toDeploymentResponse(deployment, customUrls.get(deployment.projectId)),
+      );
     }
   }
   return latestByProject;
