@@ -231,6 +231,59 @@ documented conventions, not yet checked against a live response — the
 first real `addCustomDomain` call against the zone is the actual
 verification of that contract.
 
+## Investigated and abandoned: deferred Cloudflare hostname creation (2026-07-27)
+
+Attempted to close the top item under "Custom domains — possible
+improvements": skip the ownership-verification TXT record by deferring
+`createCustomHostname` until Fleet's own DNS check confirmed the customer's
+routing CNAME already resolved to the fallback origin. Cloudflare treats
+ownership as pre-proven if the CNAME is already live *before* the hostname
+is created, so getting the timing right should have let most users skip
+that step entirely.
+
+**Built and unit-tested**: new `status: "provisioning"` domain lifecycle
+stage, a server-side CNAME check (`node:dns/promises` `resolveCname`
+against `1.1.1.1`/`8.8.8.8`), a 10-minute precheck window with fallback to
+the old immediate-creation flow, worker sweep + "Check now" wiring, and
+dashboard UI for the new state.
+
+**Killed by live testing against a real domain** (`testrepo2.crypwt.com`,
+`testrepo3.crypwt.com`): the customer's domain was itself hosted on
+Cloudflare, with the routing CNAME record set to **proxied** (orange
+cloud). `dig CNAME` against `1.1.1.1` returned `NOERROR` with zero answers —
+Cloudflare flattens proxied records at the edge and only ever exposes its
+own anycast A/AAAA IPs to public resolvers, never the real CNAME target.
+That's not specific to our resolver choice; it's how Cloudflare proxying
+works for anyone querying from outside that zone.
+
+The fix isn't "ask Cloudflare's API instead of doing our own DNS lookup."
+Cloudflare's own Custom Hostname ownership check, when evaluating a
+hostname it doesn't have account-level access to (the customer's zone is a
+different Cloudflare account than Fleet's), almost certainly falls back to
+the same public-DNS visibility we have — cross-tenant zones don't get
+privileged access to each other's raw DNS records just because both happen
+to be on Cloudflare's platform. So there's no version of "verify via
+Cloudflare's API" that sees through a proxied record on someone else's
+account either, as far as we could determine without Cloudflare support
+access to confirm internals.
+
+Whether proxying the CNAME even breaks the *routing* itself (not just the
+ownership check) — i.e. whether the customer's own zone correctly hands off
+to Fleet's Cloudflare-for-SaaS setup on a different zone when proxied,
+versus just serving from the customer's own edge with no custom-hostname
+config — was flagged as worth testing (Cloudflare for SaaS generally expects
+the customer CNAME to be DNS-only/grey-cloud) but not conclusively verified
+before the decision to abandon.
+
+**Decision**: not worth pursuing further. A meaningful fraction of real
+users have their domain's DNS on Cloudflare with proxying on by default —
+this isn't a rare edge case worth carving out a partial optimization for,
+especially since the *existing* immediate-creation flow already works
+correctly for exactly these users (it doesn't depend on us or Cloudflare
+being able to see the CNAME in advance). The implementation was reverted
+(hard reset to the prior commit); this entry exists so the idea doesn't
+get re-attempted without first re-deriving this constraint.
+
 ## Open question: BYO-server / "environment manager" pivot
 
 Idea from a collaborator: instead of the operator hosting everyone's

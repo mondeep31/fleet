@@ -280,6 +280,25 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 | **Health checks** | "Live" currently only means "container reported Running"; no HTTP-level check |
 | **Build isolation hardening** | All user Dockerfiles currently build/run on one shared Docker daemon; sandboxing exists (`CapDrop`, resource limits) but isn't full isolation |
 
+### Custom domains — investigated, not pursued
+
+- **Skip the ownership TXT by deferring hostname creation.** Idea: defer calling
+  Cloudflare's `createCustomHostname` until our own DNS check confirms the routing
+  CNAME already resolves, so Cloudflare treats ownership as pre-proven and skips the
+  TXT challenge. Prototyped and tested against a live domain (2026-07-27) — abandoned.
+  Root cause: it only works when the customer's routing CNAME is DNS-only. If the
+  customer's own domain is *also* on Cloudflare and that record is proxied (orange
+  cloud), the real CNAME target is invisible to any public resolver, including the
+  ones a server-side precheck would use — Cloudflare hides it behind its own edge
+  IPs. This isn't fixable by picking a different resolver: Cloudflare's own
+  ownership-verification check almost certainly hits the same wall for a
+  cross-account zone it has no API access into, so routing the check through
+  Cloudflare's API instead of our own doesn't help either. Since a meaningful chunk
+  of real users run their domain's DNS through Cloudflare with proxying on by
+  default, this isn't a rare edge case — full writeup in
+  [`docs/CONTEXT.md`](docs/CONTEXT.md). The existing immediate-hostname-creation flow
+  (always shows the ownership TXT) remains the shipped behavior.
+
 ## Architecture decisions
 
 - **Bun monorepo** — workspaces for apps and shared packages; fast installs and native TypeScript.
