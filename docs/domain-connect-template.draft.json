@@ -1,0 +1,32 @@
+{
+  "providerId": "tryfleet.app",
+  "providerName": "Fleet",
+  "serviceId": "custom-domain",
+  "serviceName": "Fleet Custom Domain",
+  "version": 1,
+  "syncBlock": false,
+  "syncPubKeyDomain": "tryfleet.app",
+  "syncRedirectDomain": "tryfleet.app",
+  "description": "Connect a custom domain to your Fleet project.",
+  "variableDescription": "%host%: the subdomain the user is pointing at Fleet (e.g. app). %ownershipRecordName%/%ownershipRecordValue%: Cloudflare's ownership verification TXT, returned by Fleet's API when the domain is added. %sslRecordName%/%sslRecordValue%: Cloudflare's certificate validation TXT, returned the same way.",
+  "records": [
+    {
+      "type": "CNAME",
+      "host": "%host%",
+      "pointsTo": "cus.tryfleet.app",
+      "ttl": 3600
+    },
+    {
+      "type": "TXT",
+      "host": "%ownershipRecordName%",
+      "data": "%ownershipRecordValue%",
+      "ttl": 3600
+    },
+    {
+      "type": "TXT",
+      "host": "%sslRecordName%",
+      "data": "%sslRecordValue%",
+      "ttl": 3600
+    }
+  ]
+}

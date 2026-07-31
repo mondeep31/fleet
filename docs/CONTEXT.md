@@ -319,6 +319,50 @@ into incremental work on the current single-server path.
 its own milestone/spike, not a background task alongside custom domains or
 other Phase 4 items.
 
+## Considered: Domain Connect auto-configure for custom domains (deferred)
+
+Idea: replicate Resend's "Auto configure" UX (popup → authorize → DNS
+records appear automatically) for Fleet's own custom-domains feature,
+instead of asking users to copy/paste the routing CNAME + ownership TXT +
+SSL TXT records shown in `domains-card.tsx`.
+
+**How it actually works, after checking**: Resend's button isn't a generic
+Cloudflare capability any app gets for free — it's the **Domain Connect**
+open standard (supported by Cloudflare, GoDaddy, Namecheap, etc.). A
+service provider pre-registers a signed **template** describing exactly
+which records to create; only after that's approved does the
+popup-authorize flow become available to that provider's users. There's no
+shortcut that skips this — it's an external approval step, not app code.
+
+**To do this for Fleet's `cus.tryfleet.app` fallback origin**:
+1. Fork [`Domain-Connect/Templates`](https://github.com/Domain-Connect/Templates),
+   add a template, open a PR. Draft already written:
+   [`docs/domain-connect-template.draft.json`](domain-connect-template.draft.json)
+   (providerId `tryfleet.app`, serviceId `custom-domain` — one CNAME for
+   the routing record, two TXT records for Cloudflare's ownership/SSL
+   validation, all as template variables since Cloudflare only generates
+   their name+value once `createCustomHostname` has already been called).
+2. After the PR merges, separately contact Cloudflare to have them onboard
+   the template on their side (PR merge alone doesn't activate it).
+3. New app-side work, not yet started: Cloudflare requires the synchronous
+   signed flow (`syncBlock: false`), which means Fleet needs an RSA
+   keypair, the public key published at `_domainconnect.tryfleet.app` as a
+   TXT record (`p=1,a=RS256,d=<base64-der-pubkey>`), and every apply
+   request signed server-side before redirecting the user into the popup.
+   Nothing in `packages/domains` does this today.
+4. Flow ordering: the popup can't be the first step — Fleet's backend must
+   call `createCustomHostname` *first* to get the real ownership/SSL TXT
+   values back from Cloudflare, then build the signed apply URL with those
+   values as template variables, then open the popup.
+
+**Status: not started, no urgency.** Only helps customers whose domain
+happens to be on a Domain Connect–supporting provider — the manual
+copy/paste + polling flow (already built, working) still has to exist for
+everyone else, and still does all the actual verification work regardless
+of how the records got there. Revisit if/when Fleet has enough external
+custom-domain users that the manual step is a real friction point, not
+before.
+
 ## Other things noted but not yet actioned
 
 - Billing: dashboard has a disabled "Coming soon" upgrade button; no
