@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Plus } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,7 +35,6 @@ export function NewProjectDialog({
   onCreated: () => void;
 }) {
   const [open, setOpen] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [variables, setVariables] = useState<EnvVariableRow[]>([]);
 
   const {
@@ -52,17 +52,14 @@ export function NewProjectDialog({
     if (!next) {
       reset();
       setVariables([]);
-      setError(null);
     }
   }
 
   async function onSubmit(values: ProjectForm) {
-    setError(null);
-
     const validVariables = variables.filter((v) => v.key.trim() !== "");
     const keys = validVariables.map((v) => v.key.trim());
     if (keys.length !== new Set(keys).size) {
-      setError("Environment variables contain duplicate keys.");
+      toast.error("Environment variables contain duplicate keys.");
       return;
     }
 
@@ -73,7 +70,7 @@ export function NewProjectDialog({
       setOpen(false);
       onCreated();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to create project. Check the repository URL and try again.",
@@ -138,12 +135,6 @@ export function NewProjectDialog({
               disabled={isSubmitting}
             />
           </div>
-
-          {error && (
-            <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
 
           <DialogFooter>
             <Button

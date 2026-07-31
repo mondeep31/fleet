@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowCounterClockwise } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { Button } from "@/components/ui/button";
@@ -23,7 +24,6 @@ export default function ProjectLayout({
   const { deployments, mutate } = useDeploymentsByProject(projectId);
 
   const [redeploying, setRedeploying] = useState(false);
-  const [redeployError, setRedeployError] = useState<string | null>(null);
 
   const project = useMemo(
     () => projects.find((p) => p.projectId === projectId),
@@ -34,12 +34,11 @@ export default function ProjectLayout({
 
   async function handleRedeploy() {
     setRedeploying(true);
-    setRedeployError(null);
     try {
       await api.startProjectDeployment(projectId);
       await mutate();
     } catch (err) {
-      setRedeployError(
+      toast.error(
         err instanceof ApiError ? err.message : "Failed to start redeploy.",
       );
     } finally {
@@ -48,21 +47,16 @@ export default function ProjectLayout({
   }
 
   const headerActions = isLive ? (
-    <div className="flex flex-col items-end gap-1">
-      <Button
-        size="sm"
-        variant="outline"
-        disabled={redeploying}
-        onClick={() => void handleRedeploy()}
-        className="gap-1.5"
-      >
-        <ArrowCounterClockwise className="size-4" />
-        {redeploying ? "Starting…" : "Redeploy"}
-      </Button>
-      {redeployError && (
-        <p className="text-xs text-destructive">{redeployError}</p>
-      )}
-    </div>
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={redeploying}
+      onClick={() => void handleRedeploy()}
+      className="gap-1.5"
+    >
+      <ArrowCounterClockwise className="size-4" />
+      {redeploying ? "Starting…" : "Redeploy"}
+    </Button>
   ) : undefined;
 
   return (

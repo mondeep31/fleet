@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,7 +29,6 @@ export default function LoginPage({
   const { reset, error: oauthError } = use(searchParams);
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -39,8 +39,17 @@ export default function LoginPage({
     defaultValues: { email: "", password: "" },
   });
 
+  useEffect(() => {
+    if (reset === "1") toast.success("Password updated. Sign in with your new password.");
+    if (oauthError) {
+      toast.error(
+        "GitHub sign-in is temporarily unavailable. Please sign in with your email and password.",
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function onSubmit(values: LoginForm) {
-    setError(null);
     try {
       const data = await api.login(values.email, values.password);
       setSession(data.token, {
@@ -50,7 +59,7 @@ export default function LoginPage({
       });
       router.push("/projects");
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Sign in failed. Check your credentials and try again.",
@@ -140,25 +149,6 @@ export default function LoginPage({
             </p>
           )}
         </div>
-
-        {reset === "1" && (
-          <p className="rounded-lg border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-400">
-            Password updated. Sign in with your new password.
-          </p>
-        )}
-
-        {oauthError && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            GitHub sign-in is temporarily unavailable. Please sign in with your
-            email and password.
-          </p>
-        )}
-
-        {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
 
         <Button type="submit" disabled={isSubmitting} className="h-10 w-full">
           {isSubmitting ? "Signing in…" : "Sign in"}

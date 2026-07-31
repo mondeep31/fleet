@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,7 +19,6 @@ type ForgotForm = z.infer<typeof forgotSchema>;
 
 export default function ForgotPasswordPage() {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -31,7 +30,6 @@ export default function ForgotPasswordPage() {
   });
 
   async function onSubmit(values: ForgotForm) {
-    setError(null);
     try {
       await api.requestPasswordReset(values.email);
       router.push(
@@ -41,16 +39,16 @@ export default function ForgotPasswordPage() {
       if (err instanceof ApiError) {
         switch (err.code) {
           case "RESET_COOLDOWN":
-            setError("Wait a minute before requesting another code.");
+            toast.error("Wait a minute before requesting another code.");
             break;
           case "USER_NOT_FOUND":
-            setError("No account found for that email.");
+            toast.error("No account found for that email.");
             break;
           default:
-            setError(err.message || "Something went wrong. Please try again.");
+            toast.error(err.message || "Something went wrong. Please try again.");
         }
       } else {
-        setError("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
       }
     }
   }
@@ -85,12 +83,6 @@ export default function ForgotPasswordPage() {
             <p className="text-sm text-destructive">{errors.email.message}</p>
           )}
         </div>
-
-        {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
 
         <Button
           type="submit"

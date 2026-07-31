@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -23,7 +23,6 @@ type SignupForm = z.infer<typeof signupSchema>;
 export default function SignupPage() {
   const router = useRouter();
   const setSession = useAuthStore((s) => s.setSession);
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -35,7 +34,6 @@ export default function SignupPage() {
   });
 
   async function onSubmit(values: SignupForm) {
-    setError(null);
     try {
       const data = await api.signup(values.name, values.email, values.password);
       setSession(data.token, {
@@ -45,7 +43,7 @@ export default function SignupPage() {
       });
       router.push("/projects");
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Sign up failed. Try a different email or try again.",
@@ -145,12 +143,6 @@ export default function SignupPage() {
             </p>
           )}
         </div>
-
-        {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
 
         <Button
           type="submit"

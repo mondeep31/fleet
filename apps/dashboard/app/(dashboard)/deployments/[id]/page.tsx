@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowSquareOut } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { DeploymentLogs } from "@/components/deployments/deployment-logs";
 import { DeploymentProgress } from "@/components/deployments/deployment-progress";
@@ -37,7 +38,6 @@ export default function DeploymentDetailPage() {
 
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const canStop =
     deployment &&
@@ -47,13 +47,12 @@ export default function DeploymentDetailPage() {
   async function handleStop() {
     if (!deployment) return;
     setStopping(true);
-    setError(null);
     try {
       await api.stopDeployment(deployment.deploymentId);
       setConfirmOpen(false);
       mutate();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to stop deployment. Try again.",
@@ -151,7 +150,6 @@ export default function DeploymentDetailPage() {
               container. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          {error && <p className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Cancel

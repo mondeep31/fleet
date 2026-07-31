@@ -9,6 +9,7 @@ import {
   Stop,
   Trash,
 } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -70,7 +71,6 @@ export function ProjectCardMenu({
   const [loading, setLoading] = useState<
     "stop" | "start" | "redeploy" | "archive" | null
   >(null);
-  const [error, setError] = useState<string | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, right: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -122,13 +122,12 @@ export function ProjectCardMenu({
   async function handleStop() {
     if (!latestDeployment) return;
     setLoading("stop");
-    setError(null);
     try {
       await api.stopDeployment(latestDeployment.deploymentId);
       setOpen(false);
       onChanged();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to stop deployment. Try again.",
@@ -140,13 +139,12 @@ export function ProjectCardMenu({
 
   async function handleStart() {
     setLoading("start");
-    setError(null);
     try {
       await api.startProjectDeployment(projectId);
       setOpen(false);
       onChanged();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to start deployment. Try again.",
@@ -158,13 +156,12 @@ export function ProjectCardMenu({
 
   async function handleRedeploy() {
     setLoading("redeploy");
-    setError(null);
     try {
       await api.startProjectDeployment(projectId);
       setOpen(false);
       onChanged();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to start redeploy. Try again.",
@@ -176,14 +173,13 @@ export function ProjectCardMenu({
 
   async function handleArchive() {
     setLoading("archive");
-    setError(null);
     try {
       await api.archiveProject(projectId);
       setConfirmOpen(false);
       setOpen(false);
       onChanged();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to delete project. Try again.",
@@ -271,9 +267,6 @@ export function ProjectCardMenu({
           <Trash className="size-4" />
           Delete project
         </Button>
-        {error && !confirmOpen && (
-          <p className="px-3 py-2 text-xs text-destructive">{error}</p>
-        )}
       </div>,
       document.body,
     );
@@ -291,7 +284,6 @@ export function ProjectCardMenu({
             event.preventDefault();
             event.stopPropagation();
             setOpen((current) => !current);
-            setError(null);
           }}
           className={cn(
             "flex size-7 shrink-0 items-center justify-center rounded-full border border-border bg-[var(--bg-inset)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground",
@@ -313,9 +305,6 @@ export function ProjectCardMenu({
               deployments. Archived projects cannot be restored.
             </DialogDescription>
           </DialogHeader>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
           <DialogFooter>
             <Button
               variant="outline"

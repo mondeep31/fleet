@@ -1,11 +1,12 @@
 "use client";
 
-import { use, useState } from "react";
+import { use } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -35,7 +36,6 @@ export default function ResetPasswordPage({
 }) {
   const { email } = use(searchParams);
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
 
   const {
     register,
@@ -52,7 +52,6 @@ export default function ResetPasswordPage({
   }
 
   async function onSubmit(values: ResetForm) {
-    setError(null);
     try {
       await api.confirmPasswordReset(email!, values.code, values.newPassword);
       router.push("/login?reset=1");
@@ -60,19 +59,19 @@ export default function ResetPasswordPage({
       if (err instanceof ApiError) {
         switch (err.code) {
           case "RESET_CODE_EXPIRED":
-            setError("Code has expired. Request a new one.");
+            toast.error("Code has expired. Request a new one.");
             break;
           case "RESET_CODE_LOCKED":
-            setError("Too many failed attempts. Request a new code.");
+            toast.error("Too many failed attempts. Request a new code.");
             break;
           case "RESET_CODE_INVALID":
-            setError(err.message);
+            toast.error(err.message);
             break;
           default:
-            setError("Something went wrong. Please try again.");
+            toast.error("Something went wrong. Please try again.");
         }
       } else {
-        setError("Something went wrong. Please try again.");
+        toast.error("Something went wrong. Please try again.");
       }
     }
   }
@@ -156,12 +155,6 @@ export default function ResetPasswordPage({
             </p>
           )}
         </div>
-
-        {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
-          </p>
-        )}
 
         <Button
           type="submit"

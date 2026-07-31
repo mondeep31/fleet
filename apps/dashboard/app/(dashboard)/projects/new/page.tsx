@@ -10,9 +10,9 @@ import {
   CheckCircle,
   MagnifyingGlass,
   SpinnerGap,
-  Warning,
   XCircle,
 } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -228,7 +228,6 @@ export default function NewProjectPage() {
   const [projectName, setProjectName] = useState("");
   const [envVars, setEnvVars] = useState<EnvVariableRow[]>([]);
   const [creating, setCreating] = useState(false);
-  const [createError, setCreateError] = useState<string | null>(null);
 
   // ── Handlers ─────────────────────────────────────────────────────────────
 
@@ -263,14 +262,13 @@ export default function NewProjectPage() {
   async function handleCreate() {
     if (!selectedRepo || !selectedBranch || !validation?.ok) return;
     setCreating(true);
-    setCreateError(null);
     try {
       const repoUrl = `https://github.com/${selectedRepo.full_name}`;
       const result = await api.createProject(projectName, repoUrl, selectedBranch, envVars);
       router.push(`/projects/${result.projectId}`);
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Failed to create project";
-      setCreateError(msg);
+      toast.error(msg);
     } finally {
       setCreating(false);
     }
@@ -530,13 +528,6 @@ export default function NewProjectPage() {
             <p className="mb-2 text-sm font-medium">Environment variables</p>
             <EnvVariableEditor rows={envVars} onChange={setEnvVars} />
           </div>
-
-          {createError && (
-            <div className="flex items-start gap-2 rounded-lg bg-destructive/10 px-4 py-3 text-sm text-destructive">
-              <Warning className="mt-0.5 size-4 shrink-0" weight="fill" />
-              {createError}
-            </div>
-          )}
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-1">

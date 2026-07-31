@@ -1,18 +1,17 @@
 "use client";
 
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CheckCircle, CreditCard, Warning } from "@phosphor-icons/react";
+import { CreditCard } from "@phosphor-icons/react";
 import useSWR from "swr";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api, ApiError } from "@/lib/api";
 import { useAuthStore } from "@/stores/auth-store";
-import { cn } from "@/lib/utils";
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters"),
@@ -40,32 +39,9 @@ const passwordSchema = z
 type ProfileForm = z.infer<typeof profileSchema>;
 type PasswordForm = z.infer<typeof passwordSchema>;
 
-type Notice = { kind: "success" | "error"; text: string };
-
-function NoticeBar({ notice }: { notice: Notice }) {
-  return (
-    <div
-      className={cn(
-        "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm",
-        notice.kind === "success"
-          ? "border-green-500/20 bg-green-500/10 text-green-400"
-          : "border-red-500/20 bg-red-500/10 text-red-400",
-      )}
-    >
-      {notice.kind === "success" ? (
-        <CheckCircle className="mt-0.5 size-4 shrink-0" />
-      ) : (
-        <Warning className="mt-0.5 size-4 shrink-0" />
-      )}
-      {notice.text}
-    </div>
-  );
-}
-
 function ProfileCard() {
   const user = useAuthStore((s) => s.user);
   const updateUser = useAuthStore((s) => s.updateUser);
-  const [notice, setNotice] = useState<Notice | null>(null);
 
   const {
     register,
@@ -77,7 +53,6 @@ function ProfileCard() {
   });
 
   async function onSubmit(values: ProfileForm) {
-    setNotice(null);
     try {
       const updated = await api.updateUser({ name: values.name });
       updateUser({
@@ -85,15 +60,13 @@ function ProfileCard() {
         name: updated.name,
         email: updated.email,
       });
-      setNotice({ kind: "success", text: "Profile updated successfully." });
+      toast.success("Profile updated successfully.");
     } catch (err) {
-      setNotice({
-        kind: "error",
-        text:
-          err instanceof ApiError
-            ? err.message
-            : "Failed to update profile. Please try again.",
-      });
+      toast.error(
+        err instanceof ApiError
+          ? err.message
+          : "Failed to update profile. Please try again.",
+      );
     }
   }
 
@@ -137,8 +110,6 @@ function ProfileCard() {
             Email cannot be changed.
           </p>
         </div>
-
-        {notice && <NoticeBar notice={notice} />}
 
         <div className="flex justify-end">
           <Button
@@ -216,8 +187,6 @@ function PlanCard() {
 }
 
 function SecurityCard() {
-  const [notice, setNotice] = useState<Notice | null>(null);
-
   const {
     register,
     handleSubmit,
@@ -233,14 +202,13 @@ function SecurityCard() {
   });
 
   async function onSubmit(values: PasswordForm) {
-    setNotice(null);
     try {
       await api.updateUser({
         currentPassword: values.currentPassword,
         newPassword: values.newPassword,
       });
       reset();
-      setNotice({ kind: "success", text: "Password changed successfully." });
+      toast.success("Password changed successfully.");
     } catch (err) {
       const message =
         err instanceof ApiError
@@ -248,7 +216,7 @@ function SecurityCard() {
             ? "Current password is incorrect."
             : err.message
           : "Failed to change password. Please try again.";
-      setNotice({ kind: "error", text: message });
+      toast.error(message);
     }
   }
 
@@ -323,8 +291,6 @@ function SecurityCard() {
             </p>
           )}
         </div>
-
-        {notice && <NoticeBar notice={notice} />}
 
         <div className="flex justify-end">
           <Button type="submit" size="sm" disabled={isSubmitting}>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { DM_Sans, Geist_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { Toaster } from "@/components/ui/sonner";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
@@ -57,6 +58,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
+        <Toaster />
         {gaId ? (
           <>
             <Script

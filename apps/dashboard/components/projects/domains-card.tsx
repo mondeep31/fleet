@@ -10,6 +10,7 @@ import {
   WarningCircle,
 } from "@phosphor-icons/react";
 import useSWR from "swr";
+import { toast } from "sonner";
 import { api, ApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -259,33 +260,30 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
   const [isAdding, setIsAdding] = useState(false);
   const [checkingId, setCheckingId] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   async function handleAdd() {
     const domain = newDomain.trim().toLowerCase();
     if (!domain) return;
 
-    setError(null);
     setIsAdding(true);
     try {
       await api.addProjectDomain(projectId, domain);
       setNewDomain("");
       await mutate();
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to add domain.");
+      toast.error(err instanceof ApiError ? err.message : "Failed to add domain.");
     } finally {
       setIsAdding(false);
     }
   }
 
   async function handleVerifyNow(domainId: string) {
-    setError(null);
     setCheckingId(domainId);
     try {
       await api.verifyProjectDomain(projectId, domainId);
       await mutate();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to check domain status.",
@@ -296,13 +294,12 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
   }
 
   async function handleRemove(domainId: string) {
-    setError(null);
     setRemovingId(domainId);
     try {
       await api.deleteProjectDomain(projectId, domainId);
       await mutate();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError ? err.message : "Failed to remove domain.",
       );
     } finally {
@@ -394,12 +391,6 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
         ) : (
           <p className="text-sm text-muted-foreground">
             No custom domains connected yet.
-          </p>
-        )}
-
-        {error && (
-          <p className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-            {error}
           </p>
         )}
       </CardContent>

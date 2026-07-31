@@ -1,23 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  CheckCircle,
-  MagnifyingGlass,
-  Plus,
-  RocketLaunch,
-  Warning,
-  X,
-} from "@phosphor-icons/react";
+import { MagnifyingGlass, Plus, RocketLaunch } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { ProjectCard } from "@/components/projects/project-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useProjects } from "@/hooks/use-projects";
-import { cn } from "@/lib/utils";
 
 function NewProjectButton() {
   return (
@@ -32,12 +25,12 @@ export default function ProjectsPage() {
   const searchParams = useSearchParams();
   const { projects, isLoading, error, mutate } = useProjects();
   const [query, setQuery] = useState("");
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(() => {
+  useEffect(() => {
     const github = searchParams.get("github");
-    if (github === "connected") return { type: "success", text: "GitHub connected successfully." };
-    if (github === "error") return { type: "error", text: "GitHub connection failed. Please try again." };
-    return null;
-  });
+    if (github === "connected") toast.success("GitHub connected successfully.");
+    if (github === "error") toast.error("GitHub connection failed. Please try again.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const visibleProjects = useMemo(() => {
     const normalized = query.trim().toLowerCase();
     if (!normalized) return projects;
@@ -53,34 +46,6 @@ export default function ProjectsPage() {
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <Header title="Projects" />
-
-      {banner && (
-        <div
-          className={cn(
-            "mx-4 mt-4 flex items-center justify-between rounded-lg px-4 py-3 text-sm md:mx-6",
-            banner.type === "success"
-              ? "bg-green-500/10 text-green-400"
-              : "bg-destructive/10 text-destructive",
-          )}
-        >
-          <span className="flex items-center gap-2">
-            {banner.type === "success" ? (
-              <CheckCircle className="size-4" weight="fill" />
-            ) : (
-              <Warning className="size-4" weight="fill" />
-            )}
-            {banner.text}
-          </span>
-          <button
-            type="button"
-            onClick={() => setBanner(null)}
-            className="ml-4 shrink-0 text-current opacity-70 hover:opacity-100"
-          >
-            <X className="size-4" />
-            <span className="sr-only">Dismiss</span>
-          </button>
-        </div>
-      )}
 
       <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
         <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">

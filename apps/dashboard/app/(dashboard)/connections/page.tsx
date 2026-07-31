@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
-import { CheckCircle, Warning, X } from "@phosphor-icons/react";
+import { CheckCircle } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
@@ -55,17 +56,16 @@ function GitHubCard() {
     { revalidateOnFocus: false },
   );
   const [disconnecting, setDisconnecting] = useState(false);
-  const [disconnectError, setDisconnectError] = useState<string | null>(null);
 
   async function handleDisconnect() {
     setDisconnecting(true);
-    setDisconnectError(null);
     try {
       await api.disconnectGitHub();
       await mutate();
+      toast.success("GitHub disconnected.");
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : "Failed to disconnect";
-      setDisconnectError(msg);
+      toast.error(msg);
     } finally {
       setDisconnecting(false);
     }
@@ -113,10 +113,6 @@ function GitHubCard() {
           )}
         </div>
       </div>
-
-      {disconnectError && (
-        <p className="mt-3 text-xs text-destructive">{disconnectError}</p>
-      )}
     </div>
   );
 }
@@ -146,47 +142,18 @@ function ComingSoonCard({
 export default function ConnectionsPage() {
   const searchParams = useSearchParams();
 
-  // Initialise banner from OAuth return params once on first render.
-  const [banner, setBanner] = useState<{ type: "success" | "error"; text: string } | null>(() => {
+  useEffect(() => {
     const github = searchParams.get("github");
-    if (github === "connected") return { type: "success", text: "GitHub connected successfully." };
-    if (github === "error") return { type: "error", text: "GitHub connection failed. Please try again." };
-    return null;
-  });
+    if (github === "connected") toast.success("GitHub connected successfully.");
+    if (github === "error") toast.error("GitHub connection failed. Please try again.");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <Header title="Connections" />
 
       <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
-        {banner && (
-          <div
-            className={cn(
-              "mb-6 flex items-center justify-between rounded-lg px-4 py-3 text-sm",
-              banner.type === "success"
-                ? "bg-green-500/10 text-green-400"
-                : "bg-destructive/10 text-destructive",
-            )}
-          >
-            <span className="flex items-center gap-2">
-              {banner.type === "success" ? (
-                <CheckCircle className="size-4" weight="fill" />
-              ) : (
-                <Warning className="size-4" weight="fill" />
-              )}
-              {banner.text}
-            </span>
-            <button
-              type="button"
-              onClick={() => setBanner(null)}
-              className="ml-4 shrink-0 text-current opacity-70 hover:opacity-100"
-            >
-              <X className="size-4" />
-              <span className="sr-only">Dismiss</span>
-            </button>
-          </div>
-        )}
-
         <div className="max-w-xl space-y-3">
           <GitHubCard />
           <ComingSoonCard name="GitLab" provider="gitlab" />

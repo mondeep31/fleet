@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ArrowSquareOut, Trash } from "@phosphor-icons/react";
+import { toast } from "sonner";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,7 +34,6 @@ export function DeploymentRow({
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [stopping, setStopping] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const canStop =
     deployment.status !== "stopped" &&
@@ -43,13 +43,12 @@ export function DeploymentRow({
 
   async function handleStop() {
     setStopping(true);
-    setError(null);
     try {
       await api.stopDeployment(deployment.deploymentId);
       setConfirmOpen(false);
       onStopped();
     } catch (err) {
-      setError(
+      toast.error(
         err instanceof ApiError
           ? err.message
           : "Failed to stop deployment. Try again.",
@@ -138,9 +137,6 @@ export function DeploymentRow({
               container. This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          {error && (
-            <p className="text-sm text-destructive">{error}</p>
-          )}
           <DialogFooter>
             <Button variant="outline" onClick={() => setConfirmOpen(false)}>
               Cancel
