@@ -9,20 +9,20 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-[#e7eadf] py-24 text-[#15201e] sm:py-32">
+    <section id="pricing" className="bg-[#f5f0e7] py-24 text-[#171918] sm:py-32">
       <div className="site-shell">
-        <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
+        <div className="grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-16">
           <div>
             <p className="eyebrow mb-6 text-[#65736c]">Pricing</p>
-            <h2 className="max-w-[8ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Start small. Run real work.</h2>
-            <p className="mt-6 max-w-sm text-sm leading-6 text-[#5d6a64]">Every plan includes GitHub deployment, logs, environment variables, stable URLs, CI/CD, and custom domains.</p>
+            <h2 className="max-w-[8ch] text-4xl leading-[0.98] font-medium tracking-[-0.04em] sm:text-6xl">Start free. Scale when the service does.</h2>
+            <p className="mt-7 max-w-sm text-sm leading-6 text-[#5d6a64]">GitHub deployment, logs, environment variables, stable URLs, CI/CD, and custom domains are included on every plan.</p>
           </div>
-          <div className="border-t border-black/20">
+          <div className="border-t border-black/20 lg:mt-2">
             {plans.map((plan) => (
-              <div key={plan.name} className="grid gap-5 border-b border-black/20 py-7 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
-                <div><p className="text-xl font-medium">{plan.name}</p><p className="mt-1 text-sm text-[#67746e]">{plan.ram} RAM · {plan.cpu} · {plan.projects} {plan.projects === "1" ? "project" : "projects"}</p></div>
+              <div key={plan.name} className="grid gap-5 border-b border-black/20 py-8 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
+                <div><p className="text-xl font-medium tracking-[-0.02em]">{plan.name}</p><p className="mt-1.5 font-mono text-[10px] text-[#67746e]">{plan.ram} RAM · {plan.cpu} · {plan.projects} {plan.projects === "1" ? "PROJECT" : "PROJECTS"}</p></div>
                 <div className="flex items-baseline gap-2"><span className="text-3xl font-medium">{plan.price}</span><span className="text-sm text-[#67746e]">{plan.note}</span></div>
-                {plan.active ? <Link href="/signup" className="group inline-flex h-10 items-center justify-between gap-6 bg-[#14201d] px-4 text-sm text-white sm:justify-center"><span>{plan.action}</span><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link> : <span className="eyebrow text-[#77837d]">{plan.action}</span>}
+                {plan.active ? <Link href="/signup" className="group inline-flex h-11 items-center justify-between gap-6 bg-[#14201d] px-5 text-sm text-white transition-transform hover:-translate-y-0.5 sm:justify-center"><span>{plan.action}</span><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link> : <span className="eyebrow text-[#77837d]">{plan.action}</span>}
               </div>
             ))}
             <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">

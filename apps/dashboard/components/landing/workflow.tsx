@@ -1,26 +1,29 @@
 const capabilities = [
-  ["01", "Build visibility", "Stream build and runtime logs without leaving the project."],
-  ["02", "Environment control", "Add, edit, and protect configuration for every backend."],
-  ["03", "More room to run", "Compute allocations designed for services, workers, and APIs."],
-  ["04", "Stable routes", "Keep one live URL through every redeploy and route your own domain."],
+  ["01", "Build output", "Watch every build step as it happens, from dependency install to image creation.", "streamed"],
+  ["02", "Runtime logs", "Inspect live application output without reaching for a separate logging service.", "live"],
+  ["03", "Configuration", "Keep environment variables and deployment settings with the service they belong to.", "encrypted"],
+  ["04", "Stable routing", "Preserve one production URL across releases, then attach your own domain.", "automatic"],
 ] as const;
 
 export function Workflow() {
   return (
-    <section className="bg-[#0b1111] py-24 text-[#eef1e8] sm:py-32">
+    <section className="bg-[#dfe7fb] py-24 text-[#171918] sm:py-32">
       <div className="site-shell">
-        <div className="grid gap-10 border-b border-white/10 pb-14 lg:grid-cols-2 lg:items-end">
-          <div><p className="eyebrow mb-6 text-[#b8a573]">A backend platform should behave like one</p><h2 className="max-w-[12ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Infrastructure without the ceremony.</h2></div>
-          <p className="max-w-lg text-base leading-7 text-[#95a29b] lg:justify-self-end">Fleet removes the setup work without hiding what matters after launch. You still get the logs, configuration, deployment history, and routing controls needed to operate confidently.</p>
-        </div>
-        <div>
-          {capabilities.map(([number, title, body]) => (
-            <div key={number} className="grid gap-4 border-b border-white/10 py-7 sm:grid-cols-[5rem_1fr_1.2fr] sm:items-center">
-              <span className="font-mono text-xs text-[#66756e]">{number}</span>
-              <h3 className="text-xl font-medium">{title}</h3>
-              <p className="text-sm leading-6 text-[#87958e]">{body}</p>
-            </div>
-          ))}
+        <div className="grid gap-8 lg:grid-cols-[.72fr_1.28fr]">
+          <div>
+            <p className="eyebrow mb-6 text-[#627069]">After launch</p>
+            <h2 className="max-w-[9ch] text-4xl leading-[0.98] font-medium tracking-[-0.04em] sm:text-6xl">The controls you actually need.</h2>
+          </div>
+          <div className="border-t border-black/18">
+            {capabilities.map(([number, title, body, state]) => (
+              <div key={number} className="group grid gap-4 border-b border-black/18 py-7 sm:grid-cols-[3.5rem_.8fr_1.35fr_auto] sm:items-center">
+                <span className="font-mono text-[10px] text-[#718078]">{number}</span>
+                <h3 className="text-lg font-medium tracking-[-0.015em]">{title}</h3>
+                <p className="max-w-md text-sm leading-6 text-[#58665f]">{body}</p>
+                <span className="hidden font-mono text-[9px] uppercase tracking-[0.12em] text-[#75817b] sm:block">{state}</span>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -1,52 +1,92 @@
 import Image from "next/image";
-import { Check, GithubLogo } from "@phosphor-icons/react/dist/ssr";
+import { Check, GithubLogo, GlobeHemisphereWest } from "@phosphor-icons/react/dist/ssr";
 
 const steps = [
-  ["01", "Connect", "Authorize GitHub once and choose any backend repository."],
-  ["02", "Configure", "Select a branch, add environment variables, and confirm your build."],
-  ["03", "Go live", "Fleet builds the container, assigns a stable URL, and starts serving traffic."],
+  {
+    number: "01",
+    title: "Connect",
+    body: "Authorize GitHub once, choose the repository and branch, then add the environment your service needs.",
+  },
+  {
+    number: "02",
+    title: "Build",
+    body: "Fleet detects the Dockerfile, streams every build step, and checks the container before release.",
+  },
+  {
+    number: "03",
+    title: "Go live",
+    body: "Traffic moves only after the health check passes. Your stable URL remains unchanged on the next push.",
+  },
 ] as const;
 
 export function Figs() {
   return (
-    <section id="path" className="bg-[#e7eadf] py-24 text-[#15201e] sm:py-32">
+    <section id="path" className="bg-white py-24 text-[#171918] sm:py-32">
       <div className="site-shell">
-        <div className="grid gap-12 lg:grid-cols-[.82fr_1.18fr] lg:gap-20">
-          <div className="lg:pt-10">
-            <p className="eyebrow mb-6 text-[#607069]">One path. No platform archaeology.</p>
-            <h2 className="max-w-[10ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Repo to running backend.</h2>
-            <p className="mt-6 max-w-md text-base leading-7 text-[#52605a]">
-              Fleet handles the deployment path that usually sends you through build settings, container docs, and infrastructure limits.
-            </p>
-
-            <div className="mt-12 border-t border-black/15">
-              {steps.map(([number, title, description]) => (
-                <div
-                  key={number}
-                  className="grid grid-cols-[2.5rem_1fr] gap-3 border-b border-black/15 py-6"
-                >
-                  <span className="font-mono text-xs text-[#77847d]">{number}</span>
-                  <div><h3 className="text-lg font-medium">{title}</h3><p className="mt-1 max-w-sm text-sm leading-6 text-[#5b6962]">{description}</p></div>
-                </div>
-              ))}
-            </div>
+        <div className="mb-12 grid gap-6 lg:grid-cols-[1fr_.6fr] lg:items-end">
+          <div>
+            <p className="eyebrow mb-5 text-[#52615a]">How Fleet works</p>
+            <h2 className="max-w-[13ch] text-4xl leading-[0.95] font-[540] tracking-[-0.05em] sm:text-6xl [font-variation-settings:'opsz'_60,'wdth'_96]">Three steps. Nothing hiding between them.</h2>
           </div>
+          <p className="max-w-md text-base leading-7 text-[#686e6b] lg:justify-self-end">The interface stays close to the deployment: repository in, verified release out.</p>
+        </div>
 
-          <div className="relative min-h-[32rem] overflow-hidden bg-[#0b1717] lg:min-h-[46rem]">
-            <Image src="/images/landing/workflow.jpg" alt="Abstract teal light passing through textured glass" fill sizes="(max-width: 1024px) 100vw, 58vw" className="object-cover opacity-85" />
-            <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,13,13,.1),rgba(5,13,13,.78))]" />
-            <div className="absolute inset-x-6 bottom-6 border border-white/15 bg-[#071010]/72 p-5 text-white backdrop-blur-md sm:inset-x-10 sm:bottom-10 sm:p-7">
-              <div className="mb-8 flex items-center justify-between border-b border-white/12 pb-5">
-                <span className="flex items-center gap-2 text-sm"><GithubLogo className="size-4" weight="fill" /> api-service / main</span>
-                <span className="eyebrow flex items-center gap-2 text-[#9fd5bd]"><Check className="size-3" weight="bold" /> Live</span>
+        <div className="grid gap-5 lg:grid-cols-3">
+          <article>
+            <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#123c4a] sm:min-h-[35rem]">
+              <Image src="/images/landing/workflow.jpg" alt="Blue abstract texture behind the repository connection flow" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover" />
+              <div className="absolute inset-0 bg-[#082834]/25" />
+              <div className="absolute left-1/2 top-12 w-[76%] -translate-x-1/2 rounded-full border border-white/30 bg-white/18 px-5 py-3 text-white backdrop-blur-xl">
+                <p className="flex items-center gap-2 text-sm"><GithubLogo className="size-4" weight="fill" /> GitHub connected</p>
               </div>
-              <div className="grid grid-cols-2 gap-6 sm:grid-cols-3">
-                <div><p className="eyebrow">Build</p><p className="mt-2 font-mono text-sm">42s</p></div>
-                <div><p className="eyebrow">Runtime</p><p className="mt-2 font-mono text-sm">Docker</p></div>
-                <div className="col-span-2 sm:col-span-1"><p className="eyebrow">Route</p><p className="mt-2 truncate font-mono text-sm">api.fleet.run</p></div>
+              <span className="absolute left-1/2 top-[5.55rem] h-24 -translate-x-1/2 border-l border-dashed border-white/70" />
+              <div className="absolute left-1/2 top-44 w-[82%] -translate-x-1/2 rounded-2xl bg-white p-5 text-[#171918] shadow-2xl">
+                <p className="font-mono text-[9px] uppercase tracking-[0.12em] text-black/40">Repository</p>
+                <p className="mt-2 text-base font-medium">dhaasu / fleet-api</p>
+                <div className="mt-5 flex items-center justify-between rounded-xl bg-[#eef3f4] px-4 py-3 text-xs"><span>Branch</span><span className="font-mono">main</span></div>
               </div>
+              <span className="absolute bottom-20 left-1/2 h-20 -translate-x-1/2 border-l border-dashed border-white/70" />
+              <div className="absolute inset-x-8 bottom-8 rounded-full border border-white/30 bg-white/18 px-5 py-3 text-center text-sm text-white backdrop-blur-xl">Environment ready</div>
             </div>
-          </div>
+            <p className="mt-6 text-2xl font-[540] tracking-[-0.03em]">Step 1: {steps[0].title}</p>
+            <p className="mt-3 text-sm leading-6 text-[#6b706e]">{steps[0].body}</p>
+          </article>
+
+          <article>
+            <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#8d5f25] sm:min-h-[35rem]">
+              <Image src="/images/landing/22.jpg" alt="Amber abstract texture behind the Fleet build sequence" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover object-center saturate-125" />
+              <div className="absolute inset-0 bg-[#4d2b14]/20" />
+              <div className="absolute left-1/2 top-12 w-[78%] -translate-x-1/2 rounded-2xl bg-white p-5 text-[#171918] shadow-2xl">
+                <div className="flex items-center justify-between"><div><p className="font-mono text-[9px] uppercase text-black/40">Building release</p><p className="mt-2 text-base font-medium">commit a83f9c2</p></div><span className="size-3 animate-pulse rounded-full bg-[#ff9b36] motion-reduce:animate-none" /></div>
+              </div>
+              <span className="absolute left-1/2 top-[8.35rem] h-20 -translate-x-1/2 border-l border-dashed border-white/80" />
+              <div className="absolute inset-x-8 top-52 space-y-2">
+                {["Dockerfile detected", "Image created", "Port 3000 responding"].map((item, index) => <div key={item} className="flex items-center justify-between rounded-full border border-white/25 bg-[#302116]/55 px-5 py-3 text-sm text-white backdrop-blur-xl"><span>{item}</span><span className="font-mono text-[10px] text-white/60">0{index + 1}</span></div>)}
+              </div>
+              <div className="absolute inset-x-8 bottom-8 rounded-2xl bg-[#fff0d5] p-4 text-[#563715] shadow-xl"><p className="flex items-center gap-2 text-sm font-medium"><Check className="size-4" weight="bold" /> Build completed in 42s</p></div>
+            </div>
+            <p className="mt-6 text-2xl font-[540] tracking-[-0.03em]">Step 2: {steps[1].title}</p>
+            <p className="mt-3 text-sm leading-6 text-[#6b706e]">{steps[1].body}</p>
+          </article>
+
+          <article>
+            <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#173d32] sm:min-h-[35rem]">
+              <Image src="/images/landing/features-cicd.jpg" alt="Green light behind the live release routing diagram" fill sizes="(max-width: 1024px) 100vw, 33vw" className="object-cover object-center saturate-125" />
+              <div className="absolute inset-0 bg-[#062e24]/30" />
+              <div className="absolute left-8 top-10 rounded-full border border-white/30 bg-white/18 px-5 py-3 text-sm text-white backdrop-blur-xl">GitHub push</div>
+              <div className="absolute right-8 top-28 rounded-full border border-white/30 bg-white/18 px-5 py-3 text-sm text-white backdrop-blur-xl">Custom domain</div>
+              <span className="absolute left-[28%] top-[5.9rem] h-32 rotate-[-22deg] border-l border-dashed border-white/70" />
+              <span className="absolute right-[30%] top-[10.3rem] h-24 rotate-[25deg] border-l border-dashed border-white/70" />
+              <div className="absolute left-1/2 top-56 w-[80%] -translate-x-1/2 rounded-2xl bg-white p-5 text-[#171918] shadow-2xl">
+                <p className="flex items-center gap-3 text-base font-medium"><span className="flex size-8 items-center justify-center rounded-lg bg-[#24864f] text-white"><Check className="size-5" weight="bold" /></span> Production is healthy</p>
+                <p className="mt-2 pl-11 text-sm text-black/45">Verified before traffic moved</p>
+              </div>
+              <span className="absolute bottom-[6.6rem] left-1/2 h-20 -translate-x-1/2 border-l border-dashed border-white/70" />
+              <div className="absolute inset-x-8 bottom-8 flex items-center justify-center gap-2 rounded-full border border-white/30 bg-white/18 px-5 py-3 text-sm text-white backdrop-blur-xl"><GlobeHemisphereWest className="size-4" /> api.fleet.run</div>
+            </div>
+            <p className="mt-6 text-2xl font-[540] tracking-[-0.03em]">Step 3: {steps[2].title}</p>
+            <p className="mt-3 text-sm leading-6 text-[#6b706e]">{steps[2].body}</p>
+          </article>
         </div>
       </div>
     </section>

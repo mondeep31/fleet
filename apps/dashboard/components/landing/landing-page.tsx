@@ -9,7 +9,7 @@ import { LandingFooter } from "./landing-footer";
 
 export function LandingPage() {
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="landing-type min-h-dvh bg-[#f7f7f2] text-[#171918]">
       <LandingNav />
       <main>
         <Hero />

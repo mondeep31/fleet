@@ -1,10 +1,27 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
+import {
+  Google_Sans_Code,
+  Google_Sans_Flex,
+  IBM_Plex_Mono,
+  Instrument_Sans,
+} from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
+
+const googleSansFlex = Google_Sans_Flex({
+  variable: "--font-google-sans-flex",
+  subsets: ["latin"],
+  axes: ["opsz", "wdth", "GRAD", "ROND"],
+});
+
+const googleSansCode = Google_Sans_Code({
+  variable: "--font-google-sans-code",
+  subsets: ["latin"],
+  weight: "variable",
+});
 
 const instrumentSans = Instrument_Sans({
   variable: "--font-instrument-sans",
@@ -56,7 +73,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${instrumentSans.variable} ${ibmPlexMono.variable} dark h-full scroll-smooth antialiased`}
+      className={`${instrumentSans.variable} ${ibmPlexMono.variable} ${googleSansFlex.variable} ${googleSansCode.variable} dark h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

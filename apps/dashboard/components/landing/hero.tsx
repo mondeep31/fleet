@@ -2,88 +2,86 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowDown, ArrowRight, GithubLogo } from "@phosphor-icons/react";
-import {
-  motion,
-  useReducedMotion,
-  useScroll,
-  useTransform,
-} from "framer-motion";
-import { useRef } from "react";
+import { ArrowDown, ArrowRight, Check, GithubLogo } from "@phosphor-icons/react";
+import { motion, useReducedMotion } from "framer-motion";
+
+const pipeline = [
+  ["Build", "42s"],
+  ["Health check", "Passed"],
+  ["Release", "Live"],
+] as const;
 
 export function Hero() {
-  const ref = useRef<HTMLElement>(null);
   const reduceMotion = useReducedMotion();
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"],
-  });
-  const imageY = useTransform(scrollYProgress, [0, 1], ["0%", "9%"]);
-  const copyY = useTransform(scrollYProgress, [0, 1], ["0%", "-10%"]);
 
   return (
-    <section
-      ref={ref}
-      className="grain relative min-h-[92svh] overflow-hidden bg-[#071010]"
-    >
-      <motion.div
-        className="absolute inset-0 scale-[1.04]"
-        style={reduceMotion ? undefined : { y: imageY }}
-      >
-        <Image
-          src="/images/landing/hero.jpg"
-          alt="A figure moving through a hazy green landscape toward warm light"
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-[62%_center] sm:object-center"
-        />
-      </motion.div>
-      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(4,13,12,.9)_0%,rgba(4,13,12,.58)_38%,rgba(4,13,12,.08)_70%),linear-gradient(0deg,rgba(4,12,11,.76)_0%,transparent_42%)]" />
-
-      <motion.div
-        style={reduceMotion ? undefined : { y: copyY }}
-        className="site-shell relative flex min-h-[92svh] items-center pb-10 pt-24 sm:pb-12 sm:pt-28"
-      >
-        <div className="max-w-[36rem]">
-          <p className="eyebrow mb-5 text-[#c9b77f]">Backend deployment</p>
-          <h1 className="max-w-[13ch] text-[clamp(3rem,4.7vw,5.25rem)] leading-[0.95] font-medium text-[#f0f2ea]">
-            Deploy backends
-            <br />
-            from GitHub.
-          </h1>
-          <div className="mt-7 flex flex-col items-start gap-7">
-            <p className="w-full max-w-[32rem] text-base leading-7 text-[#c6cdc5] sm:text-lg">
-              Pick a repository. Fleet builds it, runs it, and gives you a live
-              URL with logs, push-to-deploy, and custom domains.
+    <section className="grain relative overflow-hidden bg-[#f7f7f2] pb-16 pt-28 text-[#151715] sm:pb-24 sm:pt-36">
+      <div className="site-shell">
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.65, ease: [0.22, 1, 0.36, 1] }}
+          className="grid gap-8 lg:grid-cols-[1.15fr_.85fr] lg:items-end"
+        >
+          <div>
+            <p className="eyebrow mb-6 text-[#50625a]">Backend deployment, minus the detour</p>
+            <h1 className="max-w-[12ch] text-[clamp(3.1rem,6.6vw,7rem)] leading-[0.86] font-[540] tracking-[-0.065em] [font-variation-settings:'opsz'_72,'wdth'_94,'ROND'_10]">
+              From repository to running backend.
+            </h1>
+          </div>
+          <div className="pb-1 lg:justify-self-end">
+            <p className="max-w-md text-base leading-7 text-[#5f6662] sm:text-lg sm:leading-8">
+              Fleet builds your container, verifies the release, and gives it a stable URL. Push again whenever you are ready.
             </p>
-            <div className="flex flex-wrap items-center gap-6">
-              <Link
-                href="/login"
-                className="group inline-flex h-12 shrink-0 items-center gap-3 bg-[#e2d29e] px-5 text-sm font-medium text-[#101512] transition-colors hover:bg-[#f1e6bf]"
-              >
+            <div className="mt-7 flex flex-col items-start gap-5 sm:flex-row sm:items-center">
+              <Link href="/login" className="group inline-flex h-12 items-center gap-3 rounded-full bg-[#171a18] px-5 text-sm font-medium text-white transition-transform hover:-translate-y-0.5">
                 <GithubLogo className="size-4" weight="fill" />
                 Connect GitHub
                 <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </Link>
-              <a
-                href="#path"
-                className="text-sm text-white/65 transition-colors hover:text-white"
-              >
-                See how it works
+              <a href="#path" className="group inline-flex items-center gap-2 text-sm text-black/55 hover:text-black">
+                See the three steps <ArrowDown className="size-3.5 transition-transform group-hover:translate-y-1" />
               </a>
             </div>
           </div>
-        </div>
-      </motion.div>
+        </motion.div>
 
-      <a
-        href="#path"
-        aria-label="See how Fleet works"
-        className="absolute right-4 bottom-6 hidden size-11 items-center justify-center border border-white/20 text-white/70 transition-colors hover:border-white/40 hover:text-white sm:flex lg:right-10"
-      >
-        <ArrowDown className="size-4" />
-      </a>
+        <motion.div
+          initial={reduceMotion ? false : { opacity: 0, y: 28, scale: 0.985 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.85, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+          className="relative mt-14 min-h-[31rem] overflow-hidden rounded-[1.75rem] bg-[#193d36] sm:min-h-[39rem]"
+        >
+          <Image src="/images/landing/hero.jpg" alt="Abstract light and movement behind a Fleet deployment interface" fill priority sizes="(max-width: 1400px) 100vw, 86rem" className="object-cover object-center saturate-[1.15]" />
+          <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,33,28,.55),rgba(18,42,36,.05)_55%,rgba(16,29,26,.32))]" />
+          <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.13)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.13)_1px,transparent_1px)] [background-size:6rem_6rem]" />
+
+          <div className="absolute left-5 top-5 flex items-center gap-2 rounded-full border border-white/30 bg-white/18 px-4 py-2 text-xs text-white backdrop-blur-xl sm:left-8 sm:top-8">
+            <GithubLogo className="size-4" weight="fill" /> fleet-api / main
+          </div>
+          <div className="absolute right-5 top-5 flex items-center gap-2 rounded-full border border-white/30 bg-white/18 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.1em] text-white backdrop-blur-xl sm:right-8 sm:top-8">
+            <span className="size-2 rounded-full bg-[#82f0b7]" /> Deploying
+          </div>
+
+          <div className="absolute inset-x-4 bottom-5 mx-auto max-w-4xl rounded-[1.4rem] bg-white/94 p-4 text-[#161917] shadow-[0_30px_80px_rgba(6,20,17,.3)] backdrop-blur-xl sm:inset-x-8 sm:bottom-8 sm:p-6">
+            <div className="flex items-center justify-between border-b border-black/10 pb-4">
+              <div>
+                <p className="font-mono text-[9px] uppercase tracking-[0.14em] text-black/40">Deployment 1842</p>
+                <p className="mt-1.5 text-sm font-medium">Production release</p>
+              </div>
+              <span className="flex items-center gap-2 rounded-full bg-[#dff5e8] px-3 py-1.5 text-xs font-medium text-[#185a37]"><Check className="size-3.5" weight="bold" /> Healthy</span>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3">
+              {pipeline.map(([label, value], index) => (
+                <div key={label} className="flex items-center justify-between border-b border-black/10 py-4 last:border-b-0 sm:block sm:border-r sm:border-b-0 sm:px-5 sm:first:pl-0 sm:last:border-r-0 sm:last:pr-0">
+                  <div className="flex items-center gap-2"><span className="flex size-5 items-center justify-center rounded-full bg-[#1b6545] font-mono text-[9px] text-white">{index + 1}</span><p className="text-xs text-black/50">{label}</p></div>
+                  <p className="font-mono text-xs text-black/80 sm:mt-5">{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+      </div>
     </section>
   );
 }
