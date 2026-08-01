@@ -1,45 +1,46 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { DM_Sans, Geist_Mono } from "next/font/google";
+import { Instrument_Sans, IBM_Plex_Mono } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
 
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
+const instrumentSans = Instrument_Sans({
+  variable: "--font-instrument-sans",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const ibmPlexMono = IBM_Plex_Mono({
+  variable: "--font-ibm-plex-mono",
   subsets: ["latin"],
+  weight: ["400", "500"],
 });
 
 const DESCRIPTION =
-  "Connect GitHub, pick a repo, and get a stable live URL — with build logs, env vars, push-to-deploy, and zero-downtime rollouts.";
+  "Deploy backend applications from GitHub in one click, with generous compute, build logs, CI/CD, stable URLs, and custom domains.";
 
 export const metadata: Metadata = {
   metadataBase: getSiteUrl(),
   title: { default: "Fleet", template: "%s · Fleet" },
   description: DESCRIPTION,
   icons: {
-    icon: { url: "/sailboat.svg", type: "image/svg+xml" },
-    shortcut: "/sailboat.svg",
-    apple: "/sailboat.svg",
+    icon: { url: "/images/brand/icon.svg", type: "image/svg+xml" },
+    shortcut: "/images/brand/icon.svg",
+    apple: "/images/brand/icon.svg",
   },
   openGraph: {
     type: "website",
     siteName: "Fleet",
     title: "Fleet",
     description: DESCRIPTION,
-    images: [{ url: "/sailboat.png", width: 512, height: 512, alt: "Fleet" }],
+    images: [{ url: "/images/brand/icon.png", width: 512, height: 512, alt: "Fleet" }],
   },
   twitter: {
     card: "summary",
     title: "Fleet",
     description: DESCRIPTION,
-    images: ["/sailboat.png"],
+    images: ["/images/brand/icon.png"],
   },
   robots: { index: true, follow: true },
 };
@@ -54,7 +55,8 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${dmSans.variable} ${geistMono.variable} dark h-full scroll-smooth antialiased`}
+      data-scroll-behavior="smooth"
+      className={`${instrumentSans.variable} ${ibmPlexMono.variable} dark h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

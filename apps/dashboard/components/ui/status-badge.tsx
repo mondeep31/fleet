@@ -8,43 +8,43 @@ const statusConfig: Record<
 > = {
   queued: {
     label: "Queued",
-    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+    className: "bg-[#71807a]/12 text-[#93a19b] border-[#71807a]/25",
   },
   cloning: {
     label: "Cloning",
-    className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    className: "bg-[#d5b875]/12 text-[#d8c38e] border-[#d5b875]/24",
   },
   cloned: {
     label: "Cloned",
-    className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    className: "bg-[#d5b875]/12 text-[#d8c38e] border-[#d5b875]/24",
   },
   building: {
     label: "Building",
-    className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    className: "bg-[#d5b875]/12 text-[#d8c38e] border-[#d5b875]/24",
   },
   deploying: {
     label: "Deploying",
-    className: "bg-amber-500/15 text-amber-400 border-amber-500/20",
+    className: "bg-[#d5b875]/12 text-[#d8c38e] border-[#d5b875]/24",
   },
   live: {
     label: "Live",
-    className: "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
+    className: "bg-[#7ac7a5]/12 text-[#8fd4b7] border-[#7ac7a5]/24",
   },
   failed: {
     label: "Failed",
-    className: "bg-red-500/15 text-red-400 border-red-500/20",
+    className: "bg-[#d87970]/12 text-[#e18f87] border-[#d87970]/24",
   },
   rolled_back: {
     label: "Rolled Back",
-    className: "bg-red-500/15 text-red-400 border-red-500/20",
+    className: "bg-[#d87970]/12 text-[#e18f87] border-[#d87970]/24",
   },
   stopped: {
     label: "Stopped",
-    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+    className: "bg-[#71807a]/12 text-[#93a19b] border-[#71807a]/25",
   },
   deleted: {
     label: "Deleted",
-    className: "bg-zinc-500/15 text-zinc-400 border-zinc-500/20",
+    className: "bg-[#71807a]/12 text-[#93a19b] border-[#71807a]/25",
   },
 };
 

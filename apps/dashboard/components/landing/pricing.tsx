@@ -1,209 +1,35 @@
-"use client";
-
 import Link from "next/link";
-import { motion, useReducedMotion } from "framer-motion";
-import { Check } from "@phosphor-icons/react";
+import { ArrowRight, Check } from "@phosphor-icons/react/dist/ssr";
 
-interface Plan {
-  id: string;
-  name: string;
-  price: string;
-  priceNote: string;
-  highlight: boolean;
-  cta: { label: string; href?: string; disabled: boolean };
-  specs: { label: string; value: string }[];
-}
-
-const PLANS: Plan[] = [
-  {
-    id: "free",
-    name: "Free",
-    price: "$0",
-    priceNote: "forever",
-    highlight: false,
-    cta: { label: "Get started", href: "/login", disabled: false },
-    specs: [
-      { label: "RAM", value: "256 MB" },
-      { label: "CPU", value: "0.25 cores" },
-      { label: "Projects", value: "1" },
-      { label: "Build queue", value: "Standard" },
-    ],
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    price: "$9",
-    priceNote: "/ mo",
-    highlight: true,
-    cta: { label: "Coming soon", disabled: true },
-    specs: [
-      { label: "RAM", value: "1 GB" },
-      { label: "CPU", value: "1 core" },
-      { label: "Projects", value: "5" },
-      { label: "Build queue", value: "Priority" },
-    ],
-  },
-  {
-    id: "team",
-    name: "Team",
-    price: "$29",
-    priceNote: "/ mo",
-    highlight: false,
-    cta: { label: "Coming soon", disabled: true },
-    specs: [
-      { label: "RAM", value: "4 GB" },
-      { label: "CPU", value: "4 cores" },
-      { label: "Projects", value: "Unlimited" },
-      { label: "Build queue", value: "Priority" },
-    ],
-  },
-];
-
-const FEATURES = [
-  "GitHub push-to-deploy",
-  "Build & runtime logs",
-  "Environment variables",
-  "Stable live URLs",
-  "Zero-downtime redeploys",
-];
+const plans = [
+  { name: "Free", price: "$0", note: "forever", ram: "256 MB", cpu: "0.25 core", projects: "1", action: "Deploy free", active: true },
+  { name: "Pro", price: "$9", note: "per month", ram: "1 GB", cpu: "1 core", projects: "5", action: "Coming soon", active: false },
+  { name: "Team", price: "$29", note: "per month", ram: "4 GB", cpu: "4 cores", projects: "Unlimited", action: "Coming soon", active: false },
+] as const;
 
 export function Pricing() {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section
-      id="pricing"
-      aria-label="Pricing"
-      className="mx-auto max-w-5xl px-6 py-24"
-    >
-      <div className="border-t border-white/8 pt-16">
-        <motion.p
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-4 font-mono text-[10px] tracking-[0.22em] text-(--text-secondary) uppercase"
-        >
-          Pricing
-        </motion.p>
-
-        <motion.h2
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.06, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-3 text-2xl font-semibold tracking-tight text-(--text-primary) sm:text-3xl"
-        >
-          Simple, transparent pricing.
-        </motion.h2>
-
-        <motion.p
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
-          className="mb-10 text-sm text-(--text-secondary)"
-        >
-          Every plan includes all features. Only the compute allocation differs.
-        </motion.p>
-
-        {/* Pricing cards — compute specs only */}
-        <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-3 sm:gap-6">
-          {PLANS.map((plan, i) => (
-            <motion.div
-              key={plan.id}
-              initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-40px" }}
-              transition={{
-                duration: 0.42,
-                delay: i * 0.09,
-                ease: [0.22, 1, 0.36, 1],
-              }}
-              className={
-                plan.highlight
-                  ? "relative flex flex-col rounded-xl border border-white/14 bg-white/4 p-6 ring-1 ring-white/14"
-                  : "relative flex flex-col rounded-xl border border-white/8 bg-white/2 p-6"
-              }
-            >
-              {plan.highlight && (
-                <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full border border-white/16 bg-[#1a1a18] px-3 py-0.5 font-mono text-[9px] tracking-widest text-(--text-secondary) uppercase">
-                  Popular
-                </span>
-              )}
-
-              <div className="mb-5">
-                <p className="mb-3 text-sm font-medium text-(--text-primary)">
-                  {plan.name}
-                </p>
-                <div className="flex items-baseline gap-1.5">
-                  <span className="text-3xl font-semibold tracking-tight text-(--text-primary)">
-                    {plan.price}
-                  </span>
-                  <span className="text-sm text-(--text-secondary)">
-                    {plan.priceNote}
-                  </span>
-                </div>
+    <section id="pricing" className="bg-[#e7eadf] py-24 text-[#15201e] sm:py-32">
+      <div className="site-shell">
+        <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
+          <div>
+            <p className="eyebrow mb-6 text-[#65736c]">Pricing</p>
+            <h2 className="max-w-[8ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Start small. Run real work.</h2>
+            <p className="mt-6 max-w-sm text-sm leading-6 text-[#5d6a64]">Every plan includes GitHub deployment, logs, environment variables, stable URLs, CI/CD, and custom domains.</p>
+          </div>
+          <div className="border-t border-black/20">
+            {plans.map((plan) => (
+              <div key={plan.name} className="grid gap-5 border-b border-black/20 py-7 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
+                <div><p className="text-xl font-medium">{plan.name}</p><p className="mt-1 text-sm text-[#67746e]">{plan.ram} RAM · {plan.cpu} · {plan.projects} {plan.projects === "1" ? "project" : "projects"}</p></div>
+                <div className="flex items-baseline gap-2"><span className="text-3xl font-medium">{plan.price}</span><span className="text-sm text-[#67746e]">{plan.note}</span></div>
+                {plan.active ? <Link href="/signup" className="group inline-flex h-10 items-center justify-between gap-6 bg-[#14201d] px-4 text-sm text-white sm:justify-center"><span>{plan.action}</span><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link> : <span className="eyebrow text-[#77837d]">{plan.action}</span>}
               </div>
-
-              <div className="mb-6 space-y-2 border-t border-white/6 pt-4">
-                {plan.specs.map((s) => (
-                  <div key={s.label} className="flex items-center justify-between">
-                    <span className="text-xs text-(--text-secondary)">
-                      {s.label}
-                    </span>
-                    <span className="font-mono text-xs text-(--text-primary)">
-                      {s.value}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-auto">
-                {plan.cta.disabled ? (
-                  <button
-                    type="button"
-                    disabled
-                    className="w-full cursor-not-allowed rounded-lg border border-white/8 bg-white/4 py-2 text-sm text-(--text-secondary) opacity-60"
-                  >
-                    {plan.cta.label}
-                  </button>
-                ) : (
-                  <Link
-                    href={plan.cta.href!}
-                    className="block w-full rounded-lg bg-(--text-primary) py-2 text-center text-sm font-medium text-[#1a1a18] transition-opacity hover:opacity-85"
-                  >
-                    {plan.cta.label}
-                  </Link>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Shared features — applies to all plans */}
-        <motion.div
-          initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.18, ease: [0.22, 1, 0.36, 1] }}
-          className="rounded-xl border border-white/8 bg-white/2 px-6 py-5"
-        >
-          <p className="mb-4 font-mono text-[10px] tracking-[0.18em] text-(--text-secondary) uppercase">
-            Included on every plan
-          </p>
-          <ul className="flex flex-wrap gap-x-8 gap-y-2.5">
-            {FEATURES.map((feature) => (
-              <li key={feature} className="flex items-center gap-2">
-                <Check
-                  className="size-3.5 shrink-0 text-(--text-secondary)"
-                  weight="bold"
-                />
-                <span className="text-xs text-(--text-secondary)">{feature}</span>
-              </li>
             ))}
-          </ul>
-        </motion.div>
+            <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
+              {["No credit card", "Custom domains", "Zero-downtime rollouts"].map((item) => <span key={item} className="flex items-center gap-2 text-sm text-[#53615a]"><Check className="size-3.5" weight="bold" />{item}</span>)}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

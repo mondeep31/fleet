@@ -3,7 +3,7 @@
  * White-filled icon on a transparent background for email clients.
  *
  * Run:  bun run gen:png           (from packages/brand)
- * Output is committed at apps/dashboard/public/sailboat.png.
+ * Output is committed at apps/dashboard/public/images/brand/icon.png.
  */
 import { Resvg } from "@resvg/resvg-js";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -26,7 +26,7 @@ const resvg = new Resvg(svgSource, {
 });
 const png = resvg.render().asPng();
 
-const outPath = resolve(root, "apps/dashboard/public/sailboat.png");
+const outPath = resolve(root, "apps/dashboard/public/images/brand/icon.png");
 writeFileSync(outPath, png);
 
 // Write base64 constant so the email package can embed the logo inline.

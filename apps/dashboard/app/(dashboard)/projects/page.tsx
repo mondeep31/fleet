@@ -47,24 +47,26 @@ export default function ProjectsPage() {
     <div className="flex min-h-[100dvh] flex-col">
       <Header title="Projects" />
 
-      <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 md:px-6">
-        <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
-          <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder={
-              typeof window !== "undefined" && window.innerWidth <= 768
-                ? "Search"
-                : "Search projects"
-            }
-            className="pl-9"
-          />
+      <div className="border-b border-border">
+        <div className="dashboard-container flex items-center justify-between gap-3 px-4 py-4 md:px-8">
+          <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
+            <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+              placeholder={
+                typeof window !== "undefined" && window.innerWidth <= 768
+                  ? "Search"
+                  : "Search projects"
+              }
+              className="pl-9"
+            />
+          </div>
+          <NewProjectButton />
         </div>
-        <NewProjectButton />
       </div>
 
-      <div className="flex-1 px-4 py-4 md:px-6 md:py-6">
+      <div className="dashboard-container flex-1 px-4 py-5 md:px-8 md:py-8">
         {isLoading && (
           <div className="grid gap-3 md:gap-4 xl:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -117,7 +119,7 @@ export default function ProjectsPage() {
           )}
 
         {!isLoading && !error && visibleProjects.length > 0 && (
-          <div className="grid min-w-0 gap-3 md:gap-4 xl:grid-cols-2">
+          <div className="grid min-w-0 gap-px overflow-hidden border border-border bg-border xl:grid-cols-2">
             {visibleProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}

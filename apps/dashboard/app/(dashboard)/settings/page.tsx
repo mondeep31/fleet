@@ -71,7 +71,7 @@ function ProfileCard() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <section className="border-t border-border py-7">
       <h2 className="mb-1 text-base font-semibold">Profile</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Update your display name.
@@ -121,7 +121,7 @@ function ProfileCard() {
           </Button>
         </div>
       </form>
-    </div>
+    </section>
   );
 }
 
@@ -141,7 +141,7 @@ function PlanCard() {
   const planInfo = PLAN_DISPLAY[planId] ?? PLAN_DISPLAY.free;
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <section className="border-t border-border py-7">
       <h2 className="mb-1 text-base font-semibold">Plan</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Your current subscription and resource limits.
@@ -182,7 +182,7 @@ function PlanCard() {
           Upgrade — Coming soon
         </Button>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -221,7 +221,7 @@ function SecurityCard() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <section className="border-t border-border py-7">
       <h2 className="mb-1 text-base font-semibold">Security</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Change your account password.
@@ -298,7 +298,7 @@ function SecurityCard() {
           </Button>
         </div>
       </form>
-    </div>
+    </section>
   );
 }
 
@@ -306,8 +306,8 @@ export default function SettingsPage() {
   return (
     <div className="flex min-h-dvh flex-col">
       <Header title="Profile" />
-      <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
-        <div className="mx-auto max-w-lg space-y-6">
+      <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
+        <div className="max-w-2xl space-y-10">
           <ProfileCard />
           <PlanCard />
           <SecurityCard />

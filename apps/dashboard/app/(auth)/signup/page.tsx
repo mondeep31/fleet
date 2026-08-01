@@ -71,7 +71,7 @@ export default function SignupPage() {
             className="h-10 w-full gap-2"
           >
             <img
-              src="/github-svgrepo-com.svg"
+              src="/images/integrations/github.svg"
               alt=""
               aria-hidden
               className="h-4 w-4 dark:invert"

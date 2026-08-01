@@ -90,7 +90,7 @@ export default function DeploymentDetailPage() {
         }
       />
 
-      <div className="flex-1 space-y-6 px-6 py-6">
+      <div className="dashboard-container flex-1 space-y-6 px-4 py-6 md:px-8">
         {isLoading && (
           <div className="space-y-4">
             <Skeleton className="h-8 w-48" />

@@ -1,83 +1,38 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "framer-motion";
 import { FleetLogo } from "@/components/brand/fleet-logo";
 
-export function AuthShell({
-  title,
-  subtitle,
-  children,
-  footer,
-}: {
-  title: string;
-  subtitle: string;
-  children: React.ReactNode;
-  footer?: React.ReactNode;
-}) {
+export function AuthShell({ title, subtitle, children, footer }: { title: string; subtitle: string; children: React.ReactNode; footer?: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
-
   return (
-    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden bg-background px-4 py-12">
-      <div
-        className="pointer-events-none absolute inset-0 opacity-42"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.12) 1px, transparent 1px)",
-          backgroundSize: "24px 24px",
-        }}
-      />
-      <motion.div
-        initial={reduceMotion ? false : { opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-        className="relative w-full max-w-[370px] rounded-xl border border-white/[0.08] bg-card p-8"
-      >
-        <div className="mb-6 flex justify-center">
-          <div className="flex size-11 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-            <FleetLogo className="size-5" />
-          </div>
+    <div className="grid min-h-[100dvh] bg-[#0b1111] text-foreground lg:grid-cols-[1.1fr_.9fr]">
+      <div className="grain relative hidden min-h-[100dvh] overflow-hidden lg:block">
+        <Image src="/images/auth/panel.jpg" alt="Light and shadow moving across textured glass" fill priority sizes="55vw" className="object-cover" />
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,12,.08),rgba(5,12,12,.78))]" />
+        <Link href="/" className="absolute left-10 top-9 flex items-center gap-2.5 text-[#14201d]"><FleetLogo className="size-4" /><span className="text-lg font-medium">Fleet</span></Link>
+        <div className="absolute inset-x-10 bottom-10 max-w-xl">
+          <p className="eyebrow mb-5 text-[#d8c38e]">GitHub in. Live URL out.</p>
+          <p className="text-4xl leading-[1.04] font-medium text-white">Deploy from GitHub. Fleet handles the rest.</p>
         </div>
+      </div>
 
-        <div className="mb-6 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-balance text-[var(--text-primary)]">
-            {title}
-          </h1>
-          <p className="mt-2 text-sm text-[var(--text-secondary)]">
-            {subtitle}
-          </p>
-        </div>
-
-        {children}
-
-        {footer ? (
-          <div className="mt-6 text-center text-sm text-[var(--text-secondary)]">
-            {footer}
-          </div>
-        ) : null}
-      </motion.div>
+      <div className="flex min-h-[100dvh] items-center justify-center px-5 py-12 sm:px-10">
+        <motion.div initial={reduceMotion ? false : { opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }} className="w-full max-w-[25rem]">
+          <Link href="/" className="mb-14 flex items-center gap-2.5 text-white lg:hidden"><FleetLogo className="size-4" /><span className="text-lg font-medium">Fleet</span></Link>
+          <p className="eyebrow mb-4 text-[#bba875]">Fleet account</p>
+          <h1 className="text-3xl leading-tight font-medium text-balance text-[var(--text-primary)] sm:text-4xl">{title}</h1>
+          <p className="mt-3 text-sm leading-6 text-[var(--text-secondary)]">{subtitle}</p>
+          <div className="mt-8">{children}</div>
+          {footer ? <div className="mt-7 border-t border-white/10 pt-6 text-sm text-[var(--text-secondary)]">{footer}</div> : null}
+        </motion.div>
+      </div>
     </div>
   );
 }
 
-export function AuthFooterLink({
-  text,
-  linkText,
-  href,
-}: {
-  text: string;
-  linkText: string;
-  href: string;
-}) {
-  return (
-    <>
-      {text}{" "}
-      <Link
-        href={href}
-        className="text-[var(--text-primary)] underline-offset-4 transition-colors hover:underline focus-visible:underline focus-visible:outline-none"
-      >
-        {linkText}
-      </Link>
-    </>
-  );
+export function AuthFooterLink({ text, linkText, href }: { text: string; linkText: string; href: string }) {
+  return <>{text}{" "}<Link href={href} className="text-[#dac78f] underline-offset-4 transition-colors hover:text-[#efe0b3] hover:underline focus-visible:underline focus-visible:outline-none">{linkText}</Link></>;
 }

@@ -18,28 +18,30 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
   ];
 
   return (
-    <nav className="flex gap-6 overflow-x-auto border-b border-border px-6">
-      {tabs.map((tab) => {
-        // "Deployments" is the bare project URL, which is a prefix of every
-        // other tab's URL — it can only be active on an exact match.
-        const active = tab.exact
-          ? pathname === tab.href
-          : isActivePath(pathname, tab.href);
-        return (
-          <Link
-            key={tab.href}
-            href={tab.href}
-            className={cn(
-              "shrink-0 border-b-2 py-3 text-sm font-medium transition-colors",
-              active
-                ? "border-foreground text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {tab.label}
-          </Link>
-        );
-      })}
+    <nav className="border-b border-border">
+      <div className="dashboard-container flex gap-6 overflow-x-auto px-4 md:px-8">
+        {tabs.map((tab) => {
+          // "Deployments" is the bare project URL, which is a prefix of every
+          // other tab's URL — it can only be active on an exact match.
+          const active = tab.exact
+            ? pathname === tab.href
+            : isActivePath(pathname, tab.href);
+          return (
+            <Link
+              key={tab.href}
+              href={tab.href}
+              className={cn(
+                "shrink-0 border-b-2 py-3 text-sm font-medium transition-colors",
+                active
+                  ? "border-foreground text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </div>
     </nav>
   );
 }

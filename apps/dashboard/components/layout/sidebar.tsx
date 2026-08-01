@@ -62,7 +62,7 @@ function AccountMenu({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center gap-3 rounded-lg bg-[var(--bg-elevated)] px-3 py-2 text-left transition-colors hover:bg-[#3a3a37]"
+        className="flex w-full items-center gap-3 rounded-md border border-border bg-[var(--bg-elevated)] px-3 py-2 text-left transition-colors hover:bg-[#20302c]"
       >
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{user?.name ?? "User"}</p>
@@ -253,7 +253,7 @@ export function Sidebar() {
     <TooltipProvider>
       <aside
         className={cn(
-          "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[var(--bg-surface)] shadow-[inset_-1px_0_0_rgba(255,255,255,0.03)] transition-[width] duration-150 md:flex",
+        "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[#0d1514] transition-[width] duration-200 md:flex",
           collapsed ? "w-14" : "w-60",
         )}
       >
@@ -263,11 +263,11 @@ export function Sidebar() {
             collapsed ? "justify-center px-2" : "px-4",
           )}
         >
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+          <div className="flex size-8 shrink-0 items-center justify-center border border-[#d8c38e]/35 bg-[#d8c38e]/10 text-[#d8c38e]">
             <FleetLogo className="size-4" />
           </div>
           {!collapsed && (
-            <span className="text-sm font-semibold tracking-tight">fleet</span>
+            <span className="text-base font-medium">Fleet</span>
           )}
         </div>
 
@@ -300,10 +300,10 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+                  "flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm transition-all",
                   active
-                    ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-                    : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                    ? "border-[#d8c38e] bg-[#d8c38e]/9 text-[#e6d6a6]"
+                    : "border-transparent text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
                 )}
               >
                 <Icon className="size-4" />
@@ -325,10 +325,10 @@ export function Sidebar() {
             <Link
               href="/settings"
               className={cn(
-                "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
+                "mb-2 flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm transition-all",
                 pathname.startsWith("/settings")
-                  ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-                  : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                  ? "border-[#d8c38e] bg-[#d8c38e]/9 text-[#e6d6a6]"
+                  : "border-transparent text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
               )}
             >
               <Gear className="size-4" />
@@ -346,7 +346,7 @@ export function Sidebar() {
                     type="button"
                     onClick={handleLogout}
                     aria-label="Sign out"
-                    className="flex w-full items-center justify-center rounded-lg bg-[var(--bg-elevated)] py-2 text-muted-foreground transition-colors hover:bg-[#3a3a37] hover:text-foreground"
+                    className="flex w-full items-center justify-center rounded-md bg-[var(--bg-elevated)] py-2 text-muted-foreground transition-colors hover:bg-[#20302c] hover:text-foreground"
                   />
                 }
               >

@@ -18,16 +18,16 @@ const PROVIDER_ICONS: Record<
   { src: string; alt: string; className?: string }
 > = {
   github: {
-    src: "/github-svgrepo-com.svg",
+    src: "/images/integrations/github.svg",
     alt: "GitHub",
     className: "dark:invert",
   },
   gitlab: {
-    src: "/gitlab-svgrepo-com.svg",
+    src: "/images/integrations/gitlab.svg",
     alt: "GitLab",
   },
   bitbucket: {
-    src: "/bitbucketpipeline-svgrepo-com.svg",
+    src: "/images/integrations/bitbucket.svg",
     alt: "Bitbucket",
   },
 };
@@ -72,10 +72,10 @@ function GitHubCard() {
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="border-b border-border py-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-[var(--bg-elevated)]">
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center border border-border bg-[var(--bg-elevated)]">
             <ProviderIcon provider="github" />
           </div>
           <div>
@@ -125,9 +125,9 @@ function ComingSoonCard({
   provider: Provider;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5 opacity-60">
+    <div className="border-b border-border py-6 opacity-55">
       <div className="flex items-center gap-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-[var(--bg-elevated)]">
+        <div className="flex size-9 shrink-0 items-center justify-center border border-border bg-[var(--bg-elevated)]">
           <ProviderIcon provider={provider} />
         </div>
         <div>
@@ -153,8 +153,8 @@ export default function ConnectionsPage() {
     <div className="flex min-h-[100dvh] flex-col">
       <Header title="Connections" />
 
-      <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
-        <div className="max-w-xl space-y-3">
+      <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
+        <div className="max-w-2xl border-t border-border">
           <GitHubCard />
           <ComingSoonCard name="GitLab" provider="gitlab" />
           <ComingSoonCard name="Bitbucket" provider="bitbucket" />

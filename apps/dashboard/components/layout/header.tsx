@@ -19,8 +19,8 @@ export function Header({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="border-b border-border bg-background/95">
-      <div className="flex min-h-16 items-center gap-4 px-4 py-4 md:px-6">
+    <header className="border-b border-border bg-[#0b1111]/92 backdrop-blur-xl">
+      <div className="dashboard-container flex min-h-[4.5rem] items-center gap-4 px-4 py-4 md:px-8">
         <div className="flex min-w-0 items-center gap-4">
           <div className="flex shrink-0 items-center md:hidden">
             <MobileSidebarTrigger />
@@ -49,7 +49,7 @@ export function Header({
                 ))}
               </nav>
             )}
-            <h1 className="text-xl font-semibold tracking-tight text-balance md:text-2xl">
+            <h1 className="text-xl font-medium text-balance md:text-2xl">
               {title}
             </h1>
           </div>

@@ -1,50 +1,27 @@
-"use client";
-
-import { motion, useReducedMotion } from "framer-motion";
-
-const steps = [
-  { number: "01", label: "Connect GitHub and pick a repository" },
-  { number: "02", label: "Choose a branch and configure env vars" },
-  { number: "03", label: "Fleet clones, builds, and runs your container" },
-  { number: "04", label: "Push to deploy — GitHub webhooks trigger CI/CD on every commit" },
-  { number: "05", label: "Zero-downtime cutover — your URL stays live while the new version rolls out" },
+const capabilities = [
+  ["01", "Build visibility", "Stream build and runtime logs without leaving the project."],
+  ["02", "Environment control", "Add, edit, and protect configuration for every backend."],
+  ["03", "More room to run", "Compute allocations designed for services, workers, and APIs."],
+  ["04", "Stable routes", "Keep one live URL through every redeploy and route your own domain."],
 ] as const;
 
 export function Workflow() {
-  const reduceMotion = useReducedMotion();
-
   return (
-    <section id="how-it-works" className="mx-auto max-w-5xl px-6 py-24">
-      <motion.p
-        initial={reduceMotion ? false : { opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-        className="mb-12 font-mono text-[10px] tracking-[0.22em] text-[var(--text-secondary)] uppercase"
-      >
-        How it works
-      </motion.p>
-
-      <div className="divide-y divide-white/[0.07]">
-        {steps.map(({ number, label }, i) => (
-          <motion.div
-            key={number}
-            initial={reduceMotion ? false : { opacity: 0, x: -8 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{
-              duration: 0.38,
-              delay: i * 0.07,
-              ease: [0.22, 1, 0.36, 1],
-            }}
-            className="flex items-baseline gap-8 py-5"
-          >
-            <span className="w-6 shrink-0 font-mono text-[11px] text-[var(--text-secondary)]">
-              {number}
-            </span>
-            <span className="text-base text-[var(--text-primary)]">{label}</span>
-          </motion.div>
-        ))}
+    <section className="bg-[#0b1111] py-24 text-[#eef1e8] sm:py-32">
+      <div className="site-shell">
+        <div className="grid gap-10 border-b border-white/10 pb-14 lg:grid-cols-2 lg:items-end">
+          <div><p className="eyebrow mb-6 text-[#b8a573]">A backend platform should behave like one</p><h2 className="max-w-[12ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Infrastructure without the ceremony.</h2></div>
+          <p className="max-w-lg text-base leading-7 text-[#95a29b] lg:justify-self-end">Fleet removes the setup work without hiding what matters after launch. You still get the logs, configuration, deployment history, and routing controls needed to operate confidently.</p>
+        </div>
+        <div>
+          {capabilities.map(([number, title, body]) => (
+            <div key={number} className="grid gap-4 border-b border-white/10 py-7 sm:grid-cols-[5rem_1fr_1.2fr] sm:items-center">
+              <span className="font-mono text-xs text-[#66756e]">{number}</span>
+              <h3 className="text-xl font-medium">{title}</h3>
+              <p className="text-sm leading-6 text-[#87958e]">{body}</p>
+            </div>
+          ))}
+        </div>
       </div>
     </section>
   );

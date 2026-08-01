@@ -69,7 +69,7 @@ export default function LoginPage({
 
   return (
     <AuthShell
-      title="Login to fleet"
+      title="Log in to Fleet"
       subtitle="Sign in to continue to your dashboard"
       footer={
         <AuthFooterLink
@@ -87,7 +87,7 @@ export default function LoginPage({
             className="h-10 w-full gap-2"
           >
             <img
-              src="/github-svgrepo-com.svg"
+              src="/images/integrations/github.svg"
               alt=""
               aria-hidden
               className="h-4 w-4 dark:invert"

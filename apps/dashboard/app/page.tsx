@@ -3,14 +3,14 @@ import { LandingPage } from "@/components/landing/landing-page";
 import { getSiteUrl } from "@/lib/site";
 
 const DESCRIPTION =
-  "Connect GitHub, pick a repo, and get a stable live URL — with build logs, env vars, push-to-deploy, and zero-downtime rollouts.";
+  "Deploy backend applications from GitHub in one click, with generous compute, build logs, CI/CD, stable URLs, and custom domains.";
 
 export const metadata: Metadata = {
-  title: "Fleet — From GitHub repo to live URL",
+  title: "Fleet — Your backend, live in one click",
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
-    title: "Fleet — From GitHub repo to live URL",
+    title: "Fleet — Your backend, live in one click",
     description: DESCRIPTION,
     url: "/",
   },

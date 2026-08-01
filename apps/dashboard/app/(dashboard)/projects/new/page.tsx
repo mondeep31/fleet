@@ -284,7 +284,7 @@ export default function NewProjectPage() {
           title="New Project"
           breadcrumbs={[{ label: "Projects", href: "/projects" }, { label: "New" }]}
         />
-        <div className="flex flex-1 flex-col items-center justify-center px-4 py-16 text-center">
+        <div className="dashboard-container flex flex-1 flex-col items-center justify-center px-4 py-16 text-center md:px-8">
           <div className="max-w-sm">
             <p className="text-base font-medium">Connect GitHub to continue</p>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -316,7 +316,7 @@ export default function NewProjectPage() {
           breadcrumbs={[{ label: "Projects", href: "/projects" }, { label: "New" }]}
         />
 
-        <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
+        <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
           <div className="mx-auto max-w-2xl space-y-5">
             {/* Repo search */}
             <div>
@@ -339,7 +339,7 @@ export default function NewProjectPage() {
             </div>
 
             {/* Repo list */}
-            <div className="max-h-64 overflow-y-auto rounded-lg border border-border p-1 scrollbar-thin scrollbar-track-[#2f2f2d] scrollbar-thumb-[#7b7b75] scrollbar-corner-[#2f2f2d] hover:scrollbar-thumb-[#92928c]">
+            <div className="max-h-64 overflow-y-auto rounded-lg border border-border p-1 scrollbar-thin scrollbar-track-[#101817] scrollbar-thumb-[#52635d] scrollbar-corner-[#101817] hover:scrollbar-thumb-[#72847d]">
               {listLoading && (
                 <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
                   <SpinnerGap className="size-5 animate-spin" />
@@ -417,7 +417,7 @@ export default function NewProjectPage() {
                       side="bottom"
                       align="start"
                       alignItemWithTrigger={false}
-                      className="max-h-64 scrollbar-thin scrollbar-track-[#2f2f2d] scrollbar-thumb-[#7b7b75] scrollbar-corner-[#2f2f2d] hover:scrollbar-thumb-[#92928c]"
+                      className="max-h-64 scrollbar-thin scrollbar-track-[#101817] scrollbar-thumb-[#52635d] scrollbar-corner-[#101817] hover:scrollbar-thumb-[#72847d]"
                     >
                       {branches?.map((b) => (
                         <SelectItem key={b.name} value={b.name}>
@@ -489,7 +489,7 @@ export default function NewProjectPage() {
         breadcrumbs={[{ label: "Projects", href: "/projects" }, { label: "New" }]}
       />
 
-      <div className="flex-1 px-4 py-6 md:px-6 md:py-8">
+      <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
         <div className="mx-auto max-w-2xl space-y-6">
           {/* Summary */}
           <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">
