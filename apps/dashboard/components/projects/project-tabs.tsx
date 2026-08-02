@@ -19,7 +19,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
 
   return (
     <nav className="border-b border-border bg-[#050505]">
-      <div className="dashboard-container flex gap-2 overflow-x-auto px-4 py-3 md:px-8">
+      <div className="dashboard-container flex gap-6 overflow-x-auto px-4 [scrollbar-width:none] md:px-8 [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => {
           // "Deployments" is the bare project URL, which is a prefix of every
           // other tab's URL — it can only be active on an exact match.
@@ -31,10 +31,10 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
               key={tab.href}
               href={tab.href}
               className={cn(
-                "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
+                "shrink-0 border-b-2 px-0 py-3 text-sm font-medium transition-colors",
                 active
-                  ? "bg-[#1f1f1f] text-white"
-                  : "text-muted-foreground hover:bg-[#111111] hover:text-foreground",
+                  ? "border-white text-white"
+                  : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
               {tab.label}

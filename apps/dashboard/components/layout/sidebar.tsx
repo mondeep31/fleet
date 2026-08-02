@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -117,10 +118,29 @@ function MobileSidebarOverlay({
     logout();
   }
 
-  return (
+  useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onOpenChange(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open, onOpenChange]);
+
+  if (typeof document === "undefined") return null;
+
+  return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-50 md:hidden",
+        "fixed inset-0 z-[100] h-[100dvh] overflow-hidden md:hidden",
         open ? "pointer-events-auto" : "pointer-events-none",
       )}
       aria-hidden={!open}
@@ -129,14 +149,14 @@ function MobileSidebarOverlay({
         type="button"
         aria-label="Close navigation"
         className={cn(
-          "absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity",
+          "absolute inset-0 z-0 bg-black/75 backdrop-blur-[2px] transition-opacity",
           open ? "opacity-100" : "opacity-0",
         )}
         onClick={() => onOpenChange(false)}
       />
       <aside
         className={cn(
-          "absolute inset-y-0 left-0 flex w-[min(300px,calc(100vw-4rem))] flex-col border-r border-border bg-[#050505] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,.95)] transition-transform duration-200",
+          "absolute inset-y-0 left-0 z-10 flex h-[100dvh] w-[min(20rem,calc(100vw-3rem))] flex-col overflow-y-auto border-r border-border bg-[#050505] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,.95)] transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -202,7 +222,8 @@ function MobileSidebarOverlay({
           <AccountMenu user={user} onSignOut={handleLogout} />
         </div>
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

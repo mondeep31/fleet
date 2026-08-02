@@ -34,8 +34,8 @@ export function VirtualDeploymentList({
 
   if (!useVirtual) {
     return (
-      <div className="overflow-x-auto">
-        <Table>
+      <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <Table className="min-w-[44rem]">
           <TableHeader>
             <TableRow>
               <TableHead>Status</TableHead>
@@ -78,7 +78,7 @@ export function VirtualDeploymentList({
       </Table>
       <div
         ref={parentRef}
-        className="max-h-[calc(100dvh-220px)] overflow-auto scrollbar-thin scrollbar-track-[#080808] scrollbar-thumb-[#3f3f3f] scrollbar-corner-[#080808] scrollbar-hover:scrollbar-thumb-[#5a5a5a]"
+        className="max-h-[calc(100dvh-220px)] overflow-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
       >
         <div
           style={{
