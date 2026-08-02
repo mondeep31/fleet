@@ -52,7 +52,7 @@ export function Hero() {
           transition={{ duration: 0.85, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
           className="relative mt-14 min-h-[31rem] overflow-hidden rounded-[1.75rem] bg-[#193d36] sm:min-h-[39rem]"
         >
-          <Image src="/images/landing/hero.jpg" alt="Abstract light and movement behind a Fleet deployment interface" fill priority sizes="(max-width: 1400px) 100vw, 86rem" className="object-cover object-center saturate-[1.15]" />
+          <Image src="/images/landing/hero.webp" alt="Abstract light and movement behind a Fleet deployment interface" fill priority sizes="(max-width: 1400px) 100vw, 86rem" className="object-cover object-center saturate-[1.15]" />
           <div className="absolute inset-0 bg-[linear-gradient(110deg,rgba(10,33,28,.55),rgba(18,42,36,.05)_55%,rgba(16,29,26,.32))]" />
           <div className="absolute inset-0 opacity-30 [background-image:linear-gradient(rgba(255,255,255,.13)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.13)_1px,transparent_1px)] [background-size:6rem_6rem]" />
 

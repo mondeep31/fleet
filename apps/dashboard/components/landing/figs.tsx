@@ -44,7 +44,7 @@ export function Figs() {
           <article>
             <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#123c4a] sm:min-h-[35rem]">
               <Image
-                src="/images/landing/workflow.jpg"
+                src="/images/landing/workflow.webp"
                 alt="Blue abstract texture behind the repository connection flow"
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"
@@ -84,7 +84,7 @@ export function Figs() {
           <article>
             <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#8d5f25] sm:min-h-[35rem]">
               <Image
-                src="/images/landing/22.jpg"
+                src="/images/landing/22.webp"
                 alt="Amber abstract texture behind the Fleet build sequence"
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"
@@ -138,7 +138,7 @@ export function Figs() {
           <article>
             <div className="relative min-h-[30rem] overflow-hidden rounded-[1.6rem] bg-[#173d32] sm:min-h-[35rem]">
               <Image
-                src="/images/landing/features-cicd.jpg"
+                src="/images/landing/features-cicd.webp"
                 alt="Green light behind the live release routing diagram"
                 fill
                 sizes="(max-width: 1024px) 100vw, 33vw"

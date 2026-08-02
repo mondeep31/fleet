@@ -10,7 +10,7 @@ export function AuthShell({ title, subtitle, children, footer }: { title: string
   return (
     <div className="grid min-h-[100dvh] bg-[#0b1111] text-foreground lg:grid-cols-[1.1fr_.9fr]">
       <div className="grain relative hidden min-h-[100dvh] overflow-hidden lg:block">
-        <Image src="/images/auth/panel.jpg" alt="Light and shadow moving across textured glass" fill priority sizes="55vw" className="object-cover" />
+        <Image src="/images/auth/panel.webp" alt="Light and shadow moving across textured glass" fill priority sizes="55vw" className="object-cover" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,12,.08),rgba(5,12,12,.78))]" />
         <Link href="/" className="absolute left-10 top-9 flex items-center gap-2.5 text-[#14201d]"><FleetLogo className="size-4" /><span className="text-lg font-medium">Fleet</span></Link>
         <div className="absolute inset-x-10 bottom-10 max-w-xl">
