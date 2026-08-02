@@ -161,10 +161,16 @@ function MobileSidebarOverlay({
         )}
       >
         <div className="flex h-16 items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-md border border-white/12 bg-[#111] text-white">
-            <FleetLogo className="size-4" />
-          </div>
-          <span className="text-sm font-semibold tracking-tight">fleet</span>
+          <Link
+            href="/projects"
+            onClick={() => onOpenChange(false)}
+            className="flex min-w-0 items-center gap-2 transition-opacity hover:opacity-80"
+          >
+            <div className="flex size-8 items-center justify-center rounded-md border border-white/12 bg-[#111] text-white">
+              <FleetLogo className="size-4" />
+            </div>
+            <span className="text-sm font-semibold tracking-tight">fleet</span>
+          </Link>
           <Button
             variant="ghost"
             size="icon-sm"
@@ -284,12 +290,21 @@ export function Sidebar() {
             collapsed ? "justify-center px-2" : "px-4",
           )}
         >
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-white/12 bg-[#111] text-white">
-            <FleetLogo className="size-4" />
-          </div>
-          {!collapsed && (
-            <span className="text-base font-medium">Fleet</span>
-          )}
+          <Link
+            href="/projects"
+            className={cn(
+              "flex min-w-0 items-center gap-2 transition-opacity hover:opacity-80",
+              collapsed && "justify-center",
+            )}
+            title={collapsed ? "Fleet" : undefined}
+          >
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-white/12 bg-[#111] text-white">
+              <FleetLogo className="size-4" />
+            </div>
+            {!collapsed && (
+              <span className="text-base font-medium">Fleet</span>
+            )}
+          </Link>
         </div>
 
         <Separator />
