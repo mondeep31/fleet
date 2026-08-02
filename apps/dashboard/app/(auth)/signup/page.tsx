@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -70,10 +71,12 @@ export default function SignupPage() {
             variant="outline"
             className="h-10 w-full gap-2"
           >
-            <img
+            <Image
               src="/images/integrations/github.svg"
               alt=""
               aria-hidden
+              width={16}
+              height={16}
               className="h-4 w-4 invert"
             />
             Continue with GitHub
