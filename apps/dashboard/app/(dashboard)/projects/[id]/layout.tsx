@@ -82,7 +82,7 @@ export default function ProjectLayout({
         )}
 
         {!isLoading && !project && (
-          <div className="rounded-xl border border-border bg-card px-6 py-12 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+          <div className="rounded-2xl border border-border bg-card px-6 py-12 text-center shadow-[0_16px_40px_-34px_rgba(18,28,23,.35)]">
             <p className="text-muted-foreground">Project not found.</p>
           </div>
         )}

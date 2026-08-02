@@ -201,7 +201,7 @@ export function ProjectCardMenu({
           right: menuPosition.right,
           zIndex: 50,
         }}
-        className="min-w-44 overflow-hidden rounded-lg border border-border bg-[var(--bg-elevated)] py-1 shadow-[0_18px_48px_-24px_rgba(0,0,0,0.8)]"
+        className="min-w-44 overflow-hidden rounded-2xl border border-border bg-white p-1 shadow-[0_18px_48px_-24px_rgba(18,28,23,.38)]"
         onClick={(event) => event.stopPropagation()}
       >
         {showStop && (
@@ -209,7 +209,7 @@ export function ProjectCardMenu({
             variant="ghost"
             size="sm"
             disabled={loading !== null}
-            className="h-9 w-full justify-start gap-2 rounded-none bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
+            className="h-9 w-full justify-start gap-2 rounded-xl bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -225,7 +225,7 @@ export function ProjectCardMenu({
             variant="ghost"
             size="sm"
             disabled={loading !== null}
-            className="h-9 w-full justify-start gap-2 rounded-none bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
+            className="h-9 w-full justify-start gap-2 rounded-xl bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -241,7 +241,7 @@ export function ProjectCardMenu({
             variant="ghost"
             size="sm"
             disabled={loading !== null}
-            className="h-9 w-full justify-start gap-2 rounded-none bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
+            className="h-9 w-full justify-start gap-2 rounded-xl bg-transparent px-3 text-sm text-muted-foreground shadow-none hover:bg-[var(--bg-inset)] hover:text-foreground"
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();
@@ -256,7 +256,7 @@ export function ProjectCardMenu({
           variant="ghost"
           size="sm"
           disabled={loading !== null}
-          className="h-9 w-full justify-start gap-2 rounded-none bg-transparent px-3 text-sm text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
+          className="h-9 w-full justify-start gap-2 rounded-xl bg-transparent px-3 text-sm text-destructive shadow-none hover:bg-destructive/10 hover:text-destructive"
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();

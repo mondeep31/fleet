@@ -30,13 +30,13 @@ export function ProjectCard({
   const domain = extractRepoDomain(project.repoUrl);
 
   return (
-    <div className="group relative flex min-h-36 min-w-0 flex-col justify-between overflow-hidden bg-card px-5 py-5 transition-colors hover:bg-[#14201e]">
+    <div className="group relative flex min-h-44 min-w-0 flex-col justify-between overflow-hidden rounded-2xl border border-border bg-card px-5 py-5 shadow-[0_14px_35px_-30px_rgba(18,28,23,.35)] transition-[transform,box-shadow,border-color] hover:-translate-y-0.5 hover:border-black/18 hover:shadow-[0_20px_40px_-28px_rgba(18,28,23,.42)]">
       <div className="flex min-w-0 items-start gap-3">
         <Link
           href={`/projects/${project.projectId}`}
           className="flex min-w-0 flex-1 items-start gap-3"
         >
-          <div className="flex size-8 shrink-0 items-center justify-center border border-[#d8c38e]/20 bg-[#d8c38e]/8 text-[#d8c38e]">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-[#dce6df] text-[#1f6748]">
             <GitBranch className="size-3.5" weight="bold" />
           </div>
           <div className="min-w-0 flex-1">
@@ -65,7 +65,7 @@ export function ProjectCard({
               rel="noopener noreferrer"
               aria-label={`Open ${project.name}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex size-7 shrink-0 items-center justify-center border border-border bg-[var(--bg-inset)] text-muted-foreground transition-colors hover:border-[#d8c38e]/35 hover:text-[#d8c38e]"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-[#f5f7f4] text-muted-foreground transition-colors hover:border-[#1f6748]/35 hover:text-[#1f6748]"
             >
               <ArrowSquareOut className="size-4 shrink-0" />
             </a>
@@ -84,7 +84,7 @@ export function ProjectCard({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="inline-flex max-w-full items-center gap-1.5 border border-border bg-[var(--bg-inset)] px-2 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-[#f2f5f1] px-2.5 py-1 font-mono text-[11px] text-muted-foreground transition-colors hover:border-black/20 hover:text-foreground"
         >
           <GitBranch className="size-3" weight="bold" />
           <span className="truncate">{domain}</span>

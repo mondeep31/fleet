@@ -119,7 +119,7 @@ export default function ProjectsPage() {
           )}
 
         {!isLoading && !error && visibleProjects.length > 0 && (
-          <div className="grid min-w-0 gap-px overflow-hidden border border-border bg-border xl:grid-cols-2">
+          <div className="grid min-w-0 gap-4 xl:grid-cols-2">
             {visibleProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}

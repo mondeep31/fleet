@@ -45,7 +45,7 @@ function AccountMenu({
   return (
     <div className="relative">
       {open && (
-        <div className="absolute inset-x-0 bottom-[calc(100%+0.5rem)] rounded-lg border border-border bg-[var(--bg-elevated)] shadow-[0_18px_48px_-24px_rgba(0,0,0,0.8)]">
+        <div className="absolute inset-x-0 bottom-[calc(100%+0.5rem)] rounded-2xl border border-border bg-white p-1 shadow-[0_18px_48px_-24px_rgba(18,28,23,.35)]">
           <Button
             variant="ghost"
             size="sm"
@@ -62,7 +62,7 @@ function AccountMenu({
         type="button"
         aria-expanded={open}
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-center gap-3 rounded-md border border-border bg-[var(--bg-elevated)] px-3 py-2 text-left transition-colors hover:bg-[#20302c]"
+        className="flex w-full items-center gap-3 rounded-xl border border-border bg-white px-3 py-2.5 text-left transition-colors hover:bg-[#f7f8f5]"
       >
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-medium">{user?.name ?? "User"}</p>
@@ -129,19 +129,19 @@ function MobileSidebarOverlay({
         type="button"
         aria-label="Close navigation"
         className={cn(
-          "absolute inset-0 bg-black/65 transition-opacity",
+          "absolute inset-0 bg-[#152019]/35 backdrop-blur-sm transition-opacity",
           open ? "opacity-100" : "opacity-0",
         )}
         onClick={() => onOpenChange(false)}
       />
       <aside
         className={cn(
-          "absolute inset-y-0 left-0 flex w-[min(300px,calc(100vw-4rem))] flex-col border-r border-border bg-[var(--bg-surface)] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,0.95)] transition-transform duration-200",
+          "absolute inset-y-0 left-0 flex w-[min(300px,calc(100vw-4rem))] flex-col border-r border-border bg-[#eef1ec] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(18,28,23,.5)] transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
         <div className="flex h-16 items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg border border-white/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.05))] text-[var(--text-primary)] shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
+          <div className="flex size-8 items-center justify-center rounded-full bg-[#1f6748] text-white shadow-[0_8px_20px_-12px_rgba(31,103,72,.65)]">
             <FleetLogo className="size-4" />
           </div>
           <span className="text-sm font-semibold tracking-tight">fleet</span>
@@ -170,8 +170,8 @@ function MobileSidebarOverlay({
                 className={cn(
                   "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
                   active
-                    ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-                    : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                    ? "bg-[#d9e5dd] text-[#174c35]"
+                    : "text-muted-foreground hover:bg-white/75 hover:text-foreground",
                 )}
               >
                 <Icon className="size-4" />
@@ -188,8 +188,8 @@ function MobileSidebarOverlay({
             className={cn(
               "mb-2 flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all",
               pathname.startsWith("/settings")
-                ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-                : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                ? "bg-[#d9e5dd] text-[#174c35]"
+                : "text-muted-foreground hover:bg-white/75 hover:text-foreground",
             )}
           >
             <Gear className="size-4" />
@@ -226,8 +226,8 @@ function CollapsedNavLink({
             className={cn(
               "flex items-center justify-center rounded-lg px-2 py-2 text-sm transition-all",
               active
-                ? "bg-primary text-primary-foreground shadow-[0_12px_28px_-20px_rgba(255,255,255,0.8)]"
-                : "text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                ? "bg-[#d9e5dd] text-[#174c35]"
+                : "text-muted-foreground hover:bg-white/75 hover:text-foreground",
             )}
           />
         }
@@ -253,7 +253,7 @@ export function Sidebar() {
     <TooltipProvider>
       <aside
         className={cn(
-        "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[#0d1514] transition-[width] duration-200 md:flex",
+        "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[#eef1ec] transition-[width] duration-200 md:flex",
           collapsed ? "w-14" : "w-60",
         )}
       >
@@ -263,7 +263,7 @@ export function Sidebar() {
             collapsed ? "justify-center px-2" : "px-4",
           )}
         >
-          <div className="flex size-8 shrink-0 items-center justify-center border border-[#d8c38e]/35 bg-[#d8c38e]/10 text-[#d8c38e]">
+          <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#1f6748] text-white shadow-[0_8px_20px_-12px_rgba(31,103,72,.65)]">
             <FleetLogo className="size-4" />
           </div>
           {!collapsed && (
@@ -300,10 +300,10 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm transition-all",
+                  "flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all",
                   active
-                    ? "border-[#d8c38e] bg-[#d8c38e]/9 text-[#e6d6a6]"
-                    : "border-transparent text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                    ? "bg-[#d9e5dd] font-medium text-[#174c35]"
+                    : "text-muted-foreground hover:bg-white/75 hover:text-foreground",
                 )}
               >
                 <Icon className="size-4" />
@@ -325,10 +325,10 @@ export function Sidebar() {
             <Link
               href="/settings"
               className={cn(
-                "mb-2 flex items-center gap-2.5 rounded-md border-l-2 px-3 py-2 text-sm transition-all",
+                "mb-2 flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-sm transition-all",
                 pathname.startsWith("/settings")
-                  ? "border-[#d8c38e] bg-[#d8c38e]/9 text-[#e6d6a6]"
-                  : "border-transparent text-muted-foreground hover:bg-[var(--bg-elevated)] hover:text-foreground",
+                  ? "bg-[#d9e5dd] font-medium text-[#174c35]"
+                  : "text-muted-foreground hover:bg-white/75 hover:text-foreground",
               )}
             >
               <Gear className="size-4" />
@@ -346,7 +346,7 @@ export function Sidebar() {
                     type="button"
                     onClick={handleLogout}
                     aria-label="Sign out"
-                    className="flex w-full items-center justify-center rounded-md bg-[var(--bg-elevated)] py-2 text-muted-foreground transition-colors hover:bg-[#20302c] hover:text-foreground"
+                    className="flex w-full items-center justify-center rounded-xl border border-border bg-white py-2 text-muted-foreground transition-colors hover:bg-[#f7f8f5] hover:text-foreground"
                   />
                 }
               >

@@ -73,7 +73,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${instrumentSans.variable} ${ibmPlexMono.variable} ${googleSansFlex.variable} ${googleSansCode.variable} dark h-full scroll-smooth antialiased`}
+      className={`${instrumentSans.variable} ${ibmPlexMono.variable} ${googleSansFlex.variable} ${googleSansCode.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

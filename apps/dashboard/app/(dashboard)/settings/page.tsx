@@ -71,7 +71,7 @@ function ProfileCard() {
   }
 
   return (
-    <section className="border-t border-border py-7">
+    <section className="rounded-2xl border border-border bg-white p-6 shadow-[0_16px_40px_-34px_rgba(18,28,23,.36)]">
       <h2 className="mb-1 text-base font-semibold">Profile</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Update your display name.
@@ -141,7 +141,7 @@ function PlanCard() {
   const planInfo = PLAN_DISPLAY[planId] ?? PLAN_DISPLAY.free;
 
   return (
-    <section className="border-t border-border py-7">
+    <section className="rounded-2xl border border-border bg-white p-6 shadow-[0_16px_40px_-34px_rgba(18,28,23,.36)]">
       <h2 className="mb-1 text-base font-semibold">Plan</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Your current subscription and resource limits.
@@ -150,7 +150,7 @@ function PlanCard() {
       {isLoading ? (
         <div className="h-16 animate-pulse rounded-md bg-muted/40" />
       ) : (
-        <div className="mb-5 rounded-md border border-border bg-muted/20 p-4">
+        <div className="mb-5 rounded-xl border border-border bg-[#f3f6f3] p-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-medium">{planInfo.label}</span>
             <span className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
@@ -170,7 +170,7 @@ function PlanCard() {
         </div>
       )}
 
-      <div className="rounded-md border border-border bg-muted/10 p-4">
+      <div className="rounded-xl border border-border bg-[#f7f8f6] p-4">
         <div className="mb-2 flex items-center gap-2">
           <CreditCard className="size-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Billing</h3>
@@ -221,7 +221,7 @@ function SecurityCard() {
   }
 
   return (
-    <section className="border-t border-border py-7">
+    <section className="rounded-2xl border border-border bg-white p-6 shadow-[0_16px_40px_-34px_rgba(18,28,23,.36)]">
       <h2 className="mb-1 text-base font-semibold">Security</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Change your account password.
@@ -307,7 +307,7 @@ export default function SettingsPage() {
     <div className="flex min-h-dvh flex-col">
       <Header title="Profile" />
       <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-        <div className="max-w-2xl space-y-10">
+        <div className="max-w-2xl space-y-4">
           <ProfileCard />
           <PlanCard />
           <SecurityCard />

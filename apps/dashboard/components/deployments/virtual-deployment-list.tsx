@@ -78,7 +78,7 @@ export function VirtualDeploymentList({
       </Table>
       <div
         ref={parentRef}
-        className="max-h-[calc(100dvh-220px)] overflow-auto scrollbar-thin scrollbar-track-[#101817] scrollbar-thumb-[#52635d] scrollbar-corner-[#101817] scrollbar-hover:scrollbar-thumb-[#72847d]"
+        className="max-h-[calc(100dvh-220px)] overflow-auto scrollbar-thin scrollbar-track-[#edf0ec] scrollbar-thumb-[#aab4ae] scrollbar-corner-[#edf0ec] scrollbar-hover:scrollbar-thumb-[#85928b]"
       >
         <div
           style={{

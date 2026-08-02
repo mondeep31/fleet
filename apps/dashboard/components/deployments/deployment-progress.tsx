@@ -57,9 +57,9 @@ export function DeploymentProgress({ status }: { status: DeploymentStatus }) {
               <div
                 className={cn(
                   "flex size-7 items-center justify-center rounded-full border text-xs font-medium tabular-nums transition-colors",
-                  completed && "border-emerald-500/40 bg-emerald-500/15 text-emerald-400",
-                  active && "border-amber-500/40 bg-amber-500/15 text-amber-400",
-                  failedAtStep && "border-red-500/40 bg-red-500/15 text-red-400",
+                  completed && "border-emerald-600/30 bg-emerald-600/10 text-emerald-700",
+                  active && "border-amber-600/30 bg-amber-600/10 text-amber-700",
+                  failedAtStep && "border-red-600/30 bg-red-600/10 text-red-700",
                   !completed && !active && !failedAtStep &&
                     "border-border bg-[var(--bg-elevated)] text-muted-foreground",
                 )}
@@ -80,7 +80,7 @@ export function DeploymentProgress({ status }: { status: DeploymentStatus }) {
           );
         })}
       </div>
-      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--bg-elevated)] shadow-[inset_0_1px_2px_rgba(0,0,0,0.35)]">
+      <div className="h-1.5 overflow-hidden rounded-full bg-[var(--bg-elevated)] shadow-[inset_0_1px_2px_rgba(18,28,23,0.12)]">
         <div
           className={cn(
             "h-full rounded-full transition-[width] duration-500",
