@@ -21,7 +21,7 @@ const PROVIDER_ICONS: Record<
   github: {
     src: "/images/integrations/github.svg",
     alt: "GitHub",
-    className: "",
+    className: "invert",
   },
   gitlab: {
     src: "/images/integrations/gitlab.svg",
@@ -75,22 +75,24 @@ function GitHubCard() {
   }
 
   return (
-    <div className="border-b border-border px-5 py-5 last:border-b-0 sm:px-6">
-      <div className="flex items-start justify-between gap-4">
-        <div className="flex items-start gap-3">
+    <div className="border-b border-border px-4 py-4 last:border-b-0 sm:px-6 sm:py-5">
+      <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
           <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-[#171717]">
             <ProviderIcon provider="github" />
           </div>
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="text-sm font-medium">GitHub</p>
             {isLoading ? (
               <p className="mt-0.5 text-xs text-muted-foreground">Loading…</p>
             ) : status?.connected ? (
-              <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-                <CheckCircle className="size-3.5 text-green-500" weight="fill" />
-                Connected as{" "}
-                <span className="font-mono font-medium text-foreground">
-                  @{status.username}
+              <p className="mt-1 flex min-w-0 items-start gap-1.5 text-xs leading-5 text-muted-foreground">
+                <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-green-500" weight="fill" />
+                <span className="min-w-0">
+                  Connected as{" "}
+                  <span className="break-all font-mono font-medium text-foreground">
+                    @{status.username}
+                  </span>
                 </span>
               </p>
             ) : (
@@ -99,18 +101,19 @@ function GitHubCard() {
           </div>
         </div>
 
-        <div className="shrink-0">
+        <div className="w-full shrink-0 sm:w-auto">
           {status?.connected ? (
             <Button
               variant="outline"
               size="sm"
               onClick={handleDisconnect}
               disabled={disconnecting}
+              className="w-full sm:w-auto"
             >
               {disconnecting ? "Disconnecting…" : "Disconnect"}
             </Button>
           ) : (
-            <Button render={<a href="/api/integrations/github/connect" />} nativeButton={false} size="sm">
+            <Button render={<a href="/api/integrations/github/connect" />} nativeButton={false} size="sm" className="w-full sm:w-auto">
               Connect
             </Button>
           )}
@@ -128,7 +131,7 @@ function ComingSoonCard({
   provider: Provider;
 }) {
   return (
-    <div className="border-b border-border px-5 py-5 opacity-55 last:border-b-0 sm:px-6">
+    <div className="border-b border-border px-4 py-4 opacity-55 last:border-b-0 sm:px-6 sm:py-5">
       <div className="flex items-center gap-3">
         <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-[#171717]">
           <ProviderIcon provider={provider} />
