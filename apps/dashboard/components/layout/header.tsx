@@ -20,7 +20,7 @@ export function Header({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-[#050505]/92 backdrop-blur-xl">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl">
       <div className="dashboard-container grid min-h-[4.25rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:px-6">
         <div className="flex min-w-0 items-center gap-3 md:gap-4">
           <div className="flex shrink-0 items-center md:hidden">

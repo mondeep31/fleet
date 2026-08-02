@@ -18,7 +18,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
   ];
 
   return (
-    <nav className="border-b border-border bg-[#050505]">
+    <nav className="border-b border-border bg-background">
       <div className="dashboard-container flex gap-6 overflow-x-auto px-4 [scrollbar-width:none] md:px-8 [&::-webkit-scrollbar]:hidden">
         {tabs.map((tab) => {
           // "Deployments" is the bare project URL, which is a prefix of every

@@ -13,7 +13,7 @@ export default function DashboardLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="portal-type flex min-h-[100dvh] flex-col bg-[#050505] md:flex-row">
+      <div className="portal-type flex min-h-[100dvh] flex-col bg-background md:flex-row">
         <Sidebar />
         <main className="min-w-0 flex-1">{children}</main>
       </div>

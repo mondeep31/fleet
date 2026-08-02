@@ -8,7 +8,7 @@ import { FleetLogo } from "@/components/brand/fleet-logo";
 export function AuthShell({ title, subtitle, children, footer }: { title: string; subtitle: string; children: React.ReactNode; footer?: React.ReactNode }) {
   const reduceMotion = useReducedMotion();
   return (
-    <div className="portal-type grid min-h-[100dvh] bg-[#050505] text-foreground lg:grid-cols-[1.08fr_.92fr]">
+    <div className="portal-type grid min-h-[100dvh] bg-background text-foreground lg:grid-cols-[1.08fr_.92fr]">
       <div className="grain relative hidden min-h-[100dvh] overflow-hidden lg:block">
         <Image src="/images/auth/panel.webp" alt="Light and shadow moving across textured glass" fill priority sizes="55vw" className="object-cover" />
         <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(5,12,12,.04),rgba(5,12,12,.68))]" />

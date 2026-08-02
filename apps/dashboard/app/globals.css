@@ -50,8 +50,8 @@
 }
 
 :root {
-  --bg-base: #050505;
-  --bg-surface: #0a0a0a;
+  --bg-base: #0a0a0a;
+  --bg-surface: #0f0f0f;
   --bg-elevated: #171717;
   --bg-inset: #080808;
   --border-custom: rgba(255, 255, 255, 0.1);
@@ -63,7 +63,7 @@
   --status-building: #d99a48;
   --status-queued: #777777;
 
-  --background: #050505;
+  --background: #0a0a0a;
   --foreground: #ededed;
   --card: #0d0d0d;
   --card-foreground: #ededed;
@@ -87,7 +87,7 @@
   --chart-4: #d99a48;
   --chart-5: #a879e8;
   --radius: 0.5rem;
-  --sidebar: #050505;
+  --sidebar: #0a0a0a;
   --sidebar-foreground: #ededed;
   --sidebar-primary: #ededed;
   --sidebar-primary-foreground: #0a0a0a;

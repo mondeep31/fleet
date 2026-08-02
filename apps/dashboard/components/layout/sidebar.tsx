@@ -156,7 +156,7 @@ function MobileSidebarOverlay({
       />
       <aside
         className={cn(
-          "absolute inset-y-0 left-0 z-10 flex h-[100dvh] w-[min(20rem,calc(100vw-3rem))] flex-col overflow-y-auto border-r border-border bg-[#050505] px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,.95)] transition-transform duration-200",
+          "absolute inset-y-0 left-0 z-10 flex h-[100dvh] w-[min(20rem,calc(100vw-3rem))] flex-col overflow-y-auto border-r border-border bg-background px-4 py-4 shadow-[28px_0_70px_-34px_rgba(0,0,0,.95)] transition-transform duration-200",
           open ? "translate-x-0" : "-translate-x-full",
         )}
       >
@@ -274,7 +274,7 @@ export function Sidebar() {
     <TooltipProvider>
       <aside
         className={cn(
-        "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-[#050505] transition-[width] duration-200 md:flex",
+        "sticky top-0 hidden h-[100dvh] shrink-0 flex-col border-r border-border bg-background transition-[width] duration-200 md:flex",
           collapsed ? "w-14" : "w-60",
         )}
       >
