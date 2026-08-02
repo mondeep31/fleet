@@ -9,7 +9,7 @@ const plans = [
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-[#f5f0e7] py-24 text-[#171918] sm:py-32">
+    <section id="pricing" className="bg-[#e8e9e5] py-24 text-[#171918] sm:py-32">
       <div className="site-shell">
         <div className="grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-16">
           <div>

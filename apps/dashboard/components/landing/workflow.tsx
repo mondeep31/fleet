@@ -7,7 +7,7 @@ const capabilities = [
 
 export function Workflow() {
   return (
-    <section className="bg-[#dfe7fb] py-24 text-[#171918] sm:py-32">
+    <section className="bg-[#dce6df] py-24 text-[#171918] sm:py-32">
       <div className="site-shell">
         <div className="grid gap-8 lg:grid-cols-[.72fr_1.28fr]">
           <div>

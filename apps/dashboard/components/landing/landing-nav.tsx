@@ -17,7 +17,7 @@ export function LandingNav() {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
-    const update = () => setScrolled(window.scrollY > window.innerHeight * 0.82);
+    const update = () => setScrolled(window.scrollY > 0);
     update();
     window.addEventListener("scroll", update, { passive: true });
     window.addEventListener("resize", update);
@@ -30,13 +30,20 @@ export function LandingNav() {
   return (
     <header
       className={cn(
-        "fixed inset-x-0 top-0 z-50 h-20 transition-[height,background-color,border-color,backdrop-filter] duration-300",
+        "fixed inset-x-0 top-0 z-50 h-20 transition-[top,height,padding] duration-300 ease-[cubic-bezier(.22,1,.36,1)]",
         scrolled || open
-          ? "h-16 border-b border-black/10 bg-[#f7f7f2]/92 backdrop-blur-xl"
-          : "border-0 bg-transparent",
+          ? "top-3 h-14 px-3"
+          : "px-0",
       )}
     >
-      <div className="site-shell flex h-full items-center justify-between">
+      <div
+        className={cn(
+          "site-shell flex h-full items-center justify-between transition-[max-width,padding,background-color,border-color,box-shadow,border-radius] duration-300 ease-[cubic-bezier(.22,1,.36,1)]",
+          scrolled || open
+            ? "!max-w-5xl rounded-full border border-black/10 bg-[#f7f7f2]/90 px-4 shadow-[0_12px_36px_rgba(22,28,25,.10)] backdrop-blur-xl sm:px-5"
+            : "px-0",
+        )}
+      >
         <Link href="/" className="flex items-center gap-2.5 text-[#141715]">
           <FleetLogo className="size-4" />
           <span className="text-lg font-medium tracking-[-0.025em]">Fleet</span>
@@ -63,7 +70,7 @@ export function LandingNav() {
       </div>
 
       {open && (
-        <nav className="border-b border-black/10 bg-[#f7f7f2] px-4 py-5 text-[#151715] lg:hidden">
+        <nav className="absolute inset-x-3 top-[calc(100%+.5rem)] rounded-[1.5rem] border border-black/10 bg-[#f7f7f2]/96 px-5 py-4 text-[#151715] shadow-[0_18px_50px_rgba(22,28,25,.12)] backdrop-blur-xl lg:hidden">
           {links.map((link) => (
             <a key={link.href} href={link.href} onClick={() => setOpen(false)} className="block border-b border-black/8 py-4 text-base text-black/70 last:border-0">
               {link.label}
