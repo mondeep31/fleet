@@ -74,7 +74,7 @@ export default function SignupPage() {
               src="/images/integrations/github.svg"
               alt=""
               aria-hidden
-              className="h-4 w-4 dark:invert"
+              className="h-4 w-4 invert"
             />
             Continue with GitHub
           </Button>

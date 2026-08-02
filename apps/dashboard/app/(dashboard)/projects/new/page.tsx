@@ -285,7 +285,7 @@ export default function NewProjectPage() {
           breadcrumbs={[{ label: "Projects", href: "/projects" }, { label: "New" }]}
         />
         <div className="dashboard-container flex flex-1 flex-col items-center justify-center px-4 py-16 text-center md:px-8">
-          <div className="max-w-sm rounded-3xl border border-border bg-white p-8 shadow-[0_20px_55px_-42px_rgba(18,28,23,.5)]">
+          <div className="max-w-sm rounded-lg border border-border bg-card p-8">
             <p className="text-base font-medium">Connect GitHub to continue</p>
             <p className="mt-2 text-sm text-muted-foreground">
               Fleet needs access to your GitHub repositories to pick a repo and
@@ -317,7 +317,7 @@ export default function NewProjectPage() {
         />
 
         <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-          <div className="mx-auto max-w-2xl space-y-5 rounded-3xl border border-border bg-white p-5 shadow-[0_20px_55px_-42px_rgba(18,28,23,.5)] sm:p-7">
+          <div className="mx-auto max-w-2xl space-y-5 rounded-lg border border-border bg-card p-5 sm:p-7">
             {/* Repo search */}
             <div>
               <Label htmlFor="repo-search" className="mb-1.5 block text-sm font-medium">
@@ -339,7 +339,7 @@ export default function NewProjectPage() {
             </div>
 
             {/* Repo list */}
-            <div className="max-h-64 overflow-y-auto rounded-xl border border-border bg-[#fafbf9] p-1 scrollbar-thin scrollbar-track-[#edf0ec] scrollbar-thumb-[#aab4ae] scrollbar-corner-[#edf0ec] hover:scrollbar-thumb-[#85928b]">
+            <div className="max-h-64 overflow-y-auto rounded-md border border-border bg-[#080808] p-1 scrollbar-thin scrollbar-track-[#080808] scrollbar-thumb-[#3f3f3f] scrollbar-corner-[#080808] hover:scrollbar-thumb-[#5a5a5a]">
               {listLoading && (
                 <div className="flex items-center justify-center gap-2 py-8 text-sm text-muted-foreground">
                   <SpinnerGap className="size-5 animate-spin" />
@@ -409,7 +409,7 @@ export default function NewProjectPage() {
                   >
                     <SelectTrigger
                       id="branch-select"
-                      className="h-10 w-full bg-white data-[size=default]:h-10"
+                      className="h-10 w-full data-[size=default]:h-10"
                     >
                       <SelectValue placeholder="Select a branch" />
                     </SelectTrigger>
@@ -417,7 +417,7 @@ export default function NewProjectPage() {
                       side="bottom"
                       align="start"
                       alignItemWithTrigger={false}
-                      className="max-h-64 scrollbar-thin scrollbar-track-[#edf0ec] scrollbar-thumb-[#aab4ae] scrollbar-corner-[#edf0ec] hover:scrollbar-thumb-[#85928b]"
+                      className="max-h-64 scrollbar-thin scrollbar-track-[#080808] scrollbar-thumb-[#3f3f3f] scrollbar-corner-[#080808] hover:scrollbar-thumb-[#5a5a5a]"
                     >
                       {branches?.map((b) => (
                         <SelectItem key={b.name} value={b.name}>
@@ -433,7 +433,7 @@ export default function NewProjectPage() {
 
             {/* Build method detection status */}
             {selectedRepo && selectedBranch && (
-              <div className="rounded-xl border border-border bg-[#f7f9f6] px-4 py-3 text-sm">
+              <div className="rounded-md border border-border bg-[#0a0a0a] px-4 py-3 text-sm">
                 {validating ? (
                   <span className="flex items-center gap-2 text-muted-foreground">
                     <SpinnerGap className="size-4 animate-spin" />
@@ -490,9 +490,9 @@ export default function NewProjectPage() {
       />
 
       <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-        <div className="mx-auto max-w-2xl space-y-6 rounded-3xl border border-border bg-white p-5 shadow-[0_20px_55px_-42px_rgba(18,28,23,.5)] sm:p-7">
+        <div className="mx-auto max-w-2xl space-y-6 rounded-lg border border-border bg-card p-5 sm:p-7">
           {/* Summary */}
-          <div className="rounded-xl border border-border bg-[#f4f6f3] px-4 py-3 text-sm">
+          <div className="rounded-md border border-border bg-[#0a0a0a] px-4 py-3 text-sm">
             <div className="flex items-center gap-2 text-muted-foreground">
               <span className="font-medium text-foreground">
                 {selectedRepo?.full_name}

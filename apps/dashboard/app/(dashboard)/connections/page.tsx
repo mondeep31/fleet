@@ -78,7 +78,7 @@ function GitHubCard() {
     <div className="border-b border-border px-5 py-5 last:border-b-0 sm:px-6">
       <div className="flex items-start justify-between gap-4">
         <div className="flex items-start gap-3">
-          <div className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf1ed]">
+          <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-[#171717]">
             <ProviderIcon provider="github" />
           </div>
           <div>
@@ -130,7 +130,7 @@ function ComingSoonCard({
   return (
     <div className="border-b border-border px-5 py-5 opacity-55 last:border-b-0 sm:px-6">
       <div className="flex items-center gap-3">
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-[#edf1ed]">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-[#171717]">
           <ProviderIcon provider={provider} />
         </div>
         <div>
@@ -157,7 +157,7 @@ export default function ConnectionsPage() {
       <Header title="Connections" />
 
       <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-        <div className="max-w-2xl overflow-hidden rounded-2xl border border-border bg-white shadow-[0_18px_45px_-36px_rgba(18,28,23,.4)]">
+        <div className="max-w-2xl overflow-hidden rounded-lg border border-border bg-card">
           <GitHubCard />
           <ComingSoonCard name="GitLab" provider="gitlab" />
           <ComingSoonCard name="Bitbucket" provider="bitbucket" />

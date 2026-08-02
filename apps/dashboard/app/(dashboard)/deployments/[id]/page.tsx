@@ -101,7 +101,7 @@ export default function DeploymentDetailPage() {
 
         {deployment && (
           <>
-            <section className="rounded-2xl border border-border bg-card p-6 shadow-[0_16px_40px_-34px_rgba(18,28,23,.35)]">
+            <section className="rounded-lg border border-border bg-card p-5">
               <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <StatusBadge status={deployment.status} className="text-sm" />
@@ -114,7 +114,7 @@ export default function DeploymentDetailPage() {
                     href={deployment.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-[#f2f5f1] px-3.5 py-2 text-sm transition-colors hover:border-black/20 hover:bg-primary hover:text-primary-foreground"
+                    className="inline-flex items-center gap-2 rounded-md border border-border bg-[#111111] px-3 py-2 text-sm text-muted-foreground transition-colors hover:border-white/20 hover:bg-[#1a1a1a] hover:text-foreground"
                   >
                     {deployment.url}
                     <ArrowSquareOut className="size-4" />
@@ -131,7 +131,7 @@ export default function DeploymentDetailPage() {
               )}
             </section>
 
-            <section className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_16px_40px_-34px_rgba(18,28,23,.35)]">
+            <section className="overflow-hidden rounded-lg border border-border bg-card">
               <div className="border-b border-border bg-[var(--bg-elevated)]/45 px-4 py-3">
                 <h2 className="text-sm font-medium">Logs</h2>
               </div>

@@ -73,7 +73,7 @@ export function DeploymentLogs({
   return (
     <div
       ref={parentRef}
-      className="h-[420px] overflow-auto bg-[#111c1a] p-4 font-mono text-xs leading-relaxed text-[#dbe5df] scrollbar-thin scrollbar-track-[#111c1a] scrollbar-thumb-[#52635d] scrollbar-corner-[#111c1a] scrollbar-hover:scrollbar-thumb-[#72847d]"
+      className="h-[420px] overflow-auto bg-[#080808] p-4 font-mono text-xs leading-relaxed text-[#d4d4d4] scrollbar-thin scrollbar-track-[#080808] scrollbar-thumb-[#3f3f3f] scrollbar-corner-[#080808] scrollbar-hover:scrollbar-thumb-[#5a5a5a]"
     >
       <div
         style={{

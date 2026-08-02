@@ -18,7 +18,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
   ];
 
   return (
-    <nav className="border-b border-border bg-[#f3f5f1]">
+    <nav className="border-b border-border bg-[#050505]">
       <div className="dashboard-container flex gap-2 overflow-x-auto px-4 py-3 md:px-8">
         {tabs.map((tab) => {
           // "Deployments" is the bare project URL, which is a prefix of every
@@ -33,8 +33,8 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
               className={cn(
                 "shrink-0 rounded-full px-3.5 py-2 text-sm font-medium transition-colors",
                 active
-                  ? "bg-[#d9e5dd] text-[#174c35]"
-                  : "text-muted-foreground hover:bg-white/70 hover:text-foreground",
+                  ? "bg-[#1f1f1f] text-white"
+                  : "text-muted-foreground hover:bg-[#111111] hover:text-foreground",
               )}
             >
               {tab.label}

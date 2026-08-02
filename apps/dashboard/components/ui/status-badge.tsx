@@ -8,43 +8,43 @@ const statusConfig: Record<
 > = {
   queued: {
     label: "Queued",
-    className: "bg-[#75807a]/10 text-[#5f6a64] border-[#75807a]/22",
+    className: "bg-[#777]/12 text-[#a3a3a3] border-[#777]/24",
   },
   cloning: {
     label: "Cloning",
-    className: "bg-[#bd7b2d]/10 text-[#8b5619] border-[#bd7b2d]/25",
+    className: "bg-[#d99a48]/12 text-[#e6ad65] border-[#d99a48]/24",
   },
   cloned: {
     label: "Cloned",
-    className: "bg-[#bd7b2d]/10 text-[#8b5619] border-[#bd7b2d]/25",
+    className: "bg-[#d99a48]/12 text-[#e6ad65] border-[#d99a48]/24",
   },
   building: {
     label: "Building",
-    className: "bg-[#bd7b2d]/10 text-[#8b5619] border-[#bd7b2d]/25",
+    className: "bg-[#d99a48]/12 text-[#e6ad65] border-[#d99a48]/24",
   },
   deploying: {
     label: "Deploying",
-    className: "bg-[#bd7b2d]/10 text-[#8b5619] border-[#bd7b2d]/25",
+    className: "bg-[#d99a48]/12 text-[#e6ad65] border-[#d99a48]/24",
   },
   live: {
     label: "Live",
-    className: "bg-[#248252]/10 text-[#17633b] border-[#248252]/24",
+    className: "bg-[#45b97c]/12 text-[#69cc93] border-[#45b97c]/24",
   },
   failed: {
     label: "Failed",
-    className: "bg-[#b64f45]/10 text-[#963d35] border-[#b64f45]/24",
+    className: "bg-[#e45c53]/12 text-[#ee7b73] border-[#e45c53]/24",
   },
   rolled_back: {
     label: "Rolled Back",
-    className: "bg-[#b64f45]/10 text-[#963d35] border-[#b64f45]/24",
+    className: "bg-[#e45c53]/12 text-[#ee7b73] border-[#e45c53]/24",
   },
   stopped: {
     label: "Stopped",
-    className: "bg-[#75807a]/10 text-[#5f6a64] border-[#75807a]/22",
+    className: "bg-[#777]/12 text-[#a3a3a3] border-[#777]/24",
   },
   deleted: {
     label: "Deleted",
-    className: "bg-[#75807a]/10 text-[#5f6a64] border-[#75807a]/22",
+    className: "bg-[#777]/12 text-[#a3a3a3] border-[#777]/24",
   },
 };
 

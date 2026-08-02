@@ -48,7 +48,7 @@ export default function ProjectsPage() {
       <Header title="Projects" />
 
       <div className="border-b border-border">
-        <div className="dashboard-container flex items-center justify-between gap-3 px-4 py-4 md:px-8">
+        <div className="dashboard-container flex items-center justify-between gap-3 px-4 py-4 md:px-6">
           <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
             <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -66,7 +66,7 @@ export default function ProjectsPage() {
         </div>
       </div>
 
-      <div className="dashboard-container flex-1 px-4 py-5 md:px-8 md:py-8">
+      <div className="dashboard-container flex-1 px-4 py-5 md:px-6 md:py-6">
         {isLoading && (
           <div className="grid gap-3 md:gap-4 xl:grid-cols-2">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -119,7 +119,7 @@ export default function ProjectsPage() {
           )}
 
         {!isLoading && !error && visibleProjects.length > 0 && (
-          <div className="grid min-w-0 gap-4 xl:grid-cols-2">
+          <div className="grid min-w-0 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
             {visibleProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}
