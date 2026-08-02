@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import useSWR from "swr";
 import { CheckCircle } from "@phosphor-icons/react";
@@ -41,9 +42,11 @@ function ProviderIcon({
 }) {
   const icon = PROVIDER_ICONS[provider];
   return (
-    <img
+    <Image
       src={icon.src}
       alt={icon.alt}
+      width={16}
+      height={16}
       className={cn("size-4", icon.className, className)}
     />
   );
