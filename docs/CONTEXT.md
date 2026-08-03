@@ -43,6 +43,22 @@ Get Fleet to a state that can be shown publicly (portfolio/showcase, and
 potentially real outside users), starting from: self-hosted on one Ubuntu
 box, GitHub-connect deploy flow, wildcard tunnel URL per project.
 
+## Direction: agents deploy through MCP (2026-08-03)
+
+Fleet will expose a remote MCP server so users can connect coding agents and
+authorize them to create, deploy, inspect, redeploy, roll back, and stop apps.
+MCP is the control plane rather than the source-transfer mechanism: an agent
+deploys a Git repo/commit, or requests a short-lived signed URL for uploading a
+generated source bundle. Human, GitHub webhook, CLI, and MCP deployments must
+all create the same Deployment records and pass through the same queue,
+readiness check, sandbox, limits, and promotion flow.
+
+Agent access will use revocable, scoped personal tokens, project restrictions,
+rate limits, idempotency keys, and an audit trail. Secret values are never
+readable through MCP. General agent access should not launch before readiness
+gating, rollback, resource limits, and deployment-storm protection exist. The
+execution checklist and release definition are in [`../TODO.md`](../TODO.md).
+
 ## Snapshot: verified gaps (2026-07-26)
 
 Confirmed by reading the actual code, not the old README claims. Full list

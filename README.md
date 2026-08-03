@@ -2,6 +2,11 @@
 
 Fleet is a self-hosted PaaS built as a Bun monorepo. Connect a GitHub repo, push to a branch, and Fleet clones the code, builds a Docker image, runs the container behind Traefik, and gives you a stable URL — auto-redeploying on every push.
 
+See [`TODO.md`](TODO.md) for the prioritized product backlog, including the
+remote MCP interface for agent-driven deployments. Production readiness and
+maintenance expectations are defined in
+[`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+
 **What's real today:** GitHub OAuth (login + repo connect), webhook-driven auto-deploy on push, a working dashboard (project CRUD, live SSE deployment logs, encrypted env var management, connections page), blue/green container cutover with no downtime on redeploy, and per-plan compute sandboxing.
 
 **What's not built yet:** a remote agent for running deploys on a server other than the one running the worker (`apps/agent` — types only), a CLI (`apps/cli` — deps only), and deployment rollback. Custom domains are built (via Cloudflare for SaaS — see below), pending a one-time Cloudflare zone setup the operator has to do outside this repo. See [`docs/architecture.md`](docs/architecture.md#roadmap--not-yet-implemented) for the full gap list and [`docs/CONTEXT.md`](docs/CONTEXT.md) for the current planning/decision log on where this is headed next.
