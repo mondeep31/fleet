@@ -16,6 +16,12 @@ export function LandingFooter() {
           <p>Backend deployment without the platform fight.</p>
           <Link href="/login" className="transition-colors hover:text-white">Log in</Link>
         </div>
+        <p className="pt-6 text-center text-xs text-[#829089]">
+          Made with <span aria-hidden="true">♡</span> by{" "}
+          <Link href="https://mondeep.xyz" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
+            mondeep
+          </Link>
+        </p>
       </div>
     </footer>
   );
