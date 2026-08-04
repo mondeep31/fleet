@@ -45,7 +45,11 @@ jobs:
 
           # Railpack build backend (used when repos have no Dockerfile)
           mkdir -p "$HOME/.fleet/bin"
-          curl -fsSL https://railpack.com/install.sh | sh -s -- -f -y -b "$HOME/.fleet/bin"
+          if [ ! -x "$HOME/.fleet/bin/railpack" ]; then
+            curl -fsSL https://railpack.com/install.sh | sh -s -- -f -y -b "$HOME/.fleet/bin"
+          else
+            echo "Reusing existing railpack at $HOME/.fleet/bin/railpack"
+          fi
           docker rm -f fleet-buildkit 2>/dev/null || true
           docker run --rm --privileged -d --name fleet-buildkit moby/buildkit:latest
 
