@@ -9,15 +9,16 @@ Fleet is a **self-hosted Platform-as-a-Service** built as a Bun monorepo. Users 
 1. [Architecture Overview](#architecture-overview)
 2. [Services and Components](#services-and-components)
 3. [Authentication Flows](#authentication-flows)
-4. [Deploy Pipeline](#deploy-pipeline)
-5. [Data Model](#data-model)
-6. [API Endpoints](#api-endpoints)
-7. [Infrastructure](#infrastructure)
-8. [Security Model](#security-model)
-9. [Plan Tiers](#plan-tiers)
-10. [Environment Variables](#environment-variables)
-11. [Local Development Ports](#local-development-ports)
-12. [Roadmap / Not Yet Implemented](#roadmap--not-yet-implemented)
+4. [Agent MCP Access (Proposed)](#agent-mcp-access-proposed)
+5. [Deploy Pipeline](#deploy-pipeline)
+6. [Data Model](#data-model)
+7. [API Endpoints](#api-endpoints)
+8. [Infrastructure](#infrastructure)
+9. [Security Model](#security-model)
+10. [Plan Tiers](#plan-tiers)
+11. [Environment Variables](#environment-variables)
+12. [Local Development Ports](#local-development-ports)
+13. [Roadmap / Not Yet Implemented](#roadmap--not-yet-implemented)
 
 ---
 
@@ -256,6 +257,76 @@ sequenceDiagram
     API->>MongoDB: User.updateOne (bcrypt new password)
     API-->>User: 200 OK
 ```
+
+---
+
+## Agent MCP Access (Proposed)
+
+Fleet can expose a remote MCP server as an agent-friendly control plane over
+the same application services used by the dashboard and REST API. This would
+allow an MCP-capable agent to deploy and operate applications without teaching
+it Fleet's internal HTTP API.
+
+When an agent connects without a valid Fleet MCP session, the server returns an
+authentication challenge and browser URL. The user signs in with GitHub in the
+browser, GitHub redirects to Fleet's backend, and Fleet completes the pending
+MCP authorization. GitHub's access token remains encrypted on the server;
+Fleet instead issues the MCP client its own short-lived, scoped, revocable
+token.
+
+```mermaid
+sequenceDiagram
+    participant Agent
+    participant MCP as Fleet MCP Server
+    participant Browser
+    participant GitHub
+    participant API as Fleet API
+
+    Agent->>MCP: Connect / call tool without a session
+    MCP-->>Agent: Authentication required + browser URL
+    Agent->>Browser: Open authorization URL
+    Browser->>GitHub: Sign in and authorize Fleet
+    GitHub-->>API: OAuth callback with code + state
+    API->>GitHub: Exchange code and verify identity
+    API->>API: Resolve user/org and permitted projects
+    API-->>MCP: Complete pending authorization
+    MCP-->>Agent: Short-lived scoped Fleet token/session
+    Agent->>MCP: deploy_application(...)
+    MCP->>API: Authorize and invoke normal deploy service
+    API-->>MCP: deployment/operation ID
+    MCP-->>Agent: Deployment accepted
+    Agent->>MCP: get_deployment_status(...) / get_logs(...)
+```
+
+The MCP adapter should remain thin: every mutation must use the normal Fleet
+API, queue, sandbox, and deployment lifecycle rather than creating a separate
+agent-only execution path. Long-running operations return an operation or
+deployment ID so agents can poll status or stream logs.
+
+Initial tools may include:
+
+| Tool | Purpose | Suggested default scope |
+|------|---------|-------------------------|
+| `list_projects` | List projects visible to the authenticated user | Read |
+| `get_deployment_status` | Inspect deployment state and URL | Read |
+| `get_logs` | Read build and runtime logs | Read |
+| `deploy_application` | Create a project/deployment or redeploy a project | Deploy |
+| `restart_service` | Restart a running service through the normal deployment path | Operate |
+| `stop_service` | Stop a deployment | Destructive |
+| `rollback_deployment` | Promote a known previous release when rollback exists | Destructive |
+
+An authenticated agent can therefore select a permitted project, trigger a
+deployment, monitor its progress, inspect a failure, and operate the resulting
+service entirely through MCP. It can only perform actions exposed by Fleet's
+tool schemas and allowed by the token's scopes; MCP access does not grant
+arbitrary backend or host access.
+
+MCP tokens must be hashed at rest, short-lived, scoped, revocable, optionally
+restricted to specific projects/environments, and excluded from tool output and
+logs. Default access should be read-only. Production deploys, secret changes,
+rollbacks, stops, and deletions should support explicit approval policies. Each
+tool call must produce an audit event containing the user, agent session,
+project, arguments (with secrets redacted), result, and correlation ID.
 
 ---
 
@@ -662,6 +733,7 @@ All variables are loaded from a single root `.env` file.
 | Item | Status |
 |------|--------|
 | **Agent** (`apps/agent`) | Message types defined, no implementation |
+| **Remote MCP interface** | Proposed browser/GitHub authentication and scoped agent tools; not implemented |
 | **CLI** (`apps/cli`) | Dependencies added, no implementation |
 | **Remote server** (`Server` model) | Schema ready; MVP uses `serverId: "local"` |
 | **Multi-environment** (`Environment` model) | Schema ready; MVP uses `environmentId: "default"` |
