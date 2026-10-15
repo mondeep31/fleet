@@ -1,4 +1,4 @@
-import { Project } from "@fleet/db";
+import { Project, Integration } from "@fleet/db";
 import { getEnv } from "@fleet/config";
 import { AppError } from "@fleet/errors";
 import {
@@ -10,7 +10,8 @@ import { getDecryptedGitHubToken } from "./github-integration";
 import { requireGitHubRepoKey } from "../lib/github-repo-url";
 
 /**
- * Ensures a Fleet push webhook exists on the GitHub repo.
+ * App connections use their existing app-level webhook. For legacy OAuth
+ * connections, ensures a Fleet push webhook exists on the GitHub repo.
  * Deduplicates: if a hook pointing at our API_URL already exists, reuses it.
  * Returns the numeric GitHub hook ID to be stored on the Project.
  *
@@ -21,7 +22,11 @@ export async function ensureRepoWebhook(
   userId: string,
   owner: string,
   repo: string,
-): Promise<number> {
+): Promise<number | undefined> {
+  const integration = await Integration.findOne({ userId, provider: "github" });
+  // The GitHub App delivers push events through its own webhook, with no
+  // per-repository hook management or repository administration permission.
+  if (integration?.oauthApp === "app") return undefined;
   const { API_URL, GITHUB_WEBHOOK_SECRET } = getEnv();
   const webhookUrl = `${API_URL}/webhooks/github`;
 

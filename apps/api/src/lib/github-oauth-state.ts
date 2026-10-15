@@ -4,16 +4,55 @@ import { randomBytes } from "node:crypto";
 const STATE_TTL_SECONDS = 10 * 60; // 10 minutes
 const keyFor = (nonce: string) => `github:oauth:state:${nonce}`;
 const loginKeyFor = (nonce: string) => `github:login:state:${nonce}`;
+const installKeyFor = (nonce: string) => `github:install:state:${nonce}`;
+
+export type GitHubReturnTo = "/connections" | "/projects/new";
+export interface GitHubOAuthContext { userId: string; returnTo?: GitHubReturnTo }
+
+export function normalizeGitHubReturnTo(value: unknown): GitHubReturnTo {
+  return value === "/projects/new" ? value : "/connections";
+}
+
+function decodeContext(value: string | null): GitHubOAuthContext | null {
+  if (!value) return null;
+  // States issued before return paths were supported contained just the user ID.
+  if (!value.startsWith("{")) return { userId: value };
+  try {
+    const context = JSON.parse(value);
+    if (typeof context.userId !== "string" || !context.userId) return null;
+    return { userId: context.userId, returnTo: normalizeGitHubReturnTo(context.returnTo) };
+  } catch { return null; }
+}
+
+export async function createInstallationState(userId: string, returnTo?: GitHubReturnTo): Promise<string> {
+  const nonce = randomBytes(24).toString("hex");
+  const redis = createRedisConnection();
+  try {
+    await redis.set(installKeyFor(nonce), JSON.stringify({ userId, returnTo }), "EX", STATE_TTL_SECONDS);
+  } finally {
+    redis.disconnect();
+  }
+  return nonce;
+}
+
+export async function consumeInstallationState(state: string): Promise<GitHubOAuthContext | null> {
+  const redis = createRedisConnection();
+  try {
+    return decodeContext(await redis.getdel(installKeyFor(state)));
+  } finally {
+    redis.disconnect();
+  }
+}
 
 /**
  * Generate a CSRF state nonce, store userId in Redis with a 10-minute TTL,
  * and return the nonce to include in the GitHub authorize URL.
  */
-export async function createOAuthState(userId: string): Promise<string> {
+export async function createOAuthState(userId: string, returnTo?: GitHubReturnTo): Promise<string> {
   const nonce = randomBytes(24).toString("hex");
   const redis = createRedisConnection();
   try {
-    await redis.set(keyFor(nonce), userId, "EX", STATE_TTL_SECONDS);
+    await redis.set(keyFor(nonce), JSON.stringify({ userId, returnTo }), "EX", STATE_TTL_SECONDS);
   } finally {
     redis.disconnect();
   }
@@ -26,11 +65,10 @@ export async function createOAuthState(userId: string): Promise<string> {
  *
  * Deletes the key atomically after first read so it can only be used once.
  */
-export async function consumeOAuthState(state: string): Promise<string | null> {
+export async function consumeOAuthState(state: string): Promise<GitHubOAuthContext | null> {
   const redis = createRedisConnection();
   try {
-    const userId = await redis.getdel(keyFor(state));
-    return userId ?? null;
+    return decodeContext(await redis.getdel(keyFor(state)));
   } finally {
     redis.disconnect();
   }

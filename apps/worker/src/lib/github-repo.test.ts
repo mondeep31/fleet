@@ -22,6 +22,11 @@ describe("isGitHubRepoUrl", () => {
     expect(isGitHubRepoUrl("https://bitbucket.org/acme/app")).toBe(false);
   });
 
+  test("does not send GitHub credentials to lookalike hosts", () => {
+    expect(isGitHubRepoUrl("https://github.com.example.org/acme/app")).toBe(false);
+    expect(isGitHubRepoUrl("https://evilgithub.com/acme/app")).toBe(false);
+  });
+
   test("returns false for an invalid URL", () => {
     expect(isGitHubRepoUrl("not-a-url")).toBe(false);
   });

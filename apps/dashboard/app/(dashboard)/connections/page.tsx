@@ -53,12 +53,19 @@ function ProviderIcon({
 }
 
 function GitHubCard() {
-  const { data: status, isLoading, mutate } = useSWR<GitHubStatus>(
+  const { data: status, error: statusError, isLoading, mutate } = useSWR<GitHubStatus>(
     "github-status",
     () => api.getGitHubStatus(),
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: true },
   );
   const [disconnecting, setDisconnecting] = useState(false);
+  const accessLabel = status?.repositorySelection === "all"
+    ? "All repositories"
+    : status?.repositorySelection === "mixed"
+      ? "Selected and full account access"
+      : status?.repositorySelection === "none" || status?.repositoryCount === 0
+        ? "No repositories granted"
+        : "Limited repository access";
 
   async function handleDisconnect() {
     setDisconnecting(true);
@@ -85,6 +92,8 @@ function GitHubCard() {
             <p className="text-sm font-medium">GitHub</p>
             {isLoading ? (
               <p className="mt-0.5 text-xs text-muted-foreground">Loading…</p>
+            ) : statusError ? (
+              <p className="mt-1 text-xs text-destructive">Could not verify your GitHub connection. Try again.</p>
             ) : status?.connected ? (
               <p className="mt-1 flex min-w-0 items-start gap-1.5 text-xs leading-5 text-muted-foreground">
                 <CheckCircle className="mt-0.5 size-3.5 shrink-0 text-green-500" weight="fill" />
@@ -98,11 +107,48 @@ function GitHubCard() {
             ) : (
               <p className="mt-0.5 text-xs text-muted-foreground">Not connected</p>
             )}
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {status?.connected && status.fineGrained
+                ? `${accessLabel}${status.repositoryCount !== undefined ? ` · ${status.repositoryCount} ${status.repositoryCount === 1 ? "repository" : "repositories"}` : ""}${status.contentsPermission === "read" ? " · Read-only code" : status.contentsPermission === "write" ? " · Read and write code" : ""}`
+                : status?.connected
+                ? "Upgrade to choose specific repositories and grant read-only code access."
+                : status?.needsReconnect
+                ? "Your GitHub authorization needs to be renewed. Your repository selection is saved on GitHub."
+                : "Choose which repositories Fleet can read and deploy. Signing in does not grant repository access."}
+            </p>
+            {!isLoading && !statusError && status?.connected && (
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Can’t see your repository?{" "}
+                <a href="/api/integrations/github/connect?returnTo=/connections" className="text-foreground underline underline-offset-4">
+                  Add repository access
+                </a>
+              </p>
+            )}
+            {!isLoading && !statusError && !status?.connected && (
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Already installed Fleet on GitHub?{" "}
+                <a href="/api/integrations/github/authorize?returnTo=/connections" className="text-foreground underline underline-offset-4">
+                  Finish connecting
+                </a>
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="w-full shrink-0 sm:w-auto">
-          {status?.connected ? (
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
+          {statusError ? (
+            <Button variant="outline" size="sm" onClick={() => void mutate()}>Retry</Button>
+          ) : status?.connected ? (
+            <>
+            <Button
+              render={<a href={status.needsReconnect ? "/api/integrations/github/authorize?returnTo=/connections" : "/api/integrations/github/connect?returnTo=/connections"} />}
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+            >
+              {status.needsReconnect ? "Reconnect GitHub" : "Manage repositories"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -112,9 +158,10 @@ function GitHubCard() {
             >
               {disconnecting ? "Disconnecting…" : "Disconnect"}
             </Button>
+            </>
           ) : (
-            <Button render={<a href="/api/integrations/github/connect" />} nativeButton={false} size="sm" className="w-full sm:w-auto">
-              Connect
+            <Button render={<a href={status?.needsReconnect ? "/api/integrations/github/authorize?returnTo=/connections" : "/api/integrations/github/connect?returnTo=/connections"} />} nativeButton={false} size="sm" className="w-full sm:w-auto" disabled={isLoading}>
+              {status?.needsReconnect ? "Reconnect" : "Connect"}
             </Button>
           )}
         </div>

@@ -2,6 +2,7 @@ import { Router } from "express";
 import { validate } from "@fleet/api-middleware";
 import {
   connectGitHubController,
+  authorizeGitHubController,
   getGitHubStatusController,
   disconnectGitHubController,
   listReposController,
@@ -19,6 +20,7 @@ const router = Router();
 
 // Connect — redirect to GitHub authorize (requires auth).
 router.get("/github/connect", connectGitHubController);
+router.get("/github/authorize", authorizeGitHubController);
 
 // Status + disconnect.
 router.get("/github/status", getGitHubStatusController);

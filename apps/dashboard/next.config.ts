@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
         source: "/api-proxy/:path*",
         destination: `${API_INTERNAL_URL}/:path*`,
       },
+      // Public GitHub return URLs also work when the dashboard is the public API origin.
+      {
+        source: "/api/v1/integrations/github/setup",
+        destination: `${API_INTERNAL_URL}/api/v1/integrations/github/setup`,
+      },
+      {
+        source: "/api/v1/integrations/github/callback",
+        destination: `${API_INTERNAL_URL}/api/v1/integrations/github/callback`,
+      },
       // GitHub delivers push webhooks to {API_URL}/webhooks/github. When API_URL
       // is the dashboard host, proxy webhook traffic to the API process.
       {

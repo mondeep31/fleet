@@ -1,106 +1,131 @@
 import { Integration } from "@fleet/db";
-import { encryptSecret, decryptSecret } from "@fleet/secrets";
+import { decryptSecret } from "@fleet/secrets";
 import { getSharedEnv, getEnv } from "@fleet/config";
 import { AppError } from "@fleet/errors";
+import { encryptGitHubTokens, getGitHubConnection } from "@fleet/github";
 import {
   buildAuthorizeUrl,
-  exchangeCode,
+  exchangeGitHubAppCode,
   getAuthenticatedUser,
+  listUserInstallations,
+  getAppRepositoryAccess,
+  GitHubApiError,
   revokeToken,
-  type GitHubUser,
 } from "../lib/github-client";
-import { createOAuthState, consumeOAuthState } from "../lib/github-oauth-state";
+import {
+  createOAuthState,
+  consumeOAuthState,
+  createInstallationState,
+  consumeInstallationState,
+  type GitHubReturnTo,
+} from "../lib/github-oauth-state";
 
-export const GITHUB_CONNECT_SCOPES = [
-  "read:user",
-  "repo",
-  "admin:repo_hook",
-] as const;
+export { getDecryptedGitHubToken, getGitHubConnection } from "@fleet/github";
 
-type GitHubOAuthApp = "login" | "connect";
-
-function getGitHubOAuthCredentials(oauthApp: GitHubOAuthApp) {
+function getAppConfig() {
   const env = getEnv();
-  if (oauthApp === "login") {
-    return {
-      clientId: env.GITHUB_LOGIN_CLIENT_ID,
-      clientSecret: env.GITHUB_LOGIN_CLIENT_SECRET,
-    };
+  const { GITHUB_APP_CLIENT_ID, GITHUB_APP_CLIENT_SECRET, GITHUB_APP_SLUG, GITHUB_APP_CALLBACK_URL } = env;
+  if (!GITHUB_APP_CLIENT_ID || !GITHUB_APP_CLIENT_SECRET || !GITHUB_APP_SLUG || !GITHUB_APP_CALLBACK_URL) {
+    throw new AppError(503, "GitHub repository connections are not configured.", "GITHUB_APP_NOT_CONFIGURED");
   }
-  return {
-    clientId: env.GITHUB_CLIENT_ID,
-    clientSecret: env.GITHUB_CLIENT_SECRET,
-  };
+  return { clientId: GITHUB_APP_CLIENT_ID, clientSecret: GITHUB_APP_CLIENT_SECRET, slug: GITHUB_APP_SLUG, callbackUrl: GITHUB_APP_CALLBACK_URL };
 }
 
-export async function upsertGitHubIntegration(
-  userId: string,
-  accessToken: string,
-  ghUser: GitHubUser,
-  oauthApp: GitHubOAuthApp,
-  scopes: readonly string[],
-): Promise<void> {
-  const { FLEET_SECRETS_ENCRYPTION_KEY } = getSharedEnv();
-  const encrypted = encryptSecret(accessToken, FLEET_SECRETS_ENCRYPTION_KEY);
+export async function getConnectRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections"): Promise<string> {
+  const { slug } = getAppConfig();
+  const state = await createInstallationState(userId, returnTo);
+  return `https://github.com/apps/${slug}/installations/new?${new URLSearchParams({ state })}`;
+}
+
+export async function getAuthorizationRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections"): Promise<string> {
+  const { clientId, callbackUrl } = getAppConfig();
+  const state = await createOAuthState(userId, returnTo);
+  return buildAuthorizeUrl(clientId, callbackUrl, state);
+}
+
+/** Installation IDs from the browser are untrusted. Authorize the installing user instead. */
+export async function handleInstallationSetup(state: string): Promise<string> {
+  const context = await consumeInstallationState(state);
+  if (!context) {
+    throw new AppError(400, "Invalid or expired installation state", "INVALID_OAUTH_STATE");
+  }
+  return getAuthorizationRedirectUrl(context.userId, context.returnTo);
+}
+
+export async function handleOAuthCallback(code: string, state: string): Promise<string> {
+  const { clientId, clientSecret } = getAppConfig();
+  const context = await consumeOAuthState(state);
+  if (!context) {
+    throw new AppError(400, "Invalid or expired OAuth state", "INVALID_OAUTH_STATE");
+  }
+  const { userId } = context;
+
+  const tokens = await exchangeGitHubAppCode(clientId, clientSecret, code);
+  const [ghUser, installations] = await Promise.all([
+    getAuthenticatedUser(tokens.access_token),
+    listUserInstallations(tokens.access_token),
+  ]);
+  // Verify access through GitHub, never through a supplied installation_id.
+  if (!installations.some((installation) => !installation.suspended_at && installation.permissions.contents)) {
+    throw new AppError(403, "Install Fleet on at least one account with read access to repository contents. An organization owner may need to approve the installation.", "GITHUB_INSTALLATION_REQUIRED");
+  }
 
   await Integration.findOneAndUpdate(
     { userId, provider: "github" },
     {
-      userId,
-      provider: "github",
-      ciphertext: encrypted.ciphertext,
-      iv: encrypted.iv,
-      authTag: encrypted.authTag,
-      githubUserId: String(ghUser.id),
-      githubUsername: ghUser.login,
-      scopes: [...scopes],
-      oauthApp,
-      connectedAt: new Date(),
+      $set: {
+        userId,
+        provider: "github",
+        ...encryptGitHubTokens(tokens),
+        githubUserId: String(ghUser.id),
+        githubUsername: ghUser.login,
+        scopes: [],
+        oauthApp: "app",
+        connectedAt: new Date(),
+      },
+      $unset: { tokenRefreshLockId: 1, tokenRefreshLockUntil: 1 },
     },
     { upsert: true, new: true },
   );
+
+  return context.returnTo
+    ? new URL(context.returnTo, getSharedEnv().DASHBOARD_URL).toString()
+    : getEnv().GITHUB_OAUTH_SUCCESS_REDIRECT;
 }
 
-export async function getConnectRedirectUrl(userId: string): Promise<string> {
-  const { GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL } = getEnv();
-  const state = await createOAuthState(userId);
-  return buildAuthorizeUrl(GITHUB_CLIENT_ID, GITHUB_OAUTH_CALLBACK_URL, state);
-}
-
-export async function handleOAuthCallback(
-  code: string,
-  state: string,
-): Promise<string> {
-  const { GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, GITHUB_OAUTH_SUCCESS_REDIRECT } = getEnv();
-
-  const userId = await consumeOAuthState(state);
-  if (!userId) {
-    throw new AppError(400, "Invalid or expired OAuth state", "INVALID_OAUTH_STATE");
-  }
-
-  const accessToken = await exchangeCode(GITHUB_CLIENT_ID, GITHUB_CLIENT_SECRET, code);
-  const ghUser = await getAuthenticatedUser(accessToken);
-  await upsertGitHubIntegration(
-    userId,
-    accessToken,
-    ghUser,
-    "connect",
-    GITHUB_CONNECT_SCOPES,
-  );
-
-  return GITHUB_OAUTH_SUCCESS_REDIRECT;
-}
-
-export async function getGitHubStatus(
-  userId: string,
-): Promise<{ connected: boolean; username?: string; needsReconnect?: boolean }> {
+export async function getGitHubStatus(userId: string): Promise<{
+  connected: boolean;
+  username?: string;
+  needsReconnect?: boolean;
+  fineGrained?: boolean;
+  repositorySelection?: "selected" | "all" | "mixed" | "none";
+  repositoryCount?: number;
+  contentsPermission?: "read" | "write";
+}> {
   const integration = await Integration.findOne({ userId, provider: "github" });
   if (!integration) return { connected: false };
-  const needsReconnect = !integration.scopes.includes("admin:repo_hook");
+  const fineGrained = integration.oauthApp === "app";
+  const refreshExpired = fineGrained && integration.refreshTokenExpiresAt && integration.refreshTokenExpiresAt.getTime() <= Date.now();
+  if (refreshExpired) return { connected: false, username: integration.githubUsername ?? undefined, fineGrained: true, needsReconnect: true };
+  let access;
+  if (fineGrained && !refreshExpired) {
+    try {
+      const { token } = await getGitHubConnection(userId);
+      access = await getAppRepositoryAccess(token);
+    } catch (error) {
+      if ((error instanceof AppError && ["GITHUB_RECONNECT_REQUIRED", "GITHUB_NOT_CONNECTED"].includes(error.code ?? "")) ||
+          (error instanceof GitHubApiError && error.status === 401)) {
+        return { connected: false, username: integration.githubUsername ?? undefined, fineGrained: true, needsReconnect: true };
+      }
+      throw error;
+    }
+  }
   return {
     connected: true,
-    username: integration.githubUsername,
-    ...(needsReconnect ? { needsReconnect: true } : {}),
+    username: integration.githubUsername ?? undefined,
+    fineGrained,
+    ...access,
+    ...(!fineGrained || refreshExpired ? { needsReconnect: true } : {}),
   };
 }
 
@@ -108,35 +133,21 @@ export async function disconnectGitHub(userId: string): Promise<void> {
   const integration = await Integration.findOne({ userId, provider: "github" });
   if (!integration) return;
 
-  // Best-effort revoke on GitHub side.
   try {
-    const oauthApp = integration.oauthApp === "login" ? "login" : "connect";
-    const { clientId, clientSecret } = getGitHubOAuthCredentials(oauthApp);
-    const { FLEET_SECRETS_ENCRYPTION_KEY } = getSharedEnv();
-    const token = decryptSecret(
-      { ciphertext: integration.ciphertext, iv: integration.iv, authTag: integration.authTag },
-      FLEET_SECRETS_ENCRYPTION_KEY,
-    );
-    await revokeToken(clientId, clientSecret, token);
+    const env = getEnv();
+    const [clientId, clientSecret] = integration.oauthApp === "app"
+      ? [env.GITHUB_APP_CLIENT_ID, env.GITHUB_APP_CLIENT_SECRET]
+      : integration.oauthApp === "login"
+        ? [env.GITHUB_LOGIN_CLIENT_ID, env.GITHUB_LOGIN_CLIENT_SECRET]
+        : [env.GITHUB_CLIENT_ID, env.GITHUB_CLIENT_SECRET];
+    if (clientId && clientSecret) {
+      const token = integration.oauthApp === "app"
+        ? (await getGitHubConnection(userId)).token
+        : decryptSecret(integration, getSharedEnv().FLEET_SECRETS_ENCRYPTION_KEY);
+      await revokeToken(clientId, clientSecret, token);
+    }
   } catch {
-    // Ignore revocation errors — always delete locally.
+    // Best effort: an expired or revoked grant must not prevent local disconnect.
   }
-
   await Integration.deleteOne({ userId, provider: "github" });
-}
-
-export async function getDecryptedGitHubToken(userId: string): Promise<string> {
-  const { FLEET_SECRETS_ENCRYPTION_KEY } = getSharedEnv();
-  const integration = await Integration.findOne({ userId, provider: "github" });
-  if (!integration) {
-    throw new AppError(
-      403,
-      "GitHub is not connected. Connect GitHub on the Connections page.",
-      "GITHUB_NOT_CONNECTED",
-    );
-  }
-  return decryptSecret(
-    { ciphertext: integration.ciphertext, iv: integration.iv, authTag: integration.authTag },
-    FLEET_SECRETS_ENCRYPTION_KEY,
-  );
 }

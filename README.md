@@ -7,7 +7,7 @@ remote MCP interface for agent-driven deployments. Production readiness and
 maintenance expectations are defined in
 [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
 
-**What's real today:** GitHub OAuth (login + repo connect), webhook-driven auto-deploy on push, a working dashboard (project CRUD, live SSE deployment logs, encrypted env var management, connections page), blue/green container cutover with no downtime on redeploy, and per-plan compute sandboxing.
+**What's real today:** GitHub OAuth login (profile/email only), a separate GitHub App connection for selected repositories with read-only code access, webhook-driven auto-deploy on push, a working dashboard (project CRUD, live SSE deployment logs, encrypted env var management, connections page), blue/green container cutover with no downtime on redeploy, and per-plan compute sandboxing.
 
 **What's not built yet:** a remote agent for running deploys on a server other than the one running the worker (`apps/agent` — types only), a CLI (`apps/cli` — deps only), and deployment rollback. Custom domains are built (via Cloudflare for SaaS — see below), pending a one-time Cloudflare zone setup the operator has to do outside this repo. See [`docs/architecture.md`](docs/architecture.md#roadmap--not-yet-implemented) for the full gap list and [`docs/CONTEXT.md`](docs/CONTEXT.md) for the current planning/decision log on where this is headed next.
 
@@ -134,7 +134,11 @@ curl -s http://depl-fleet-PROJECT_ID.localhost:18080
 | `GITHUB_WEBHOOK_SECRET` | API | HMAC secret for GitHub push deliveries. Generate: `openssl rand -hex 32` |
 | `AGENT_TOKEN` | API | Placeholder until agent is implemented |
 | `PORT` | API | HTTP port (default `3010`) |
-| `API_URL` | API | Public API URL (default `http://localhost:3010`). In production must be a publicly reachable HTTPS URL — Fleet registers `{API_URL}/webhooks/github` on each GitHub project |
+| `API_URL` | API | Public API URL (default `http://localhost:3010`). Configure the GitHub App webhook at `{API_URL}/webhooks/github` |
+| `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` | API, worker | Repository GitHub App credentials, used for authorization and refreshing deployment tokens |
+| `GITHUB_APP_SLUG`, `GITHUB_APP_CALLBACK_URL` | API | App installation slug and authorization callback; see [GitHub setup](docs/GITHUB_SETUP.md) |
+| `GITHUB_LOGIN_CLIENT_ID`, `GITHUB_LOGIN_CLIENT_SECRET`, `GITHUB_LOGIN_CALLBACK_URL` | API | Separate OAuth App for profile/email sign-in |
+| `GITHUB_OAUTH_SUCCESS_REDIRECT` | API | Dashboard URL to return to after connecting repositories |
 | `FLEET_APPS_DOMAIN` | API, worker | App hostname suffix (default `localhost`; use `mondeep.xyz` or your apex domain in production) |
 | `FLEET_PUBLIC_URL_SCHEME` | API, worker | `http` or `https` (default `http`) |
 | `FLEET_TRAEFIK_PUBLIC_PORT` | API, worker | Public Traefik port in URLs (default `18080`; leave empty for HTTPS on 443) |
@@ -146,12 +150,20 @@ Validated at startup via [`@fleet/config`](packages/config/env.ts). Invalid env 
 
 ### GitHub push webhooks (auto-deploy)
 
-When a GitHub project is created Fleet automatically registers a push webhook on the repo via the user's OAuth token. On every `git push` to the tracked branch, GitHub delivers a `POST /webhooks/github` to the API which verifies the `X-Hub-Signature-256` signature, matches the payload to active projects, and enqueues a new deployment.
+New connections use a GitHub App configured with read-only Contents access and
+an app-level Push webhook; Fleet does not manage repository hooks for these
+connections. On every `git push` to the tracked branch, GitHub delivers a
+`POST /webhooks/github` to the API, which verifies the signature, matches active
+projects, and enqueues deployments. Legacy OAuth connections retain their
+per-repository hooks during migration.
+
+Create the repository GitHub App and configure its credentials using
+[GitHub setup and migration](docs/GITHUB_SETUP.md).
 
 **Requirements:**
 - `API_URL` must be a publicly reachable HTTPS URL in production (Fleet uses `{API_URL}/webhooks/github` as the webhook delivery URL). When the dashboard and API share a host (e.g. `https://fleet.mondeep.xyz`), the dashboard rewrites `/webhooks/*` to the API on port 3010.
-- `GITHUB_WEBHOOK_SECRET` must match the secret used when the hook was created.
-- GitHub OAuth must be connected with `admin:repo_hook` scope. If a user connected before this feature shipped, they must **reconnect GitHub** on the Connections page. `GET /api/v1/integrations/github/status` returns `needsReconnect: true` when the stored token lacks the required scope.
+- `GITHUB_WEBHOOK_SECRET` must match the GitHub App webhook secret.
+- Users connect the repository GitHub App from Connections and select the repositories to deploy. Status returns `fineGrained: true` for App connections and `needsReconnect: true` for legacy OAuth connections.
 - **Cloudflare:** if webhook deliveries show error 1000 ("DNS points to prohibited IP"), the DNS A record origin must be a public IP — not `127.0.0.1` or a LAN address. Use Cloudflare Tunnel if the host is behind NAT.
 
 **Local dev:** GitHub cannot reach `localhost`. Use [ngrok](https://ngrok.com) or [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) to expose the API, then set `API_URL` to the tunnel URL and restart the API.
@@ -181,7 +193,8 @@ When a GitHub project is created Fleet automatically registers a push webhook on
 | `GET` | `/api/v1/deployments/:deploymentId/logs` | Deprecated (410) — use `/logs/stream` |
 | `DELETE` | `/api/v1/deployments/:deploymentId` | Stop/cancel deployment (removes container, cancels queued jobs) |
 | `GET`/`PUT` | `/api/v1/projects/:projectId/variables` | Read/write encrypted env vars for a project (saving triggers a redeploy) |
-| `GET` | `/api/v1/integrations/github/connect` | Start GitHub "Connect" OAuth flow (link repos, separate from login) |
+| `GET` | `/api/v1/integrations/github/connect` | Start repository GitHub App installation (separate from login) |
+| `GET` | `/api/v1/integrations/github/setup` | Installation setup redirect to user authorization |
 | `GET`/`DELETE` | `/api/v1/integrations/github` | Connection status (incl. `needsReconnect`) / disconnect |
 | `GET` | `/api/v1/integrations/github/repos` | List repos for the connected GitHub account |
 | `GET` | `/api/v1/integrations/github/repos/:owner/:repo/branches` | List branches for a repo |
@@ -270,7 +283,7 @@ rm -rf /tmp/fleet-builds/DEPLOYMENT_ID
 
 | Task | Notes |
 |------|-------|
-| ~~GitHub integration~~ | Done — OAuth (login + connect apps), repo/branch picker, webhook auto-deploy on push |
+| ~~GitHub integration~~ | Done — minimal OAuth login + repository GitHub App, selected repo/branch picker, webhook auto-deploy on push |
 | ~~Dashboard~~ | Done — auth, project CRUD, live SSE deploy logs, env var management, connections page |
 | **Registry push** | Push images to GHCR before run (needed for remote servers) |
 | **Agent** | WebSocket agent on managed/user-owned servers ([`packages/types/src/agent.ts`](packages/types/src/agent.ts)); `Server` model already exists but is unused — see [`docs/CONTEXT.md`](docs/CONTEXT.md) |

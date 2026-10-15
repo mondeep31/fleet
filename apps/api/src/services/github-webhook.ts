@@ -1,4 +1,4 @@
-import { Project } from "@fleet/db";
+import { Project, Integration } from "@fleet/db";
 import { parsePushEvent, extractBranchFromRef } from "../lib/github-webhook";
 import { parseGitHubRepoKey } from "../lib/github-repo-url";
 import { triggerDeployForProject } from "./project";
@@ -20,7 +20,7 @@ export async function handleGitHubWebhookDelivery(
     return { handled: true, deploys: 0 };
   }
 
-  if (event !== "push") {
+  if (event !== "push" && event !== "github_app_authorization") {
     return { handled: false, deploys: 0 };
   }
 
@@ -29,6 +29,15 @@ export async function handleGitHubWebhookDelivery(
     payload = JSON.parse(rawBody.toString("utf8"));
   } catch {
     return { handled: false, deploys: 0 };
+  }
+
+  if (event === "github_app_authorization") {
+    const authorization = payload as { action?: string; sender?: { id?: unknown } } | null;
+    if (authorization?.action !== "revoked" || typeof authorization.sender?.id !== "number") {
+      return { handled: false, deploys: 0 };
+    }
+    await Integration.deleteMany({ provider: "github", oauthApp: "app", githubUserId: String(authorization.sender.id) });
+    return { handled: true, deploys: 0 };
   }
 
   const push = parsePushEvent(payload);

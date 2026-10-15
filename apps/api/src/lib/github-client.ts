@@ -4,6 +4,7 @@
  */
 
 import axios, { isAxiosError, type AxiosRequestConfig } from "axios";
+import type { GitHubTokenResponse } from "@fleet/github";
 
 const GITHUB_API = "https://api.github.com";
 const GITHUB_AUTH_URL = "https://github.com/login/oauth/authorize";
@@ -16,6 +17,12 @@ const githubApi = axios.create({
     "X-GitHub-Api-Version": "2022-11-28",
   },
 });
+
+export class GitHubApiError extends Error {
+  constructor(public readonly status: number, path: string, message: string) {
+    super(`GitHub API ${path} returned ${status}: ${message}`);
+  }
+}
 
 // Names mirrored from packages/runtime-detector/src/detect-dockerfile.ts
 export const DOCKERFILE_NAMES = ["Dockerfile", "dockerfile"] as const;
@@ -96,9 +103,7 @@ async function ghFetch<T>(
       const body = error.response.data as Record<string, unknown> | undefined;
       const message =
         typeof body?.message === "string" ? body.message : error.message;
-      throw new Error(
-        `GitHub API ${path} returned ${error.response.status}: ${message}`,
-      );
+      throw new GitHubApiError(error.response.status, path, message);
     }
     throw error;
   }
@@ -112,7 +117,7 @@ export function buildAuthorizeUrl(
   const params = new URLSearchParams({
     client_id: clientId,
     redirect_uri: callbackUrl,
-    scope: "read:user repo admin:repo_hook",
+    // GitHub Apps use permissions configured on the app, not OAuth repo scopes.
     state,
   });
   return `${GITHUB_AUTH_URL}?${params.toString()}`;
@@ -123,8 +128,15 @@ export async function exchangeCode(
   clientSecret: string,
   code: string,
 ): Promise<string> {
-  const { data } = await axios.post<{
-    access_token?: string;
+  return (await exchangeGitHubAppCode(clientId, clientSecret, code)).access_token;
+}
+
+export async function exchangeGitHubAppCode(
+  clientId: string,
+  clientSecret: string,
+  code: string,
+): Promise<GitHubTokenResponse> {
+  const { data } = await axios.post<Partial<GitHubTokenResponse> & {
     error?: string;
     error_description?: string;
   }>(
@@ -143,7 +155,70 @@ export async function exchangeCode(
       `GitHub token exchange failed: ${data.error_description ?? data.error ?? "unknown"}`,
     );
   }
-  return data.access_token;
+  return { ...data, access_token: data.access_token };
+}
+
+export interface GitHubInstallation {
+  id: number;
+  account: { login: string };
+  permissions: { contents?: string };
+  repository_selection?: "all" | "selected";
+  suspended_at: string | null;
+}
+
+/** These endpoints restrict results to installations authorized by this user. */
+export async function listUserInstallations(token: string): Promise<GitHubInstallation[]> {
+  const installations: GitHubInstallation[] = [];
+  for (let page = 1; ; page++) {
+    const batch = await ghFetch<{ installations: GitHubInstallation[] }>(
+      `/user/installations?per_page=100&page=${page}`, token,
+    );
+    installations.push(...batch.installations);
+    if (batch.installations.length < 100) return installations;
+  }
+}
+
+export async function getAppRepositoryAccess(token: string): Promise<{
+  repositorySelection: "selected" | "all" | "mixed" | "none";
+  repositoryCount: number;
+  contentsPermission: "read" | "write";
+}> {
+  const installations = (await listUserInstallations(token))
+    .filter((installation) => !installation.suspended_at && installation.permissions.contents);
+  const counts = await Promise.all(installations.map((installation) =>
+    ghFetch<{ total_count: number }>(`/user/installations/${installation.id}/repositories?per_page=1`, token),
+  ));
+  const selections = new Set(installations.map((installation) => installation.repository_selection ?? "selected"));
+  return {
+    repositorySelection: installations.length === 0 ? "none" : selections.size > 1 ? "mixed" : selections.has("all") ? "all" : "selected",
+    repositoryCount: counts.reduce((total, count) => total + count.total_count, 0),
+    contentsPermission: installations.some((installation) => installation.permissions.contents === "write") ? "write" : "read",
+  };
+}
+
+export async function listAppRepos(
+  token: string,
+  page = 1,
+  perPage = 30,
+  query = "",
+): Promise<GitHubRepo[]> {
+  const installations = await listUserInstallations(token);
+  const repos = new Map<number, GitHubRepo>();
+  for (const installation of installations) {
+    if (installation.suspended_at) continue;
+    for (let repoPage = 1; ; repoPage++) {
+      const batch = await ghFetch<{ repositories: GitHubRepo[] }>(
+        `/user/installations/${installation.id}/repositories?per_page=100&page=${repoPage}`, token,
+      );
+      for (const repo of batch.repositories) {
+        if (repoMatchesQuery(repo, query)) repos.set(repo.id, repo);
+      }
+      if (batch.repositories.length < 100) break;
+    }
+  }
+  return [...repos.values()]
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at) || a.full_name.localeCompare(b.full_name))
+    .slice((page - 1) * perPage, page * perPage);
 }
 
 export async function getAuthenticatedUser(token: string): Promise<GitHubUser> {

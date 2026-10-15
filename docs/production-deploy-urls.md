@@ -18,7 +18,9 @@ FLEET_PUBLIC_URL_SCHEME=https
 FLEET_TRAEFIK_PUBLIC_PORT=
 # Public — used by the API for GitHub webhook registration and OAuth callbacks
 API_URL=https://fleet.mondeep.xyz
-GITHUB_OAUTH_CALLBACK_URL=https://fleet.mondeep.xyz/api-proxy/api/v1/integrations/github/callback
+GITHUB_APP_CALLBACK_URL=https://fleet.mondeep.xyz/api/v1/integrations/github/callback
+# Also configure Setup URL on the GitHub App:
+# https://fleet.mondeep.xyz/api/v1/integrations/github/setup
 GITHUB_OAUTH_SUCCESS_REDIRECT=https://fleet.mondeep.xyz/projects
 # Dashboard — used for login redirects and links in emails
 DASHBOARD_URL=https://fleet.mondeep.xyz
@@ -67,7 +69,12 @@ Cert path: `/etc/letsencrypt/live/mondeep.xyz/fullchain.pem`
 
 Dashboard block (`fleet.mondeep.xyz` → Next.js `:3000`) — keep your existing config, but point SSL at the wildcard cert above.
 
-Next.js rewrites `/api-proxy/*` and `/webhooks/*` to the API on `:3010`, so set `API_URL=https://fleet.mondeep.xyz` in `app_env/.env`. GitHub webhooks hit `https://fleet.mondeep.xyz/webhooks/github` and are proxied to the API.
+Next.js rewrites `/api-proxy/*`, `/webhooks/*`, and the GitHub App setup/callback
+paths to the API on `:3010`, so set `API_URL=https://fleet.mondeep.xyz` in
+`app_env/.env`. GitHub webhooks hit `https://fleet.mondeep.xyz/webhooks/github`.
+Set the App's **Setup URL** as shown above, enable **Redirect on update**, and
+leave **Request user authorization (OAuth) during installation** disabled.
+See [GitHub setup](GITHUB_SETUP.md) for credentials and permissions.
 
 **Cloudflare DNS:** the origin IP behind the orange-cloud proxy must be your server's **public** IP. Private IPs (`192.168.x`, `10.x`, `127.0.0.1`) cause Cloudflare error 1000 ("DNS points to prohibited IP") and GitHub deliveries fail before they reach Fleet. If the server is behind NAT, use a [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/) instead of an A record to a private address.
 

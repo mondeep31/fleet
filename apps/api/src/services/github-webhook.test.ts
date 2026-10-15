@@ -6,8 +6,10 @@ import { describe, test, expect, vi, beforeEach } from "vitest";
 
 const mockProjectFind = vi.fn();
 const mockTriggerDeployForProject = vi.fn();
+const mockIntegrationDeleteMany = vi.fn();
 
 vi.mock("@fleet/db", () => ({
+  Integration: { deleteMany: (...args: unknown[]) => mockIntegrationDeleteMany(...args) },
   Project: {
     find: (...args: unknown[]) => mockProjectFind(...args),
     findOne: vi.fn(),
@@ -75,6 +77,18 @@ describe("handleGitHubWebhookDelivery", () => {
   test("unrecognised event returns handled=false", async () => {
     const result = await handleGitHubWebhookDelivery("pull_request", Buffer.from("{}"));
     expect(result).toEqual({ handled: false, deploys: 0 });
+  });
+
+  test("revoking App authorization removes only that user's repository App connections", async () => {
+    const result = await handleGitHubWebhookDelivery("github_app_authorization", Buffer.from(JSON.stringify({ action: "revoked", sender: { id: 42 } })));
+    expect(result).toEqual({ handled: true, deploys: 0 });
+    expect(mockIntegrationDeleteMany).toHaveBeenCalledWith({ provider: "github", oauthApp: "app", githubUserId: "42" });
+    expect(mockTriggerDeployForProject).not.toHaveBeenCalled();
+  });
+
+  test("malformed authorization events cannot remove connections", async () => {
+    await handleGitHubWebhookDelivery("github_app_authorization", Buffer.from('{"action":"revoked"}'));
+    expect(mockIntegrationDeleteMany).not.toHaveBeenCalled();
   });
 
   test("push on matching branch triggers deploy", async () => {

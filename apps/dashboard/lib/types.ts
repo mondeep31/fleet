@@ -63,6 +63,11 @@ export interface AuthUser {
 export interface GitHubStatus {
   connected: boolean;
   username?: string;
+  fineGrained?: boolean;
+  needsReconnect?: boolean;
+  repositorySelection?: "selected" | "all" | "mixed" | "none";
+  repositoryCount?: number;
+  contentsPermission?: "read" | "write";
 }
 
 export interface GitHubRepo {

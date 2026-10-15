@@ -99,7 +99,7 @@ export default function NewProjectPage() {
   const { data: githubStatus } = useSWR<GitHubStatus>(
     "github-status",
     () => api.getGitHubStatus(),
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: true },
   );
 
   const [step, setStep] = useState<Step>("repo");
@@ -113,7 +113,7 @@ export default function NewProjectPage() {
   } = useSWR<GitHubRepo[]>(
     githubStatus?.connected ? "github-repos-p1" : null,
     () => api.listGitHubRepos({ page: 1, per_page: 30 }),
-    { revalidateOnFocus: false },
+    { revalidateOnFocus: true },
   );
   const [extraRepos, setExtraRepos] = useState<GitHubRepo[]>([]);
   const [morePage, setMorePage] = useState(2);
@@ -292,13 +292,17 @@ export default function NewProjectPage() {
               deploy it.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button render={<a href="/api/integrations/github/connect" />} nativeButton={false}>
+              <Button render={<a href="/api/integrations/github/connect?returnTo=/projects/new" />} nativeButton={false}>
                 Connect GitHub
               </Button>
               <Button variant="outline" render={<Link href="/connections" />} nativeButton={false}>
                 Manage Connections
               </Button>
             </div>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Already installed Fleet?{" "}
+              <a href="/api/integrations/github/authorize?returnTo=/projects/new" className="text-foreground underline underline-offset-4">Finish connecting GitHub</a>
+            </p>
           </div>
         </div>
       </div>
@@ -323,6 +327,14 @@ export default function NewProjectPage() {
               <Label htmlFor="repo-search" className="mb-1.5 block text-sm font-medium">
                 Repository
               </Label>
+              {githubStatus?.fineGrained && (
+                <p className="mb-3 text-xs text-muted-foreground">
+                  Can’t see your repository?{" "}
+                  <a href="/api/integrations/github/connect?returnTo=/projects/new" className="text-foreground underline underline-offset-4">
+                    Add repository access
+                  </a>
+                </p>
+              )}
               <div className="relative">
                 <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
@@ -351,7 +363,7 @@ export default function NewProjectPage() {
                   <p className="text-sm text-destructive">{reposError}</p>
                   {reposError.includes("not connected") && (
                     <Button
-                      render={<a href="/api/integrations/github/connect" />}
+                      render={<a href="/api/integrations/github/authorize?returnTo=/projects/new" />}
                       nativeButton={false}
                       size="sm"
                       className="mt-3"
