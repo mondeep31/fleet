@@ -40,6 +40,9 @@ const sharedEnvSchema = z.object({
   RESEND_API_KEY: z.string().min(1),
   RESEND_FROM_EMAIL: z.string().min(1).default("Fleet <onboarding@resend.dev>"),
   DASHBOARD_URL: z.string().url().default("http://localhost:3000"),
+  // Shared with the worker so expiring GitHub App user tokens can be refreshed.
+  GITHUB_APP_CLIENT_ID: z.string().optional(),
+  GITHUB_APP_CLIENT_SECRET: z.string().optional(),
 });
 
 const apiEnvSchema = sharedEnvSchema.extend({
@@ -48,11 +51,12 @@ const apiEnvSchema = sharedEnvSchema.extend({
   AGENT_TOKEN: z.string().min(1),
   PORT: z.coerce.number().int().min(1).max(65535).default(3010),
   API_URL: z.string().min(1).default("http://localhost:3010"),
-  // GitHub OAuth App credentials for connected integration (not login).
-  GITHUB_CLIENT_ID: z.string().min(1),
-  GITHUB_CLIENT_SECRET: z.string().min(1),
-  GITHUB_OAUTH_CALLBACK_URL: z.string().url(),
+  // Legacy repository OAuth credentials, retained only for disconnecting old grants.
+  GITHUB_CLIENT_ID: z.string().optional(),
+  GITHUB_CLIENT_SECRET: z.string().optional(),
   GITHUB_OAUTH_SUCCESS_REDIRECT: z.string().url(),
+  GITHUB_APP_SLUG: z.string().regex(/^[a-zA-Z0-9-]+$/).optional(),
+  GITHUB_APP_CALLBACK_URL: z.string().url().optional(),
   // GitHub OAuth App credentials for login/signup.
   GITHUB_LOGIN_CLIENT_ID: z.string().min(1),
   GITHUB_LOGIN_CLIENT_SECRET: z.string().min(1),

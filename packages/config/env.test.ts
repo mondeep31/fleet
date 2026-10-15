@@ -13,6 +13,9 @@ const REQUIRED_ENV = {
   GITHUB_CLIENT_SECRET: "test-client-secret",
   GITHUB_OAUTH_CALLBACK_URL: "http://localhost:3010/api/v1/integrations/github/callback",
   GITHUB_OAUTH_SUCCESS_REDIRECT: "http://localhost:3000/projects",
+  GITHUB_LOGIN_CLIENT_ID: "login-client-id",
+  GITHUB_LOGIN_CLIENT_SECRET: "login-client-secret",
+  GITHUB_LOGIN_CALLBACK_URL: "http://localhost:3010/v1/auth/github/callback",
   RESEND_API_KEY: "re_test_key",
   RESEND_FROM_EMAIL: "Fleet <onboarding@resend.dev>",
   DASHBOARD_URL: "http://localhost:3000",
@@ -37,6 +40,16 @@ afterEach(() => {
 });
 
 describe("getEnv", () => {
+  test("login can start without legacy OAuth or repository App credentials", () => {
+    resetProcessEnv();
+    Object.assign(process.env, REQUIRED_ENV);
+    for (const field of ["GITHUB_CLIENT_ID", "GITHUB_CLIENT_SECRET", "GITHUB_APP_SLUG", "GITHUB_APP_CLIENT_ID", "GITHUB_APP_CLIENT_SECRET", "GITHUB_APP_CALLBACK_URL"]) {
+      delete process.env[field];
+    }
+    expect(getEnv().GITHUB_LOGIN_CLIENT_ID).toBe("login-client-id");
+    expect(getEnv().GITHUB_APP_CLIENT_ID).toBeUndefined();
+  });
+
   test("returns parsed env with defaults and coercion", () => {
     resetProcessEnv();
     Reflect.deleteProperty(process.env, "NODE_ENV");
@@ -89,6 +102,12 @@ describe("getEnv", () => {
 });
 
 describe("getSharedEnv", () => {
+  test("worker receives GitHub App credentials for token refresh", () => {
+    resetProcessEnv();
+    Object.assign(process.env, REQUIRED_ENV, { GITHUB_APP_CLIENT_ID: "app-client", GITHUB_APP_CLIENT_SECRET: "app-secret" });
+    expect(getSharedEnv()).toMatchObject({ GITHUB_APP_CLIENT_ID: "app-client", GITHUB_APP_CLIENT_SECRET: "app-secret" });
+  });
+
   test("returns shared vars without API-only fields", () => {
     resetProcessEnv();
     Reflect.deleteProperty(process.env, "NODE_ENV");

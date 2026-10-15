@@ -13,6 +13,7 @@
     "@fleet/db": "workspace:*",
     "@fleet/domains": "workspace:*",
     "@fleet/errors": "workspace:*",
+    "@fleet/github": "workspace:*",
     "@fleet/logs": "workspace:*",
     "@fleet/queue": "workspace:*",
     "@fleet/secrets": "workspace:*",

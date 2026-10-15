@@ -31,5 +31,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(location);
   }
 
-  return new NextResponse("Unexpected response from API", { status: 502 });
+  return NextResponse.redirect(dashboardUrl("/connections?github=error"));
 }

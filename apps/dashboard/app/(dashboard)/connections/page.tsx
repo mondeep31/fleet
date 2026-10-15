@@ -98,11 +98,26 @@ function GitHubCard() {
             ) : (
               <p className="mt-0.5 text-xs text-muted-foreground">Not connected</p>
             )}
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">
+              {status?.connected && !status.fineGrained
+                ? "Upgrade to choose specific repositories and grant read-only code access."
+                : "Choose which repositories Fleet can read and deploy. Signing in does not grant repository access."}
+            </p>
           </div>
         </div>
 
-        <div className="w-full shrink-0 sm:w-auto">
+        <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row">
           {status?.connected ? (
+            <>
+            <Button
+              render={<a href="/api/integrations/github/connect" />}
+              nativeButton={false}
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+            >
+              {status.needsReconnect ? "Reconnect GitHub" : "Manage repositories"}
+            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -112,6 +127,7 @@ function GitHubCard() {
             >
               {disconnecting ? "Disconnecting…" : "Disconnect"}
             </Button>
+            </>
           ) : (
             <Button render={<a href="/api/integrations/github/connect" />} nativeButton={false} size="sm" className="w-full sm:w-auto">
               Connect
@@ -152,6 +168,8 @@ export default function ConnectionsPage() {
     const github = searchParams.get("github");
     if (github === "connected") toast.success("GitHub connected successfully.");
     if (github === "error") toast.error("GitHub connection failed. Please try again.");
+    if (github === "approval_required") toast.info("Your organization owner needs to approve the GitHub App installation. Connect again after approval.");
+    if (github === "installation_required") toast.error("Install Fleet with read access to repository contents. Your organization owner may need to approve the installation.");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

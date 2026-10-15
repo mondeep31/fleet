@@ -1,9 +1,7 @@
-const GITHUB_HOST_PATTERN = /github\.com/;
-
 export function isGitHubRepoUrl(repoUrl: string): boolean {
   try {
     const { hostname } = new URL(repoUrl);
-    return GITHUB_HOST_PATTERN.test(hostname);
+    return hostname === "github.com";
   } catch {
     return false;
   }

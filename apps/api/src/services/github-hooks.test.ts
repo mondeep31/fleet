@@ -9,9 +9,11 @@ const mockCreateRepoHook = vi.fn();
 const mockDeleteRepoHook = vi.fn();
 const mockGetDecryptedGitHubToken = vi.fn().mockResolvedValue("token-abc");
 const mockProjectFind = vi.fn();
+const mockIntegrationFindOne = vi.fn().mockResolvedValue(null);
 
 vi.mock("@fleet/db", () => ({
   Project: { find: (...args: unknown[]) => mockProjectFind(...args) },
+  Integration: { findOne: (...args: unknown[]) => mockIntegrationFindOne(...args) },
 }));
 
 vi.mock("@fleet/config", () => ({
@@ -55,6 +57,13 @@ import { ensureRepoWebhook, removeRepoWebhookIfUnused } from "./github-hooks";
 
 describe("ensureRepoWebhook", () => {
   beforeEach(() => vi.clearAllMocks());
+
+  test("GitHub App connections use the app webhook without managing repository hooks", async () => {
+    mockIntegrationFindOne.mockResolvedValueOnce({ oauthApp: "app" });
+    await expect(ensureRepoWebhook("user-1", "acme", "app")).resolves.toBeUndefined();
+    expect(mockListRepoHooks).not.toHaveBeenCalled();
+    expect(mockCreateRepoHook).not.toHaveBeenCalled();
+  });
 
   test("returns existing hook id when hook already registered", async () => {
     mockListRepoHooks.mockResolvedValue([

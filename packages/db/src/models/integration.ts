@@ -34,12 +34,23 @@ const integrationSchema = new mongoose.Schema(
       type: [String],
       default: [],
     },
-    // Which OAuth app issued the stored token — used for revocation on disconnect.
+    // Which GitHub app issued the stored token — used for refresh and revocation.
     oauthApp: {
       type: String,
-      enum: ["login", "connect"],
+      enum: ["login", "connect", "app"],
       default: "connect",
     },
+    // GitHub App user tokens expire; both tokens remain encrypted at rest.
+    tokenExpiresAt: Date,
+    refreshToken: {
+      type: new mongoose.Schema(
+        { ciphertext: String, iv: String, authTag: String },
+        { _id: false },
+      ),
+    },
+    refreshTokenExpiresAt: Date,
+    tokenRefreshLockId: String,
+    tokenRefreshLockUntil: Date,
     connectedAt: {
       type: Date,
       default: () => new Date(),

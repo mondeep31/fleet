@@ -12,16 +12,8 @@ import {
   createLoginOAuthState,
   consumeLoginOAuthState,
 } from "../lib/github-oauth-state";
-import { upsertGitHubIntegration } from "./github-integration";
-
-// Includes repo scopes so login also connects GitHub for deployments.
-const LOGIN_SCOPES = "read:user user:email repo admin:repo_hook";
-const LOGIN_INTEGRATION_SCOPES = [
-  "read:user",
-  "user:email",
-  "repo",
-  "admin:repo_hook",
-] as const;
+// Authentication is independent of the repository connection used for deployments.
+const LOGIN_SCOPES = "read:user user:email";
 
 export async function getLoginRedirectUrl(): Promise<string> {
   const { GITHUB_LOGIN_CLIENT_ID, GITHUB_LOGIN_CALLBACK_URL } = getEnv();
@@ -86,14 +78,6 @@ export async function handleLoginCallback(
     user = await User.create({ name, email: primaryEmail, githubId });
     isNewUser = true;
   }
-
-  await upsertGitHubIntegration(
-    user.userId,
-    accessToken,
-    ghUser,
-    "login",
-    LOGIN_INTEGRATION_SCOPES,
-  );
 
   await enqueueEmail(
     isNewUser
