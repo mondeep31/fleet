@@ -78,6 +78,8 @@ GITHUB_APP_CALLBACK_URL=https://api.example.com/api/v1/integrations/github/callb
 GITHUB_OAUTH_SUCCESS_REDIRECT=https://fleet.example.com/connections
 GITHUB_WEBHOOK_SECRET=your_random_webhook_secret
 API_URL=https://api.example.com
+
+# API and dashboard (must use the same public dashboard origin):
 DASHBOARD_URL=https://fleet.example.com
 ```
 
@@ -143,6 +145,14 @@ If GitHub keeps you on its settings page after saving, verify **Setup URL** is
 filled in, **Redirect on update** is checked, and **Request user authorization
 (OAuth) during installation** is unchecked. The callback URL alone does not
 control installation or repository-selection update redirects.
+
+If the popup shows GitHub's installation-success screen, GitHub has not returned
+to Fleet: check the Setup URL above. If it reaches Fleet's completion page but
+does not close or refresh the original page, verify `DASHBOARD_URL` in both the
+API and dashboard points to the exact origin where the original page is open
+(including the port during development). The successful completion page briefly
+shows **Redirecting to Fleet…** before closing. Deploy/restart both API and
+dashboard when updating this flow.
 
 GitHub also offers “All repositories”; users can choose it explicitly. The app
 itself still has only the read permissions configured above. Organization policy

@@ -26,7 +26,7 @@ function GitHubCompletion() {
   return (
     <main className="flex min-h-dvh items-center justify-center bg-background px-6 text-center">
       <div className="space-y-3">
-        <h1 className="text-lg font-medium">{result === "connected" ? "GitHub connected" : result === "approval_required" ? "Organization approval required" : "GitHub connection incomplete"}</h1>
+        <h1 className="text-lg font-medium">{result === "connected" ? "Redirecting to Fleet…" : result === "approval_required" ? "Organization approval required" : "GitHub connection incomplete"}</h1>
         <a href={`${returnTo}?github=${result}`} className="text-sm text-muted-foreground underline underline-offset-4">Return to Fleet</a>
       </div>
     </main>
