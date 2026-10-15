@@ -1,37 +1,32 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import {
-  Google_Sans_Code,
-  Google_Sans_Flex,
-  IBM_Plex_Mono,
-  Instrument_Sans,
-} from "next/font/google";
+import { Manrope, Geist_Mono, Sorts_Mill_Goudy } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { Toaster } from "@/components/ui/sonner";
 import { getSiteUrl } from "@/lib/site";
 import "./globals.css";
+import "./landing.css";
 
-const googleSansFlex = Google_Sans_Flex({
-  variable: "--font-google-sans-flex",
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
-  axes: ["opsz", "wdth", "GRAD", "ROND"],
+  style: "normal",
+  display: "swap",
 });
 
-const googleSansCode = Google_Sans_Code({
-  variable: "--font-google-sans-code",
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
   subsets: ["latin"],
-  weight: "variable",
+  display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const sortsMillGoudy = Sorts_Mill_Goudy({
+  variable: "--font-sorts-mill-goudy",
   subsets: ["latin"],
-});
-
-const ibmPlexMono = IBM_Plex_Mono({
-  variable: "--font-ibm-plex-mono",
-  subsets: ["latin"],
-  weight: ["400", "500"],
+  weight: "400",
+  style: "normal",
+  fallback: ["Georgia", "serif"],
+  display: "swap",
 });
 
 const DESCRIPTION =
@@ -73,7 +68,7 @@ export default function RootLayout({
     <html
       lang="en"
       data-scroll-behavior="smooth"
-      className={`${instrumentSans.variable} ${ibmPlexMono.variable} ${googleSansFlex.variable} ${googleSansCode.variable} h-full scroll-smooth antialiased`}
+      className={`${manrope.variable} ${geistMono.variable} ${sortsMillGoudy.variable} h-full scroll-smooth antialiased`}
     >
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>

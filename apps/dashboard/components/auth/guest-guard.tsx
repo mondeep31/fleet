@@ -18,7 +18,7 @@ export function GuestGuard({ children }: { children: React.ReactNode }) {
 
   if (!hydrated) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center bg-background">
+      <div className="auth-loading flex min-h-[100dvh] items-center justify-center bg-background" aria-busy="true">
         <div className="w-full max-w-md space-y-3 px-4">
           <Skeleton className="h-8 w-48" />
           <Skeleton className="h-4 w-full" />

@@ -45,40 +45,35 @@ export default function ProjectsPage() {
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <Header title="Projects" />
+      <Header title="Projects" actions={<NewProjectButton />} />
 
-      <div className="border-b border-border">
-        <div className="dashboard-container flex items-center justify-between gap-3 px-4 py-4 md:px-6">
-          <div className="relative w-[clamp(9rem,32vw,20rem)] flex-none">
+      <div>
+        <div className="dashboard-container flex flex-col gap-6 px-5 pt-9 pb-5 md:px-8 sm:flex-row sm:items-end sm:justify-between">
+          <div><h2 className="text-xl font-medium tracking-[-0.035em]">Your services</h2><p className="mt-2 text-sm text-muted-foreground">Deployments, activity, and the code behind them.</p></div>
+          <div className="relative w-full flex-none sm:w-64">
             <MagnifyingGlass className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder={
-                typeof window !== "undefined" && window.innerWidth <= 768
-                  ? "Search"
-                  : "Search projects"
-              }
+              placeholder="Search projects"
+              aria-label="Search projects"
               className="pl-9"
             />
           </div>
-          <NewProjectButton />
         </div>
       </div>
 
-      <div className="dashboard-container flex-1 px-4 py-5 md:px-6 md:py-6">
+      <div className="dashboard-container flex-1 px-5 pb-10 md:px-8">
         {isLoading && (
-          <div className="grid gap-3 md:gap-4 xl:grid-cols-2">
+          <div className="divide-y divide-border border-t border-border">
             {Array.from({ length: 4 }).map((_, i) => (
               <div
                 key={i}
-                className="h-32 rounded-lg border border-border bg-card px-4 py-4"
+                className="h-24 px-1 py-5"
               >
                 <div className="space-y-3">
                   <Skeleton className="h-5 w-40" />
                   <Skeleton className="h-4 w-48" />
-                  <Skeleton className="h-5 w-32 rounded-full" />
-                  <Skeleton className="h-4 w-56" />
                 </div>
               </div>
             ))}
@@ -94,14 +89,13 @@ export default function ProjectsPage() {
         )}
 
         {!isLoading && !error && projects.length === 0 && (
-          <div className="flex flex-col items-center justify-center px-4 py-20 text-center md:px-6 md:py-24">
-            <div className="mb-4 flex size-12 items-center justify-center rounded-full bg-[var(--bg-elevated)]">
+          <div className="mt-4 flex min-h-[26rem] flex-col items-center justify-center rounded-lg border border-dashed border-input px-5 py-16 text-center">
+            <div className="mb-5 flex size-11 items-center justify-center rounded-xl border border-border bg-card">
               <RocketLaunch className="size-6 text-muted-foreground" />
             </div>
-            <h2 className="text-lg font-medium">Deploy your first project</h2>
+            <h2 className="text-xl font-medium tracking-[-0.03em]">Deploy your first project</h2>
             <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-              Connect a Git repository and Fleet will build and run it on your
-              infrastructure.
+              Connect a GitHub repository to build your container and bring your backend online.
             </p>
             <div className="mt-6">
               <NewProjectButton />
@@ -113,13 +107,13 @@ export default function ProjectsPage() {
           !error &&
           projects.length > 0 &&
           visibleProjects.length === 0 && (
-            <div className="rounded-lg border border-border bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+            <div className="border-t border-border px-4 py-16 text-center text-sm text-muted-foreground">
               No projects match your search.
             </div>
           )}
 
         {!isLoading && !error && visibleProjects.length > 0 && (
-          <div className="grid min-w-0 gap-3 lg:grid-cols-2 2xl:grid-cols-3">
+          <div className="min-w-0 border-t border-border">
             {visibleProjects.map((project) => (
               <ProjectCard
                 key={project.projectId}

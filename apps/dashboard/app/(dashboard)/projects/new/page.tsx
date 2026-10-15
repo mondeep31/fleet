@@ -288,8 +288,8 @@ export default function NewProjectPage() {
           <div className="max-w-sm rounded-lg border border-border bg-card p-8">
             <p className="text-base font-medium">Connect GitHub to continue</p>
             <p className="mt-2 text-sm text-muted-foreground">
-              Fleet needs access to your GitHub repositories to pick a repo and
-              deploy it.
+              Choose the repositories Fleet can read and deploy. Repository
+              access is separate from signing in.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
               <Button render={<a href="/api/integrations/github/connect?returnTo=/projects/new" />} nativeButton={false}>

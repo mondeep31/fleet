@@ -71,8 +71,8 @@ function ProfileCard() {
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-5">
-      <h2 className="mb-1 text-base font-semibold">Profile</h2>
+    <section className="border-t border-border pt-7">
+      <h2 className="mb-1 text-base font-medium tracking-[-0.02em]">Profile</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Update your display name.
       </p>
@@ -141,19 +141,19 @@ function PlanCard() {
   const planInfo = PLAN_DISPLAY[planId] ?? PLAN_DISPLAY.free;
 
   return (
-    <section className="rounded-lg border border-border bg-card p-5">
-      <h2 className="mb-1 text-base font-semibold">Plan</h2>
+    <section className="border-t border-border pt-7">
+      <h2 className="mb-1 text-base font-medium tracking-[-0.02em]">Plan</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Your current subscription and resource limits.
       </p>
 
       {isLoading ? (
-        <div className="h-16 animate-pulse rounded-md bg-muted/40" />
+        <div className="h-16 loading-skeleton rounded-md bg-muted/40" />
       ) : (
-        <div className="mb-5 rounded-md border border-border bg-[#111111] p-4">
+        <div className="mb-5 rounded-md border border-border bg-card/60 p-4">
           <div className="mb-3 flex items-center justify-between">
             <span className="text-sm font-medium">{planInfo.label}</span>
-            <span className="rounded-full border border-border px-2.5 py-0.5 font-mono text-[10px] tracking-widest text-muted-foreground uppercase">
+            <span className="text-xs text-[var(--brand-accent)]">
               Active
             </span>
           </div>
@@ -170,7 +170,7 @@ function PlanCard() {
         </div>
       )}
 
-      <div className="rounded-md border border-border bg-[#0a0a0a] p-4">
+      <div className="border-t border-border pt-5">
         <div className="mb-2 flex items-center gap-2">
           <CreditCard className="size-4 text-muted-foreground" />
           <h3 className="text-sm font-medium">Billing</h3>
@@ -221,8 +221,8 @@ function SecurityCard() {
   }
 
   return (
-    <section className="rounded-lg border border-border bg-card p-5">
-      <h2 className="mb-1 text-base font-semibold">Security</h2>
+    <section className="border-t border-border pt-7">
+      <h2 className="mb-1 text-base font-medium tracking-[-0.02em]">Security</h2>
       <p className="mb-5 text-sm text-muted-foreground">
         Change your account password.
       </p>
@@ -305,9 +305,10 @@ function SecurityCard() {
 export default function SettingsPage() {
   return (
     <div className="flex min-h-dvh flex-col">
-      <Header title="Profile" />
-      <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-        <div className="max-w-2xl space-y-4">
+      <Header title="Settings" />
+      <div className="dashboard-container flex-1 px-5 py-9 md:px-8">
+        <div className="mb-8"><h2 className="text-xl font-medium tracking-[-0.035em]">Account settings</h2><p className="mt-2 text-sm text-muted-foreground">Your profile, plan, and account security.</p></div>
+        <div className="max-w-2xl space-y-8">
           <ProfileCard />
           <PlanCard />
           <SecurityCard />

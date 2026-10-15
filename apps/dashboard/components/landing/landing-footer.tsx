@@ -1,27 +1,14 @@
 import Link from "next/link";
-import { ArrowUpRight } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, GithubLogo } from "@phosphor-icons/react/dist/ssr";
 import { FleetLogo } from "@/components/brand/fleet-logo";
 
 export function LandingFooter() {
   return (
-    <footer id="landing-footer" className="bg-[#171918] text-[#f4f5ef]">
-      <div className="site-shell py-16 sm:py-24">
-        <p className="eyebrow mb-7 text-[#aebcf0]">Ready when your repository is</p>
-        <div className="flex flex-col gap-10 border-b border-white/12 pb-16 sm:flex-row sm:items-end sm:justify-between">
-          <h2 className="max-w-[11ch] text-4xl leading-[1.02] font-medium sm:text-6xl">Connect GitHub. Ship the backend.</h2>
-          <Link href="/signup" className="group inline-flex h-12 items-center gap-5 self-start border border-white/25 px-5 text-sm transition-colors hover:bg-white hover:text-[#0b1111] sm:self-auto">Start deploying <ArrowUpRight className="size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" /></Link>
-        </div>
-        <div className="flex flex-col gap-5 pt-7 text-sm text-[#829089] sm:flex-row sm:items-center sm:justify-between">
-          <Link href="/" className="flex items-center gap-2.5 text-[#dce2d9]"><FleetLogo className="size-4" /><span className="text-base font-medium">Fleet</span></Link>
-          <p>Backend deployment without the platform fight.</p>
-          <Link href="/login" className="transition-colors hover:text-white">Log in</Link>
-        </div>
-        <p className="pt-6 text-center text-xs text-[#829089]">
-          Made with <span aria-hidden="true">♡</span> by{" "}
-          <Link href="https://mondeep.xyz" target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-white">
-            mondeep
-          </Link>
-        </p>
+    <footer className="marketing-footer">
+      <div className="site-shell">
+        <div className="footer-cta"><h2>Give your code<br /><span>a place to run.</span></h2><Link href="/signup" className="marketing-button">Get started for free <ArrowRight className="size-4" /></Link></div>
+        <div className="footer-bottom"><Link href="/" className="fleet-wordmark"><FleetLogo className="size-5" />Fleet</Link><span>Built for the next push.</span><nav aria-label="Footer navigation"><a href="#path">How it works</a><a href="#pricing">Pricing</a><Link href="/login">Log in</Link></nav></div>
+        <div className="footer-credit"><span>© {new Date().getFullYear()} Fleet</span><a href="https://mondeep.xyz" target="_blank" rel="noopener noreferrer">Made by mondeep <ArrowRight className="size-3" /></a><Link href="/signup" aria-label="Get started with GitHub"><GithubLogo className="size-4" /></Link></div>
       </div>
     </footer>
   );

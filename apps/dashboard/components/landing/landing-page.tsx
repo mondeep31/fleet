@@ -1,6 +1,5 @@
 import { LandingNav } from "./landing-nav";
 import { Hero } from "./hero";
-import { DeployedSection } from "./deployed-section";
 import { Figs } from "./figs";
 import { CicdSection } from "./cicd-section";
 import { Workflow } from "./workflow";
@@ -9,11 +8,10 @@ import { LandingFooter } from "./landing-footer";
 
 export function LandingPage() {
   return (
-    <div className="landing-type min-h-dvh bg-[#f7f7f2] text-[#171918]">
+    <div className="landing-type marketing-page min-h-dvh">
       <LandingNav />
       <main>
         <Hero />
-        <DeployedSection />
         <Figs />
         <CicdSection />
         <Workflow />

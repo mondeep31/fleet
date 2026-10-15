@@ -20,8 +20,8 @@ export function Header({
   actions?: React.ReactNode;
 }) {
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/92 backdrop-blur-xl">
-      <div className="dashboard-container grid min-h-[4.25rem] grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 md:px-6">
+    <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur-xl">
+      <div className="dashboard-container grid min-h-16 grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-5 py-3 md:px-8">
         <div className="flex min-w-0 items-center gap-3 md:gap-4">
           <div className="flex shrink-0 items-center md:hidden">
             <MobileSidebarTrigger />
@@ -31,7 +31,7 @@ export function Header({
             {breadcrumbs.length > 0 && (
               <nav
                 aria-label="Breadcrumb"
-                className="mb-0.5 flex min-w-0 items-center gap-1 overflow-hidden text-xs whitespace-nowrap text-muted-foreground sm:mb-1 sm:text-sm"
+                className="mb-1 flex min-w-0 items-center gap-1 overflow-hidden text-[11px] whitespace-nowrap text-muted-foreground"
               >
                 {breadcrumbs.map((item, index) => (
                   <span
@@ -58,7 +58,7 @@ export function Header({
                 ))}
               </nav>
             )}
-            <h1 className="truncate text-base font-medium tracking-[-0.02em] sm:text-lg md:text-xl">
+            <h1 className="truncate text-base font-medium tracking-[-0.025em] sm:text-lg">
               {title}
             </h1>
           </div>

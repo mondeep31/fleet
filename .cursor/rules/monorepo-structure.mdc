@@ -1,0 +1,111 @@
+---
+description: Bun/npm workspace monorepo layout — apps vs packages, env, shared types/errors/db/middleware
+alwaysApply: true
+---
+
+# Monorepo structure
+
+Runnable services live in `apps/*`. Shared libraries live in `packages/*`. Never duplicate domain types, DB models, or error shapes inside an app when a package already owns them.
+
+## Root `package.json`
+
+```json
+{
+  "name": "<repo>",
+  "type": "module",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"]
+}
+```
+
+- Root owns install + cross-app scripts (`dev:api`, `dev:worker`, `dev:web`, `test`).
+- Install once at root. Depend on workspace packages with `"workspace:*"`.
+- No per-app lockfiles.
+
+## Env
+
+- **One root `.env`** (+ `.env.example`). Not per-app, unless a framework requires build-time public vars (e.g. Next `NEXT_PUBLIC_*` in that app’s `.env.local`).
+- Validate at startup in a `@<scope>/config` package (Zod). Apps call `getEnv()` / `getSharedEnv()` — do not read `process.env` ad hoc.
+- Invalid env → exit with a clear validation error.
+
+## Apps vs packages
+
+| Kind | Path | Contains |
+|------|------|----------|
+| Apps | `apps/*` | Processes you run (API, worker, dashboard/web, CLI) |
+| Packages | `packages/*` | Importable libraries only — no listen/serve entrypoints |
+
+### Typical API app layout (`apps/api/src`)
+
+```
+routes/       → paths + middleware (auth, validate)
+controller/   → HTTP adaptors; call services
+services/     → business logic
+validators/   → Zod schemas for validate()
+lib/          → app-local helpers (not shared)
+```
+
+Mount global handlers once at the app entry:
+
+```ts
+app.use(notFoundHandler); // from api-middleware package
+app.use(errorHandler);    // last
+```
+
+Throw a shared `AppError` from services; never invent ad-hoc error JSON in handlers.
+
+## Shared packages — where concerns sit
+
+Use a consistent scope (e.g. `@acme/*`). Split by responsibility:
+
+| Package | Owns | Notes |
+|---------|------|--------|
+| `@<scope>/db` | DB connection + models/schemas | Apps import models; they do not define schemas |
+| `@<scope>/errors` | `AppError`, `buildErrorResponse`, shared error types | No framework deps — reusable by API and clients |
+| `@<scope>/api-middleware` | Request `validate`, global `errorHandler`, `notFoundHandler` | Depends on `errors` (+ DB helpers if needed, e.g. duplicate key) |
+| `@<scope>/logs` | Structured / domain logging helpers | Package, not copy-pasted `console` wrappers per app |
+| `@<scope>/types` | Shared TS types + enums | **For web/dashboard reuse** — UI imports these instead of redeclaring API models |
+| `@<scope>/config` | Env schema + shared runtime config | Single source of truth for env |
+| `@<scope>/auth` | Token helpers + auth middleware | Shared by API (and worker if needed) |
+| `@<scope>/queue` | Job queue + broker connection | Worker + API producers both import this |
+
+### Placement rules
+
+- Cross-cutting behavior → `packages/` first, then consume from apps.
+- Types the UI needs → `@<scope>/types` (or export DTOs from there), not `apps/api/src/types`.
+- Error **shape** stays in `errors`; Express (or other) **wiring** stays in `api-middleware`.
+- DB access only through `@<scope>/db`.
+
+## New package checklist
+
+```json
+{
+  "name": "@<scope>/<name>",
+  "version": "0.0.1",
+  "private": true,
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@<scope>/other": "workspace:*"
+  }
+}
+```
+
+- Public API from `src/index.ts`.
+- Prefer extending an existing package over a one-helper package.
+
+## Do / don't
+
+```ts
+// ❌ Types only inside the API app
+// apps/api/src/types/project.ts
+
+// ✅ Shared for dashboard/web reuse
+import type { Project, Status } from "@<scope>/types";
+
+// ❌ Local error JSON
+res.status(400).json({ error: "nope" });
+
+// ✅ Shared error + global handler
+throw new AppError(400, "Invalid input", "VALIDATION_ERROR");
+```
