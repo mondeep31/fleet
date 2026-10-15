@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { api, ApiError } from "@/lib/api";
 import type { GitHubStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useGitHubPopup } from "@/hooks/use-github-popup";
 
 type Provider = "github" | "gitlab" | "bitbucket";
 
@@ -53,6 +54,7 @@ function ProviderIcon({
 }
 
 function GitHubCard() {
+  const openGitHub = useGitHubPopup();
   const { data: status, error: statusError, isLoading, mutate } = useSWR<GitHubStatus>(
     "github-status",
     () => api.getGitHubStatus(),
@@ -119,16 +121,8 @@ function GitHubCard() {
             {!isLoading && !statusError && status?.connected && (
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 Can’t see your repository?{" "}
-                <a href="/api/integrations/github/connect?returnTo=/connections" className="text-foreground underline underline-offset-4">
+                <a href="/api/integrations/github/install?returnTo=/connections" onClick={openGitHub} className="text-foreground underline underline-offset-4">
                   Add repository access
-                </a>
-              </p>
-            )}
-            {!isLoading && !statusError && !status?.connected && (
-              <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                Already installed Fleet on GitHub?{" "}
-                <a href="/api/integrations/github/authorize?returnTo=/connections" className="text-foreground underline underline-offset-4">
-                  Finish connecting
                 </a>
               </p>
             )}
@@ -141,7 +135,7 @@ function GitHubCard() {
           ) : status?.connected ? (
             <>
             <Button
-              render={<a href={status.needsReconnect ? "/api/integrations/github/authorize?returnTo=/connections" : "/api/integrations/github/connect?returnTo=/connections"} />}
+              render={<a href={status.needsReconnect ? "/api/integrations/github/connect?returnTo=/connections" : "/api/integrations/github/install?returnTo=/connections"} onClick={openGitHub} />}
               nativeButton={false}
               variant="outline"
               size="sm"
@@ -160,7 +154,7 @@ function GitHubCard() {
             </Button>
             </>
           ) : (
-            <Button render={<a href={status?.needsReconnect ? "/api/integrations/github/authorize?returnTo=/connections" : "/api/integrations/github/connect?returnTo=/connections"} />} nativeButton={false} size="sm" className="w-full sm:w-auto" disabled={isLoading}>
+            <Button render={<a href="/api/integrations/github/connect?returnTo=/connections" onClick={openGitHub} />} nativeButton={false} size="sm" className="w-full sm:w-auto" disabled={isLoading}>
               {status?.needsReconnect ? "Reconnect" : "Connect"}
             </Button>
           )}

@@ -42,3 +42,10 @@ test("previously issued states containing a plain user ID still work", async () 
   values.set("github:oauth:state:old-state", "legacy-user");
   await expect(consumeOAuthState("old-state")).resolves.toEqual({ userId: "legacy-user" });
 });
+
+test("only the initial Connect state permits an automatic installation fallback", async () => {
+  const first = await createOAuthState("user-1", "/projects/new", true);
+  await expect(consumeOAuthState(first)).resolves.toEqual({ userId: "user-1", returnTo: "/projects/new", installIfMissing: true });
+  const afterInstall = await createOAuthState("user-1", "/projects/new");
+  expect((await consumeOAuthState(afterInstall))?.installIfMissing).not.toBe(true);
+});

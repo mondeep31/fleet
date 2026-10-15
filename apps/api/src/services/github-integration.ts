@@ -32,14 +32,20 @@ function getAppConfig() {
 }
 
 export async function getConnectRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections"): Promise<string> {
+  // Authorize first so an existing GitHub installation connects immediately.
+  // The callback opens installation only when GitHub reports none accessible.
+  return getAuthorizationRedirectUrl(userId, returnTo, true);
+}
+
+export async function getInstallationRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections"): Promise<string> {
   const { slug } = getAppConfig();
   const state = await createInstallationState(userId, returnTo);
   return `https://github.com/apps/${slug}/installations/new?${new URLSearchParams({ state })}`;
 }
 
-export async function getAuthorizationRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections"): Promise<string> {
+export async function getAuthorizationRedirectUrl(userId: string, returnTo: GitHubReturnTo = "/connections", installIfMissing = false): Promise<string> {
   const { clientId, callbackUrl } = getAppConfig();
-  const state = await createOAuthState(userId, returnTo);
+  const state = await createOAuthState(userId, returnTo, installIfMissing);
   return buildAuthorizeUrl(clientId, callbackUrl, state);
 }
 
@@ -52,7 +58,7 @@ export async function handleInstallationSetup(state: string): Promise<string> {
   return getAuthorizationRedirectUrl(context.userId, context.returnTo);
 }
 
-export async function handleOAuthCallback(code: string, state: string): Promise<string> {
+export async function handleOAuthCallback(code: string, state: string): Promise<{ redirectUrl: string; connected: boolean }> {
   const { clientId, clientSecret } = getAppConfig();
   const context = await consumeOAuthState(state);
   if (!context) {
@@ -67,6 +73,9 @@ export async function handleOAuthCallback(code: string, state: string): Promise<
   ]);
   // Verify access through GitHub, never through a supplied installation_id.
   if (!installations.some((installation) => !installation.suspended_at && installation.permissions.contents)) {
+    if (context.installIfMissing && installations.length === 0) {
+      return { redirectUrl: await getInstallationRedirectUrl(userId, context.returnTo), connected: false };
+    }
     throw new AppError(403, "Install Fleet on at least one account with read access to repository contents. An organization owner may need to approve the installation.", "GITHUB_INSTALLATION_REQUIRED");
   }
 
@@ -88,9 +97,12 @@ export async function handleOAuthCallback(code: string, state: string): Promise<
     { upsert: true, new: true },
   );
 
-  return context.returnTo
-    ? new URL(context.returnTo, getSharedEnv().DASHBOARD_URL).toString()
-    : getEnv().GITHUB_OAUTH_SUCCESS_REDIRECT;
+  return {
+    redirectUrl: context.returnTo
+      ? new URL(context.returnTo, getSharedEnv().DASHBOARD_URL).toString()
+      : getEnv().GITHUB_OAUTH_SUCCESS_REDIRECT,
+    connected: true,
+  };
 }
 
 export async function getGitHubStatus(userId: string): Promise<{

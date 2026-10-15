@@ -50,5 +50,17 @@ test("an expired session returns to login instead of looping through GitHub", as
 
 test("API failures return to Connections with an error", async () => {
   mockFetch.mockResolvedValue(new Response(null, { status: 503 }));
-  expect((await redirectToGitHub(request("fleet_token=session-token"), "connect")).headers.get("location")).toBe("https://fleet.example.com/connections?github=error");
+  expect((await redirectToGitHub(request("fleet_token=session-token"), "connect")).headers.get("location")).toBe("https://fleet.example.com/api/integrations/github/complete?github=error&returnTo=%2Fconnections&popup=0");
+});
+
+test("a network failure completes the popup instead of leaving an error document open", async () => {
+  mockFetch.mockRejectedValue(new Error("API unavailable"));
+  const req = new NextRequest("https://fleet.example.com/api/integrations/github/connect?popup=1", { headers: { Cookie: "fleet_token=session-token" } });
+  expect((await redirectToGitHub(req, "connect")).headers.get("location")).toBe("https://fleet.example.com/api/integrations/github/complete?github=error&returnTo=%2Fconnections&popup=1");
+});
+
+test("the popup preference survives a GitHub setup return that has no state", async () => {
+  mockFetch.mockResolvedValue(new Response(null, { status: 302, headers: { location: "https://github.com/login/oauth/authorize" } }));
+  const response = await redirectToGitHub(request("fleet_token=session-token; github_popup=1"), "authorize");
+  expect(response.cookies.get("github_popup")?.value).toBe("1");
 });

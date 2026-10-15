@@ -28,10 +28,10 @@ vi.mock("../lib/github-client", async () => {
   return { ...actual, exchangeGitHubAppCode: mocks.exchangeGitHubAppCode, getAuthenticatedUser: mocks.getAuthenticatedUser, listUserInstallations: mocks.listUserInstallations, revokeToken: mocks.revokeToken, getAppRepositoryAccess: mocks.getAppRepositoryAccess };
 });
 
-import { disconnectGitHub, getConnectRedirectUrl, getGitHubStatus, handleInstallationSetup, handleOAuthCallback } from "./github-integration";
+import { disconnectGitHub, getConnectRedirectUrl, getInstallationRedirectUrl, getGitHubStatus, handleInstallationSetup, handleOAuthCallback } from "./github-integration";
 
 beforeEach(() => {
-  vi.clearAllMocks();
+  vi.resetAllMocks();
   mocks.createInstallationState.mockResolvedValue("install-state");
   mocks.consumeInstallationState.mockResolvedValue({ userId: "user-1" });
   mocks.createOAuthState.mockResolvedValue("oauth-state");
@@ -45,11 +45,18 @@ beforeEach(() => {
 });
 
 describe("GitHub App repository connection", () => {
-  test("connect opens the App installation picker without broad OAuth scopes", async () => {
+  test("Connect authorizes first so already-installed Apps do not get stuck in installation settings", async () => {
     const url = new URL(await getConnectRedirectUrl("user-1"));
-    expect(url.pathname).toBe("/apps/fleet-repos/installations/new");
-    expect(url.searchParams.get("state")).toBe("install-state");
+    expect(url.pathname).toBe("/login/oauth/authorize");
+    expect(url.searchParams.get("state")).toBe("oauth-state");
     expect(url.searchParams.has("scope")).toBe(false);
+    expect(mocks.createOAuthState).toHaveBeenCalledWith("user-1", "/connections", true);
+    expect(mocks.createInstallationState).not.toHaveBeenCalled();
+  });
+
+  test("managing repositories still opens the installation picker", async () => {
+    const url = new URL(await getInstallationRedirectUrl("user-1"));
+    expect(url.pathname).toBe("/apps/fleet-repos/installations/new");
     expect(mocks.createInstallationState).toHaveBeenCalledWith("user-1", "/connections");
   });
 
@@ -65,7 +72,7 @@ describe("GitHub App repository connection", () => {
   test("setup consumes installation state and starts separate user authorization", async () => {
     const url = new URL(await handleInstallationSetup("install-state"));
     expect(mocks.consumeInstallationState).toHaveBeenCalledWith("install-state");
-    expect(mocks.createOAuthState).toHaveBeenCalledWith("user-1", "/connections");
+    expect(mocks.createOAuthState).toHaveBeenCalledWith("user-1", "/connections", false);
     expect(url.pathname).toBe("/login/oauth/authorize");
     expect(url.searchParams.get("client_id")).toBe("app-id");
     expect(url.searchParams.get("state")).toBe("oauth-state");
@@ -79,7 +86,7 @@ describe("GitHub App repository connection", () => {
   });
 
   test("callback saves only the App grant after verifying the user's installations", async () => {
-    await expect(handleOAuthCallback("code", "oauth-state")).resolves.toBe("https://fleet.example.com/projects");
+    await expect(handleOAuthCallback("code", "oauth-state")).resolves.toEqual({ redirectUrl: "https://fleet.example.com/projects", connected: true });
     expect(mocks.exchangeGitHubAppCode).toHaveBeenCalledWith("app-id", "app-secret", "code");
     expect(mocks.listUserInstallations).toHaveBeenCalledWith("app-token");
     expect(mocks.findOneAndUpdate).toHaveBeenCalledWith(
@@ -87,6 +94,35 @@ describe("GitHub App repository connection", () => {
       expect.objectContaining({ $set: expect.objectContaining({ oauthApp: "app", githubUserId: "42", scopes: [], ciphertext: "encrypted" }) }),
       { upsert: true, new: true },
     );
+  });
+
+  test("Connect links an existing GitHub installation even when Fleet has no connection stored", async () => {
+    mocks.findOne.mockResolvedValueOnce(null);
+    mocks.consumeOAuthState.mockResolvedValueOnce({ userId: "user-1", returnTo: "/connections", installIfMissing: true });
+    await expect(handleOAuthCallback("code", "oauth-state")).resolves.toEqual({ redirectUrl: "https://fleet.example.com/connections", connected: true });
+    expect(mocks.findOneAndUpdate).toHaveBeenCalledWith(
+      { userId: "user-1", provider: "github" }, expect.anything(), { upsert: true, new: true },
+    );
+    expect(mocks.createInstallationState).not.toHaveBeenCalled();
+  });
+
+  test("a first-time connection opens installation only after GitHub confirms no installation exists", async () => {
+    mocks.consumeOAuthState.mockResolvedValueOnce({ userId: "user-1", returnTo: "/projects/new", installIfMissing: true });
+    mocks.listUserInstallations.mockResolvedValueOnce([]);
+    const result = await handleOAuthCallback("code", "oauth-state");
+    expect(result.connected).toBe(false);
+    const url = new URL(result.redirectUrl);
+    expect(url.pathname).toBe("/apps/fleet-repos/installations/new");
+    expect(url.searchParams.get("state")).toBe("install-state");
+    expect(mocks.createInstallationState).toHaveBeenCalledWith("user-1", "/projects/new");
+    expect(mocks.findOneAndUpdate).not.toHaveBeenCalled();
+  });
+
+  test("a suspended installation does not create an installation loop", async () => {
+    mocks.consumeOAuthState.mockResolvedValueOnce({ userId: "user-1", installIfMissing: true });
+    mocks.listUserInstallations.mockResolvedValueOnce([{ id: 10, suspended_at: "2026-01-01", permissions: { contents: "read" } }]);
+    await expect(handleOAuthCallback("code", "oauth-state")).rejects.toMatchObject({ code: "GITHUB_INSTALLATION_REQUIRED" });
+    expect(mocks.createInstallationState).not.toHaveBeenCalled();
   });
 
   test("callback rejects invalid state before exchanging credentials", async () => {
@@ -114,9 +150,9 @@ describe("GitHub App repository connection", () => {
   test("adding repository access returns to the originating project picker", async () => {
     mocks.consumeInstallationState.mockResolvedValueOnce({ userId: "user-1", returnTo: "/projects/new" });
     await handleInstallationSetup("install-state");
-    expect(mocks.createOAuthState).toHaveBeenCalledWith("user-1", "/projects/new");
+    expect(mocks.createOAuthState).toHaveBeenCalledWith("user-1", "/projects/new", false);
     mocks.consumeOAuthState.mockResolvedValueOnce({ userId: "user-1", returnTo: "/projects/new" });
-    await expect(handleOAuthCallback("code", "oauth-state")).resolves.toBe("https://fleet.example.com/projects/new");
+    await expect(handleOAuthCallback("code", "oauth-state")).resolves.toEqual({ redirectUrl: "https://fleet.example.com/projects/new", connected: true });
   });
 
   test("status refreshes current GitHub access after a repository-selection change", async () => {

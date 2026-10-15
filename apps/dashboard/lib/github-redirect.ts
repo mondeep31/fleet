@@ -4,13 +4,21 @@ import { apiInternalUrl, dashboardUrl } from "./urls";
 /** Browser navigations carry the Fleet cookie; the API requires a Bearer token. */
 export async function redirectToGitHub(
   request: NextRequest,
-  action: "connect" | "authorize",
+  action: "connect" | "authorize" | "install",
 ) {
   const token = request.cookies.get("fleet_token")?.value;
   if (!token) return NextResponse.redirect(dashboardUrl("/login"));
   const requestedReturnTo = request.nextUrl.searchParams.get("returnTo")
     ?? (action === "authorize" ? request.cookies.get("github_return_to")?.value : undefined);
   const returnTo = requestedReturnTo === "/projects/new" ? "/projects/new" : "/connections";
+  const popup = request.nextUrl.searchParams.get("popup") === "1"
+    || (action === "authorize" && request.cookies.get("github_popup")?.value === "1");
+  function failedConnection() {
+    const url = dashboardUrl("/api/integrations/github/complete?github=error");
+    url.searchParams.set("returnTo", returnTo);
+    url.searchParams.set("popup", popup ? "1" : "0");
+    return NextResponse.redirect(url);
+  }
 
   let upstream: Response;
   try {
@@ -19,7 +27,7 @@ export async function redirectToGitHub(
       redirect: "manual",
     });
   } catch {
-    return new NextResponse("Failed to reach API", { status: 502 });
+    return failedConnection();
   }
 
   const location = upstream.headers.get("location");
@@ -31,8 +39,12 @@ export async function redirectToGitHub(
       httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:",
       path: "/api/integrations/github", maxAge: 600,
     });
+    response.cookies.set("github_popup", popup ? "1" : "0", {
+      httpOnly: true, sameSite: "lax", secure: request.nextUrl.protocol === "https:",
+      path: "/api/integrations/github", maxAge: 600,
+    });
     return response;
   }
-  if (upstream.status === 401) return NextResponse.redirect(dashboardUrl("/login"));
-  return NextResponse.redirect(dashboardUrl("/connections?github=error"));
+  if (upstream.status === 401 && !popup) return NextResponse.redirect(dashboardUrl("/login"));
+  return failedConnection();
 }

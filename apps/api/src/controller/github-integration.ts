@@ -1,9 +1,10 @@
-import type { RequestHandler } from "express";
+import type { RequestHandler, Response } from "express";
 import { AppError } from "@fleet/errors";
 import { getSharedEnv } from "@fleet/config";
 import { normalizeGitHubReturnTo } from "../lib/github-oauth-state";
 import {
   getConnectRedirectUrl,
+  getInstallationRedirectUrl,
   getAuthorizationRedirectUrl,
   handleOAuthCallback,
   getGitHubStatus,
@@ -22,6 +23,13 @@ import type {
   ReposQuery,
 } from "../validators/github";
 
+function completeGitHubConnection(res: Response, result: string, returnTo?: string) {
+  const url = new URL("/api/integrations/github/complete", getSharedEnv().DASHBOARD_URL);
+  url.searchParams.set("github", result);
+  if (returnTo) url.searchParams.set("returnTo", normalizeGitHubReturnTo(returnTo));
+  res.redirect(url.toString());
+}
+
 export const connectGitHubController: RequestHandler = async (req, res) => {
   const userId = req.user!.userId;
   const redirectUrl = await getConnectRedirectUrl(userId, normalizeGitHubReturnTo(req.query.returnTo));
@@ -32,27 +40,34 @@ export const authorizeGitHubController: RequestHandler = async (req, res) => {
   res.redirect(await getAuthorizationRedirectUrl(req.user!.userId, normalizeGitHubReturnTo(req.query.returnTo)));
 };
 
+export const installGitHubController: RequestHandler = async (req, res) => {
+  res.redirect(await getInstallationRedirectUrl(req.user!.userId, normalizeGitHubReturnTo(req.query.returnTo)));
+};
+
 export const githubCallbackController: RequestHandler = async (req, res) => {
   const { code, state } = req.query as { code?: string; state?: string };
   try {
     if (!code || !state || typeof code !== "string" || typeof state !== "string") {
       throw new AppError(400, "Missing code or state", "BAD_REQUEST");
     }
-    const successUrl = new URL(await handleOAuthCallback(code, state));
-    successUrl.searchParams.set("github", "connected");
-    res.redirect(successUrl.toString());
+    const result = await handleOAuthCallback(code, state);
+    if (result.connected) {
+      completeGitHubConnection(res, "connected", new URL(result.redirectUrl).pathname);
+    } else {
+      res.redirect(result.redirectUrl);
+    }
   } catch (error) {
     const result = error instanceof AppError && error.code === "GITHUB_INSTALLATION_REQUIRED"
       ? "installation_required"
       : "error";
-    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=${result}`);
+    completeGitHubConnection(res, result);
   }
 };
 
 export const githubInstallationSetupController: RequestHandler = async (req, res) => {
   const { state, setup_action } = req.query;
   if (setup_action === "request") {
-    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=approval_required`);
+    completeGitHubConnection(res, "approval_required");
     return;
   }
   // GitHub settings updates/direct installations may have no Fleet nonce.
@@ -64,7 +79,7 @@ export const githubInstallationSetupController: RequestHandler = async (req, res
   try {
     res.redirect(await handleInstallationSetup(state));
   } catch {
-    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=error`);
+    completeGitHubConnection(res, "error");
   }
 };
 

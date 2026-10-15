@@ -100,10 +100,12 @@ connection returns `GITHUB_APP_NOT_CONFIGURED` until all four App variables are 
 
 1. Sign in. GitHub requests profile and email access only.
 2. Open **Connections → Connect**, or create a project and choose **Connect GitHub**.
-3. On GitHub, choose the account/organization and **Only select repositories**.
-4. Select the repositories Fleet should deploy, install, and authorize the App.
+3. Authorize the GitHub App. Fleet checks for an existing installation and
+   connects it immediately when available.
+4. If no installation exists, choose the account/organization and **Only select
+   repositories**, select the repositories to deploy, and install the App.
 5. Fleet lists only repositories available to both the installation and that user.
-6. Use **Manage repositories** in Connections or **Manage repository access** in
+6. Use **Manage repositories** in Connections or **Add repository access** in
    the project picker to change the selection or connect another organization.
 
 Connections verifies access with GitHub and displays **Limited repository access**,
@@ -111,12 +113,22 @@ the number of available repositories, and the actual Contents permission. If an
 installation grants all repositories, that broader selection is labeled instead.
 The connection and repository list refresh when users return to Fleet.
 
-If the App is already installed but Fleet still shows **Connect**, use
-**Already installed Fleet on GitHub? Finish connecting**. Installation selects
-repositories; user authorization completes the link to the signed-in Fleet account.
-Fleet cannot infer that link from an untrusted installation ID or from login alone.
+Connect and repository-access controls open GitHub in a popup. Completion returns
+to Fleet's dashboard, notifies the original page, refreshes its GitHub data, and
+closes the popup. The project picker stays open during this flow. Same-origin
+messages and BroadcastChannel handle the notification, including browsers that
+isolate the popup's opener. If popups are blocked, the normal page redirect works
+as a fallback. No additional GitHub App settings or environment variables are
+needed for popup support; keep the same callback and setup URLs.
 
-**Can’t see your repository? Add repository access** opens GitHub's installation
+The normal **Connect** button handles already-installed Apps, including when Fleet
+has no stored connection. Authorization verifies the GitHub user and existing
+installations, then saves the connection without reopening installation settings.
+Fresh installs return through the setup URL to complete authorization; a missing
+or suspended installation after that step reports an error instead of looping.
+
+**Can’t see your repository? Add repository access** uses the separate `/install`
+flow to open GitHub's installation
 picker/settings. After saving and authorizing, Fleet returns to Connections or
 the new-project picker, whichever initiated the change. The return page is stored
 with the nonce and, for state-less GitHub updates, in a short-lived HttpOnly

@@ -33,6 +33,7 @@ import type {
   GitHubStatus,
 } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { useGitHubPopup } from "@/hooks/use-github-popup";
 
 type Step = "repo" | "details";
 
@@ -201,6 +202,14 @@ export default function NewProjectPage() {
   // callback so none are synchronous in the effect body.
   const [validation, setValidation] = useState<DockerfileValidation | null>(null);
   const [validating, setValidating] = useState(false);
+  const openGitHub = useGitHubPopup(() => {
+    setExtraRepos([]);
+    setMorePage(2);
+    setLastBatchFull(true);
+    setSelectedRepo(null);
+    setSelectedBranch("");
+    setValidation(null);
+  });
 
   useEffect(() => {
     if (!selectedRepo || !selectedBranch) return;
@@ -292,17 +301,13 @@ export default function NewProjectPage() {
               access is separate from signing in.
             </p>
             <div className="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
-              <Button render={<a href="/api/integrations/github/connect?returnTo=/projects/new" />} nativeButton={false}>
+              <Button render={<a href="/api/integrations/github/connect?returnTo=/projects/new" onClick={openGitHub} />} nativeButton={false}>
                 Connect GitHub
               </Button>
               <Button variant="outline" render={<Link href="/connections" />} nativeButton={false}>
                 Manage Connections
               </Button>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Already installed Fleet?{" "}
-              <a href="/api/integrations/github/authorize?returnTo=/projects/new" className="text-foreground underline underline-offset-4">Finish connecting GitHub</a>
-            </p>
           </div>
         </div>
       </div>
@@ -330,7 +335,7 @@ export default function NewProjectPage() {
               {githubStatus?.fineGrained && (
                 <p className="mb-3 text-xs text-muted-foreground">
                   Can’t see your repository?{" "}
-                  <a href="/api/integrations/github/connect?returnTo=/projects/new" className="text-foreground underline underline-offset-4">
+                  <a href="/api/integrations/github/install?returnTo=/projects/new" onClick={openGitHub} className="text-foreground underline underline-offset-4">
                     Add repository access
                   </a>
                 </p>
@@ -363,7 +368,7 @@ export default function NewProjectPage() {
                   <p className="text-sm text-destructive">{reposError}</p>
                   {reposError.includes("not connected") && (
                     <Button
-                      render={<a href="/api/integrations/github/authorize?returnTo=/projects/new" />}
+                      render={<a href="/api/integrations/github/connect?returnTo=/projects/new" onClick={openGitHub} />}
                       nativeButton={false}
                       size="sm"
                       className="mt-3"

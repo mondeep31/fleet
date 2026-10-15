@@ -193,7 +193,8 @@ Create the repository GitHub App and configure its credentials using
 | `GET` | `/api/v1/deployments/:deploymentId/logs` | Deprecated (410) — use `/logs/stream` |
 | `DELETE` | `/api/v1/deployments/:deploymentId` | Stop/cancel deployment (removes container, cancels queued jobs) |
 | `GET`/`PUT` | `/api/v1/projects/:projectId/variables` | Read/write encrypted env vars for a project (saving triggers a redeploy) |
-| `GET` | `/api/v1/integrations/github/connect` | Start repository GitHub App installation (separate from login) |
+| `GET` | `/api/v1/integrations/github/connect` | Authorize and connect the repository App; install only when missing |
+| `GET` | `/api/v1/integrations/github/install` | Open installation settings to add repository access |
 | `GET` | `/api/v1/integrations/github/setup` | Installation setup redirect to user authorization |
 | `GET`/`DELETE` | `/api/v1/integrations/github` | Connection status (incl. `needsReconnect`) / disconnect |
 | `GET` | `/api/v1/integrations/github/repos` | List repos for the connected GitHub account |

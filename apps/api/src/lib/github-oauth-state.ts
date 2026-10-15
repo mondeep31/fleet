@@ -7,7 +7,7 @@ const loginKeyFor = (nonce: string) => `github:login:state:${nonce}`;
 const installKeyFor = (nonce: string) => `github:install:state:${nonce}`;
 
 export type GitHubReturnTo = "/connections" | "/projects/new";
-export interface GitHubOAuthContext { userId: string; returnTo?: GitHubReturnTo }
+export interface GitHubOAuthContext { userId: string; returnTo?: GitHubReturnTo; installIfMissing?: boolean }
 
 export function normalizeGitHubReturnTo(value: unknown): GitHubReturnTo {
   return value === "/projects/new" ? value : "/connections";
@@ -20,7 +20,11 @@ function decodeContext(value: string | null): GitHubOAuthContext | null {
   try {
     const context = JSON.parse(value);
     if (typeof context.userId !== "string" || !context.userId) return null;
-    return { userId: context.userId, returnTo: normalizeGitHubReturnTo(context.returnTo) };
+    return {
+      userId: context.userId,
+      returnTo: normalizeGitHubReturnTo(context.returnTo),
+      ...(context.installIfMissing === true ? { installIfMissing: true } : {}),
+    };
   } catch { return null; }
 }
 
@@ -48,11 +52,11 @@ export async function consumeInstallationState(state: string): Promise<GitHubOAu
  * Generate a CSRF state nonce, store userId in Redis with a 10-minute TTL,
  * and return the nonce to include in the GitHub authorize URL.
  */
-export async function createOAuthState(userId: string, returnTo?: GitHubReturnTo): Promise<string> {
+export async function createOAuthState(userId: string, returnTo?: GitHubReturnTo, installIfMissing = false): Promise<string> {
   const nonce = randomBytes(24).toString("hex");
   const redis = createRedisConnection();
   try {
-    await redis.set(keyFor(nonce), JSON.stringify({ userId, returnTo }), "EX", STATE_TTL_SECONDS);
+    await redis.set(keyFor(nonce), JSON.stringify({ userId, returnTo, ...(installIfMissing ? { installIfMissing: true } : {}) }), "EX", STATE_TTL_SECONDS);
   } finally {
     redis.disconnect();
   }

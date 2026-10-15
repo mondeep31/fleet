@@ -552,7 +552,8 @@ erDiagram
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/integrations/github/connect` | Redirect to GitHub App installation and repository selection |
+| GET | `/integrations/github/connect` | Authorize and connect an existing App installation; install only when missing |
+| GET | `/integrations/github/install` | Open GitHub App installation/repository selection settings |
 | GET | `/integrations/github/setup` | Public installation setup; start user authorization |
 | GET | `/integrations/github/status` | Connection status + `needsReconnect` flag |
 | DELETE | `/integrations/github` | Disconnect + revoke token |
