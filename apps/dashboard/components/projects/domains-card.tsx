@@ -319,7 +319,7 @@ export function DomainsCard({ projectId }: DomainsCardProps) {
 
       <CardContent className="space-y-3 pt-4">
         {isLoading ? (
-          <div className="h-9 animate-pulse rounded-lg bg-muted" />
+          <div className="h-9 loading-skeleton rounded-lg bg-muted" />
         ) : domains && domains.length > 0 ? (
           domains.map((domain) => {
             // Not domain.status === "active" — that's a coarser summary and

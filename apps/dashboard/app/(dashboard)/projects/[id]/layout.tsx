@@ -72,7 +72,7 @@ export default function ProjectLayout({
 
       {!isLoading && project && <ProjectTabs projectId={projectId} />}
 
-      <div className="dashboard-container flex-1 space-y-4 px-4 py-6 md:px-8">
+      <div className="dashboard-container flex-1 space-y-5 px-5 py-8 md:px-8">
         {isLoading && (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (

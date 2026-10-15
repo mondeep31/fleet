@@ -286,7 +286,7 @@ export function ProjectCardMenu({
             setOpen((current) => !current);
           }}
           className={cn(
-            "flex size-7 shrink-0 items-center justify-center rounded-full border border-border bg-[var(--bg-inset)] text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground",
+            "flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-[var(--bg-elevated)] hover:text-foreground",
             open && "border-border bg-[var(--bg-elevated)] text-foreground",
           )}
         >
