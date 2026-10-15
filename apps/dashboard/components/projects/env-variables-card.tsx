@@ -93,9 +93,9 @@ export function EnvVariablesCard({ projectId, onDeployStarted }: EnvVariablesCar
           <div className="space-y-2">
             {[1, 2].map((i) => (
               <div key={i} className="flex gap-2">
-                <div className="h-9 flex-1 animate-pulse rounded-lg bg-muted" />
-                <div className="h-9 flex-1 animate-pulse rounded-lg bg-muted" />
-                <div className="size-7 animate-pulse rounded-lg bg-muted" />
+                <div className="h-9 flex-1 loading-skeleton rounded-lg bg-muted" />
+                <div className="h-9 flex-1 loading-skeleton rounded-lg bg-muted" />
+                <div className="size-7 loading-skeleton rounded-lg bg-muted" />
               </div>
             ))}
           </div>

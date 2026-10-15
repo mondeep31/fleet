@@ -28,7 +28,7 @@ export default function ProjectDeploymentsPage() {
       )}
 
       {deployments.length > 0 && (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="overflow-hidden border-y border-border">
           <VirtualDeploymentList
             deployments={deployments}
             onStopped={() => mutate()}

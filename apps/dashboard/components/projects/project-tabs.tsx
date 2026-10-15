@@ -33,7 +33,7 @@ export function ProjectTabs({ projectId }: { projectId: string }) {
               className={cn(
                 "shrink-0 border-b-2 px-0 py-3 text-sm font-medium transition-colors",
                 active
-                  ? "border-white text-white"
+                  ? "border-[#9cb8b5] text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >

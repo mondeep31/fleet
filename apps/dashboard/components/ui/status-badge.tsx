@@ -60,11 +60,12 @@ export function StatusBadge({
     <Badge
       variant="outline"
       className={cn(
-        "font-medium tabular-nums",
         config.className,
+        "gap-1.5 rounded-md border-transparent bg-transparent font-normal tabular-nums shadow-none",
         className,
       )}
     >
+      <span className="size-1.5 shrink-0 rounded-full bg-current" aria-hidden="true" />
       {config.label}
     </Badge>
   );

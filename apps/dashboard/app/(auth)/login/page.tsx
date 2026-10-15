@@ -70,6 +70,7 @@ export default function LoginPage({
 
   return (
     <AuthShell
+      centered
       title="Log in to Fleet"
       subtitle="Sign in to continue to your dashboard"
       footer={
@@ -81,23 +82,22 @@ export default function LoginPage({
       }
     >
       <div className="space-y-4">
-        <a href="/api/auth/github/login" className="block">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-10 w-full gap-2"
-          >
-            <Image
-              src="/images/integrations/github.svg"
-              alt=""
-              aria-hidden
-              width={16}
-              height={16}
-              className="h-4 w-4 invert"
-            />
-            Continue with GitHub
-          </Button>
-        </a>
+        <Button
+          render={<a href="/api/auth/github/login" />}
+          nativeButton={false}
+          variant="outline"
+          className="h-10 w-full gap-2"
+        >
+          <Image
+            src="/images/integrations/github.svg"
+            alt=""
+            aria-hidden
+            width={16}
+            height={16}
+            className="h-4 w-4 invert"
+          />
+          Continue with GitHub
+        </Button>
 
         <div className="relative flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />

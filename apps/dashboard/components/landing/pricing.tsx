@@ -2,35 +2,19 @@ import Link from "next/link";
 import { ArrowRight, Check } from "@phosphor-icons/react/dist/ssr";
 
 const plans = [
-  { name: "Free", price: "$0", note: "forever", ram: "256 MB", cpu: "0.25 core", projects: "1", action: "Deploy free", active: true },
-  { name: "Pro", price: "$9", note: "per month", ram: "1 GB", cpu: "1 core", projects: "5", action: "Coming soon", active: false },
-  { name: "Team", price: "$29", note: "per month", ram: "4 GB", cpu: "4 cores", projects: "Unlimited", action: "Coming soon", active: false },
-] as const;
+  { name: "Free", price: "$0", note: "No card. No expiry.", ram: "256 MB RAM", cpu: "0.25 CPU core", projects: "1 project", action: "Start deploying", active: true },
+  { name: "Pro", price: "$9", note: "For your next stage.", ram: "1 GB RAM", cpu: "1 CPU core", projects: "5 projects", action: "Coming soon", active: false },
+  { name: "Team", price: "$29", note: "Room for your team.", ram: "4 GB RAM", cpu: "4 CPU cores", projects: "Unlimited projects", action: "Coming soon", active: false },
+];
 
 export function Pricing() {
   return (
-    <section id="pricing" className="bg-[#e8e9e5] py-24 text-[#171918] sm:py-32">
-      <div className="site-shell">
-        <div className="grid gap-12 lg:grid-cols-[.7fr_1.3fr] lg:gap-16">
-          <div>
-            <p className="eyebrow mb-6 text-[#65736c]">Pricing</p>
-            <h2 className="max-w-[8ch] text-4xl leading-[0.98] font-medium tracking-[-0.04em] sm:text-6xl">Start free. Scale when the service does.</h2>
-            <p className="mt-7 max-w-sm text-sm leading-6 text-[#5d6a64]">GitHub deployment, logs, environment variables, stable URLs, CI/CD, and custom domains are included on every plan.</p>
-          </div>
-          <div className="border-t border-black/20 lg:mt-2">
-            {plans.map((plan) => (
-              <div key={plan.name} className="grid gap-5 border-b border-black/20 py-8 sm:grid-cols-[1fr_1fr_auto] sm:items-center">
-                <div><p className="text-xl font-medium tracking-[-0.02em]">{plan.name}</p><p className="mt-1.5 font-mono text-[10px] text-[#67746e]">{plan.ram} RAM · {plan.cpu} · {plan.projects} {plan.projects === "1" ? "PROJECT" : "PROJECTS"}</p></div>
-                <div className="flex items-baseline gap-2"><span className="text-3xl font-medium">{plan.price}</span><span className="text-sm text-[#67746e]">{plan.note}</span></div>
-                {plan.active ? <Link href="/signup" className="group inline-flex h-11 items-center justify-between gap-6 bg-[#14201d] px-5 text-sm text-white transition-transform hover:-translate-y-0.5 sm:justify-center"><span>{plan.action}</span><ArrowRight className="size-4 transition-transform group-hover:translate-x-1" /></Link> : <span className="eyebrow text-[#77837d]">{plan.action}</span>}
-              </div>
-            ))}
-            <div className="mt-8 flex flex-wrap gap-x-7 gap-y-3">
-              {["No credit card", "Custom domains", "Zero-downtime rollouts"].map((item) => <span key={item} className="flex items-center gap-2 text-sm text-[#53615a]"><Check className="size-3.5" weight="bold" />{item}</span>)}
-            </div>
-          </div>
-        </div>
+    <section id="pricing" className="marketing-section site-shell">
+      <div className="marketing-section-heading pricing-heading"><div><p className="marketing-kicker">04 / Pricing</p><h2>Start free.<br /><span>Grow from there.</span></h2></div><p>Everything you need to launch. More room when you need it.</p></div>
+      <div className="pricing-plans">
+        {plans.map((plan) => <article key={plan.name} className="pricing-plan"><div className="flex items-center justify-between"><h3>{plan.name}</h3>{!plan.active && <span className="plan-coming">Coming soon</span>}</div><p className="plan-price">{plan.price}<span>/ month</span></p><p className="plan-note">{plan.note}</p><ul>{[plan.ram, plan.cpu, plan.projects].map((feature) => <li key={feature}><Check className="size-3.5" />{feature}</li>)}</ul>{plan.active ? <Link href="/signup" className="marketing-button w-full">{plan.action}<ArrowRight className="size-4" /></Link> : <span className="plan-unavailable">{plan.action}</span>}</article>)}
       </div>
+      <p className="pricing-included">Included on every plan <span>GitHub deployments · Build & runtime logs · Environment variables · Custom domains</span></p>
     </section>
   );
 }

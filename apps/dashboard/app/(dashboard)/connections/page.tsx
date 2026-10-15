@@ -159,8 +159,9 @@ export default function ConnectionsPage() {
     <div className="flex min-h-[100dvh] flex-col">
       <Header title="Connections" />
 
-      <div className="dashboard-container flex-1 px-4 py-6 md:px-8 md:py-8">
-        <div className="max-w-2xl overflow-hidden rounded-lg border border-border bg-card">
+      <div className="dashboard-container flex-1 px-5 py-9 md:px-8">
+        <div className="mb-8"><h2 className="text-xl font-medium tracking-[-0.035em]">Connected accounts</h2><p className="mt-2 text-sm text-muted-foreground">Manage the Git providers you deploy from.</p></div>
+        <div className="max-w-3xl overflow-hidden border-y border-border">
           <GitHubCard />
           <ComingSoonCard name="GitLab" provider="gitlab" />
           <ComingSoonCard name="Bitbucket" provider="bitbucket" />
