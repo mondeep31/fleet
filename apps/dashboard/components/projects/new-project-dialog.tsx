@@ -127,7 +127,8 @@ export function NewProjectDialog({
           <div className="space-y-2">
             <Label>Environment Variables</Label>
             <p className="text-xs text-muted-foreground">
-              Injected at runtime — available as <code>process.env.KEY</code> in your app.
+              Available at runtime and during builds. Docker builds use variables
+              declared with <code>ARG</code>.
             </p>
             <EnvVariableEditor
               rows={variables}

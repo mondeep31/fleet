@@ -125,6 +125,38 @@ curl -s http://depl-fleet-PROJECT_ID.localhost:18080
 
 ## Environment variables
 
+### Project variables in the dashboard
+
+Enter your application's variables in the project's **Environment Variables**
+editor. Saving triggers a redeploy. Fleet reads one snapshot before building and
+uses it for both the build and the running container. Changes saved after a build
+has started require another deployment to take effect.
+
+For Dockerfile builds, declare the names of public build configuration in the
+stage that needs them; set the values only in the dashboard:
+
+```dockerfile
+FROM node:22-alpine AS builder
+# ...install dependencies and copy source...
+ARG BACKEND_URL
+ARG NEXT_PUBLIC_USE_MOCK_DATA
+RUN npm run build
+```
+
+Fleet supplies matching dashboard values as Docker build arguments. No hardcoded
+URLs or committed `.env` files are needed. All project variables are also injected
+into the app container at startup, including variables without an `ARG` declaration.
+Keep runtime credentials out of Docker `ARG` and `ENV` instructions: build arguments
+can appear in image metadata. For Railpack builds, dashboard variables are supplied
+using Railpack's BuildKit secret mounts; build scripts can still write values into
+generated files. Next.js `NEXT_PUBLIC_*` values are public and fixed at build time.
+
+Docker builds respect the repository-root `.dockerignore`; Git metadata is excluded
+from the build context. Keep secret `.env` files out of Git and exclude `.env*`
+files from Docker build contexts.
+
+### Fleet service configuration
+
 | Variable | Required by | Description |
 |----------|-------------|-------------|
 | `MONGODB_URI` | API, worker | MongoDB connection string |

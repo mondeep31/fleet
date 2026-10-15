@@ -19,6 +19,7 @@ import { buildImage } from "../steps/build";
 import { buildRailpack } from "../steps/build-railpack";
 import { cloneRepo } from "../steps/clone";
 import { isGitHubRepoUrl } from "../lib/github-repo";
+import { redactBuildSecrets } from "../lib/build-logs";
 import {
   ensureTraefikOnProjectNetwork,
   removeAllProjectContainers,
@@ -50,6 +51,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
   // Track the new container ID so the catch block can clean it up on failure.
   let newContainerId: string | null = null;
+  let envVars: Record<string, string> = {};
 
   try {
     await exitIfStopped(deploymentId);
@@ -97,6 +99,9 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     await updateDeployment(deploymentId, { status: "building" });
     const imageTag = `fleet/${deployment.projectId}:${deploymentId}`;
+    // Use one snapshot for the build and runtime so rewrites and server code
+    // cannot end up configured with different backend URLs during a redeploy.
+    envVars = await getDecryptedProjectVariables(projectId);
 
     if (dockerfile.found) {
       publishLog(
@@ -110,6 +115,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
         imageTag,
         deploymentId,
         dockerfile: dockerfile.relativePath,
+        env: envVars,
       });
     } else {
       publishLog(
@@ -117,7 +123,7 @@ export async function handleDeployJob(payload: DeployJobPayload) {
         "No Dockerfile found, using railpack for auto-detection...",
         "pipeline",
       );
-      await buildRailpack({ cloneDir, imageTag, deploymentId });
+      await buildRailpack({ cloneDir, imageTag, deploymentId, env: envVars });
     }
 
     await updateDeployment(deploymentId, { imageTag });
@@ -131,7 +137,6 @@ export async function handleDeployJob(payload: DeployJobPayload) {
     await updateDeployment(deploymentId, { status: "deploying" });
     publishLog(deploymentId, "Deploying container...", "pipeline");
 
-    const envVars = await getDecryptedProjectVariables(projectId);
     const envCount = Object.keys(envVars).length;
     if (envCount > 0) {
       publishLog(deploymentId, `Injecting ${envCount} environment variable${envCount === 1 ? "" : "s"}`, "pipeline");
@@ -195,12 +200,12 @@ export async function handleDeployJob(payload: DeployJobPayload) {
       });
     }
 
-    const message = getErrorMessage(err);
+    const message = redactBuildSecrets(getErrorMessage(err), envVars);
     publishLog(deploymentId, `Error: ${message}`, "pipeline");
     await markDeploymentFailed(deploymentId, message).catch((updateErr) => {
       console.error("failed to mark deployment as failed:", updateErr);
     });
     await finalizeDeploymentLogs(deploymentId);
-    throw err;
+    throw new Error(message);
   }
 }

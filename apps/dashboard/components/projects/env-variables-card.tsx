@@ -63,7 +63,7 @@ export function EnvVariablesCard({ projectId, onDeployStarted }: EnvVariablesCar
       } else {
         toast.message(
           result.redeploy.reason?.includes("in progress")
-            ? "Variables saved. A deployment is already in progress — it will use these values."
+            ? "Variables saved. Redeploy after the current deployment finishes to apply them."
             : "Variables saved. Redeploy manually to apply them to the live app.",
         );
       }
@@ -83,8 +83,8 @@ export function EnvVariablesCard({ projectId, onDeployStarted }: EnvVariablesCar
       <CardHeader className="border-b">
         <CardTitle>Environment Variables</CardTitle>
         <CardDescription>
-          Injected at container start as runtime environment variables. Saving
-          automatically triggers a redeploy.
+          Available at runtime and during builds. Docker builds use variables
+          declared with <code>ARG</code>. Saving automatically triggers a redeploy.
         </CardDescription>
       </CardHeader>
 

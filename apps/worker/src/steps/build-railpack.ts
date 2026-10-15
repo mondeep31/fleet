@@ -1,4 +1,5 @@
 import { BUILD_TIMEOUT_MS, buildTimeoutErrorMessage } from "../lib/build-timeout";
+import { createBuildLogWriter } from "../lib/build-logs";
 import { ensureBuildKit, ensureRailpackBin } from "../lib/railpack";
 import { flushLogs, publishLog } from "../services/logs";
 
@@ -6,12 +7,14 @@ interface BuildRailpackParams {
   cloneDir: string;
   imageTag: string;
   deploymentId: string;
+  env?: Record<string, string>;
 }
 
 export async function buildRailpack({
   cloneDir,
   imageTag,
   deploymentId,
+  env = {},
 }: BuildRailpackParams): Promise<string> {
   publishLog(deploymentId, "Preparing railpack build environment...", "pipeline");
   const [railpackBin, buildkitHost] = await Promise.all([
@@ -19,7 +22,13 @@ export async function buildRailpack({
     ensureBuildKit(),
   ]);
 
-  const proc = Bun.spawn([railpackBin, "build", "--name", imageTag, cloneDir], {
+  // Railpack exposes these through BuildKit secret mounts. Pass explicit CLI
+  // arguments (without a shell) so project PATH/NODE_OPTIONS/etc. cannot change
+  // the worker's own build tooling environment.
+  const envFlags = Object.entries(env).flatMap(([key, value]) => [
+    "--env", `${key}=${value}`,
+  ]);
+  const proc = Bun.spawn([railpackBin, "build", "--name", imageTag, ...envFlags, cloneDir], {
     stdout: "pipe",
     stderr: "pipe",
     env: {
@@ -31,27 +40,17 @@ export async function buildRailpack({
   async function streamLines(stream: ReadableStream<Uint8Array>) {
     const reader = stream.getReader();
     const decoder = new TextDecoder();
-    let buffer = "";
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) {
-        if (buffer.trim()) {
-          process.stdout.write(buffer);
-          publishLog(deploymentId, [buffer], "build");
-        }
-        break;
+    const logs = createBuildLogWriter(deploymentId, env);
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        logs.write(decoder.decode(value, { stream: true }));
       }
-
-      const chunk = decoder.decode(value, { stream: true });
-      process.stdout.write(chunk);
-      buffer += chunk;
-
-      const lines = buffer.split("\n");
-      buffer = lines.pop() ?? "";
-      if (lines.length > 0) {
-        publishLog(deploymentId, lines, "build");
-      }
+      logs.write(decoder.decode());
+    } finally {
+      logs.flush();
+      reader.releaseLock();
     }
   }
 

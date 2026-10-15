@@ -93,9 +93,9 @@ vi.mock("../services/github-integration", () => ({
   getDecryptedGitHubToken: vi.fn().mockResolvedValue("ghp_test_token"),
 }));
 
-vi.mock("../lib/github-repo", () => ({
+vi.mock("../lib/github-repo", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../lib/github-repo")>(),
   isGitHubRepoUrl: vi.fn().mockReturnValue(false),
-  redactSecrets: vi.fn((msg: string) => msg),
 }));
 
 vi.mock("../steps/clone", () => ({
@@ -104,6 +104,10 @@ vi.mock("../steps/clone", () => ({
 
 vi.mock("../steps/build", () => ({
   buildImage: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../steps/build-railpack", () => ({
+  buildRailpack: vi.fn().mockResolvedValue(undefined),
 }));
 
 const mockRemoveAllProjectContainers = vi.fn().mockImplementation(async () => {
@@ -144,6 +148,12 @@ vi.mock("../steps/run", () => ({
 // ── Subject ──────────────────────────────────────────────────────────────────
 
 import { handleDeployJob } from "./deploy";
+import { buildImage } from "../steps/build";
+import { buildRailpack } from "../steps/build-railpack";
+import { detectDockerfile } from "@fleet/runtime-detector";
+import { getDecryptedProjectVariables } from "../services/project-variable";
+import { markDeploymentFailed } from "../services/deployment";
+import { publishLog } from "../services/logs";
 
 // ── Tests ────────────────────────────────────────────────────────────────────
 
@@ -151,6 +161,7 @@ describe("handleDeployJob — cutover sequence", () => {
   beforeEach(() => {
     callOrder.length = 0;
     vi.clearAllMocks();
+    vi.mocked(detectDockerfile).mockResolvedValue({ found: true, relativePath: "Dockerfile", absolutePath: "/tmp/test/Dockerfile" });
     mockRemoveAllProjectContainers.mockImplementation(async () => {
       callOrder.push("removeAll");
     });
@@ -165,6 +176,37 @@ describe("handleDeployJob — cutover sequence", () => {
         url: "http://depl-fleet-proj1.localhost:8080",
       };
     });
+  });
+
+  test("builds and starts Docker containers with the same dashboard variable snapshot", async () => {
+    const env = { BACKEND_URL: "https://api.example.com", PRIVATE_KEY: "runtime-only" };
+    vi.mocked(getDecryptedProjectVariables).mockResolvedValueOnce(env);
+    await handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" });
+
+    expect(getDecryptedProjectVariables).toHaveBeenCalledTimes(1);
+    expect(buildImage).toHaveBeenCalledWith(expect.objectContaining({ env }));
+    expect(mockRunContainer).toHaveBeenCalledWith(expect.objectContaining({ env }));
+    expect(vi.mocked(getDecryptedProjectVariables).mock.invocationCallOrder[0])
+      .toBeLessThan(vi.mocked(buildImage).mock.invocationCallOrder[0]!);
+  });
+
+  test("supplies dashboard variables to Railpack builds as well as runtime", async () => {
+    vi.mocked(detectDockerfile).mockResolvedValueOnce({ found: false });
+    await handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" });
+
+    expect(buildImage).not.toHaveBeenCalled();
+    expect(buildRailpack).toHaveBeenCalledWith(expect.objectContaining({ env: { FOO: "bar" } }));
+    expect(mockRunContainer).toHaveBeenCalledWith(expect.objectContaining({ env: { FOO: "bar" } }));
+  });
+
+  test("redacts variables from saved errors, pipeline logs, and queue errors", async () => {
+    vi.mocked(getDecryptedProjectVariables).mockResolvedValueOnce({ TOKEN: "private-token" });
+    vi.mocked(buildImage).mockRejectedValueOnce(new Error("build failed: private-token"));
+
+    await expect(handleDeployJob({ deploymentId: "dep1", projectId: "proj1", repoUrl: "https://g.com/r" }))
+      .rejects.toThrow("build failed: [REDACTED]");
+    expect(markDeploymentFailed).toHaveBeenCalledWith("dep1", expect.not.stringContaining("private-token"));
+    expect(JSON.stringify(vi.mocked(publishLog).mock.calls)).not.toContain("private-token");
   });
 
   test("removeAllProjectContainers is called before ensureTraefikOnProjectNetwork", async () => {

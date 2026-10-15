@@ -144,8 +144,8 @@ Used for three distinct purposes:
 
 Accessed via `dockerode` (Node Docker client on the local socket).
 
-- **Build:** tarballs the cloned directory and calls `docker build` with streaming output. If no Dockerfile is found, falls back to Railpack + a BuildKit sidecar container.
-- **Run:** Creates and starts a container with sandbox host config, env vars (decrypted from MongoDB), and Traefik routing labels.
+- **Build:** reads a snapshot of project variables from MongoDB. Docker builds receive values for explicitly declared `ARG` names, respect `.dockerignore`, and exclude Git metadata from the context. If no Dockerfile is found, falls back to Railpack + a BuildKit sidecar container, supplying variables through Railpack's secret mounts. Build logs redact matching variable values.
+- **Run:** Creates and starts a container with sandbox host config, the same env var snapshot used for the build, and Traefik routing labels. Variables changed after the build snapshot require another deployment.
 - **Networks:** Each project gets a dedicated Docker bridge network (`fleet-project-{projectId}`). Traefik is connected to each project network as needed.
 
 ---
