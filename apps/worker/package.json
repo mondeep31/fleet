@@ -10,6 +10,7 @@
     "@fleet/config": "workspace:*",
     "@fleet/email": "workspace:*",
     "@fleet/errors": "workspace:*",
+    "@fleet/github": "workspace:*",
     "@fleet/db": "workspace:*",
     "@fleet/domains": "workspace:*",
     "@fleet/logs": "workspace:*",

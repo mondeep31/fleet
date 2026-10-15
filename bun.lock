@@ -44,6 +44,7 @@
         "@fleet/db": "workspace:*",
         "@fleet/domains": "workspace:*",
         "@fleet/errors": "workspace:*",
+        "@fleet/github": "workspace:*",
         "@fleet/logs": "workspace:*",
         "@fleet/queue": "workspace:*",
         "@fleet/secrets": "workspace:*",
@@ -124,6 +125,7 @@
         "@fleet/domains": "workspace:*",
         "@fleet/email": "workspace:*",
         "@fleet/errors": "workspace:*",
+        "@fleet/github": "workspace:*",
         "@fleet/logs": "workspace:*",
         "@fleet/queue": "workspace:*",
         "@fleet/runtime-detector": "workspace:*",
@@ -237,6 +239,20 @@
     "packages/errors": {
       "name": "@fleet/errors",
       "version": "0.0.1",
+    },
+    "packages/github": {
+      "name": "@fleet/github",
+      "version": "0.0.1",
+      "dependencies": {
+        "@fleet/config": "workspace:*",
+        "@fleet/db": "workspace:*",
+        "@fleet/errors": "workspace:*",
+        "@fleet/secrets": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/node": "^25.6.2",
+        "typescript": "^7.0.2",
+      },
     },
     "packages/logs": {
       "name": "@fleet/logs",
@@ -463,6 +479,8 @@
     "@fleet/email": ["@fleet/email@workspace:packages/email"],
 
     "@fleet/errors": ["@fleet/errors@workspace:packages/errors"],
+
+    "@fleet/github": ["@fleet/github@workspace:packages/github"],
 
     "@fleet/logs": ["@fleet/logs@workspace:packages/logs"],
 

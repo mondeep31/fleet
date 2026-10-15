@@ -65,7 +65,8 @@ export async function handleDeployJob(payload: DeployJobPayload) {
 
     let githubToken: string | undefined;
     if (isGitHubRepoUrl(repoUrl)) {
-      githubToken = await getDecryptedGitHubToken(project.userId);
+      const repository = new URL(repoUrl).pathname.replace(/^\//, "").replace(/\/$/, "").replace(/\.git$/, "");
+      githubToken = await getDecryptedGitHubToken(project.userId, repository);
     }
 
     const { cloneDir, commitSha, commitMessage } = await cloneRepo({

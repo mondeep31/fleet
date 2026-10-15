@@ -4,6 +4,27 @@ import { randomBytes } from "node:crypto";
 const STATE_TTL_SECONDS = 10 * 60; // 10 minutes
 const keyFor = (nonce: string) => `github:oauth:state:${nonce}`;
 const loginKeyFor = (nonce: string) => `github:login:state:${nonce}`;
+const installKeyFor = (nonce: string) => `github:install:state:${nonce}`;
+
+export async function createInstallationState(userId: string): Promise<string> {
+  const nonce = randomBytes(24).toString("hex");
+  const redis = createRedisConnection();
+  try {
+    await redis.set(installKeyFor(nonce), userId, "EX", STATE_TTL_SECONDS);
+  } finally {
+    redis.disconnect();
+  }
+  return nonce;
+}
+
+export async function consumeInstallationState(state: string): Promise<string | null> {
+  const redis = createRedisConnection();
+  try {
+    return await redis.getdel(installKeyFor(state));
+  } finally {
+    redis.disconnect();
+  }
+}
 
 /**
  * Generate a CSRF state nonce, store userId in Redis with a 10-minute TTL,

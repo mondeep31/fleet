@@ -7,7 +7,7 @@ import { errorHandler, notFoundHandler } from "@fleet/api-middleware";
 import { authMiddleware } from "@fleet/auth";
 import router from "./routes";
 import unauthRoutes from "./routes/unauth";
-import { githubCallbackController } from "./controller/github-integration";
+import { githubCallbackController, githubInstallationSetupController } from "./controller/github-integration";
 import { githubWebhookController } from "./controller/github-webhook";
 import {
   githubLoginAuthorizeController,
@@ -38,6 +38,7 @@ app.get("/ping", ping);
 app.use("/v1", unauthRoutes);
 // GitHub OAuth callback is unauthenticated — state nonce ties it to a userId.
 app.get("/api/v1/integrations/github/callback", githubCallbackController);
+app.get("/api/v1/integrations/github/setup", githubInstallationSetupController);
 // GitHub login OAuth — unauthenticated flows (no Bearer token needed).
 app.get("/v1/auth/github/authorize", githubLoginAuthorizeController);
 app.get("/v1/auth/github/callback", githubLoginCallbackController);

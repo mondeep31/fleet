@@ -1,10 +1,12 @@
 import type { RequestHandler } from "express";
 import { AppError } from "@fleet/errors";
+import { getSharedEnv } from "@fleet/config";
 import {
   getConnectRedirectUrl,
   handleOAuthCallback,
   getGitHubStatus,
   disconnectGitHub,
+  handleInstallationSetup,
 } from "../services/github-integration";
 import {
   listUserRepos,
@@ -26,11 +28,37 @@ export const connectGitHubController: RequestHandler = async (req, res) => {
 
 export const githubCallbackController: RequestHandler = async (req, res) => {
   const { code, state } = req.query as { code?: string; state?: string };
-  if (!code || !state) {
-    throw new AppError(400, "Missing code or state", "BAD_REQUEST");
+  try {
+    if (!code || !state || typeof code !== "string" || typeof state !== "string") {
+      throw new AppError(400, "Missing code or state", "BAD_REQUEST");
+    }
+    const successUrl = new URL(await handleOAuthCallback(code, state));
+    successUrl.searchParams.set("github", "connected");
+    res.redirect(successUrl.toString());
+  } catch (error) {
+    const result = error instanceof AppError && error.code === "GITHUB_INSTALLATION_REQUIRED"
+      ? "installation_required"
+      : "error";
+    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=${result}`);
   }
-  const successUrl = await handleOAuthCallback(code, state);
-  res.redirect(`${successUrl}?github=connected`);
+};
+
+export const githubInstallationSetupController: RequestHandler = async (req, res) => {
+  const { state, setup_action } = req.query;
+  // Installation/configuration directly on GitHub may have no Fleet state.
+  if (typeof state !== "string") {
+    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections`);
+    return;
+  }
+  if (setup_action === "request") {
+    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=approval_required`);
+    return;
+  }
+  try {
+    res.redirect(await handleInstallationSetup(state));
+  } catch {
+    res.redirect(`${getSharedEnv().DASHBOARD_URL}/connections?github=error`);
+  }
 };
 
 export const getGitHubStatusController: RequestHandler = async (req, res) => {

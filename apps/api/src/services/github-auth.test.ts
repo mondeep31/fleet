@@ -16,13 +16,15 @@ const mockUserFindOne = vi.fn();
 const mockUserCreate = vi.fn();
 const mockEnqueueEmail = vi.fn();
 const mockConsumeLoginOAuthState = vi.fn();
+const mockCreateLoginOAuthState = vi.fn();
 const mockExchangeCode = vi.fn();
 const mockGetAuthenticatedUser = vi.fn();
 const mockGetPrimaryEmail = vi.fn();
-const mockUpsertGitHubIntegration = vi.fn();
+const mockWriteIntegration = vi.fn();
 const mockSignJWT = vi.fn();
 
 vi.mock("@fleet/db", () => ({
+  Integration: { findOneAndUpdate: (...args: unknown[]) => mockWriteIntegration(...args) },
   User: {
     findOne: (...args: unknown[]) => mockUserFindOne(...args),
     create: (...args: unknown[]) => mockUserCreate(...args),
@@ -58,7 +60,7 @@ vi.mock("@fleet/queue", () => ({
 }));
 
 vi.mock("../lib/github-oauth-state", () => ({
-  createLoginOAuthState: vi.fn(),
+  createLoginOAuthState: (...args: unknown[]) => mockCreateLoginOAuthState(...args),
   consumeLoginOAuthState: (...args: unknown[]) => mockConsumeLoginOAuthState(...args),
 }));
 
@@ -68,15 +70,11 @@ vi.mock("../lib/github-client", () => ({
   getPrimaryEmail: (...args: unknown[]) => mockGetPrimaryEmail(...args),
 }));
 
-vi.mock("./github-integration", () => ({
-  upsertGitHubIntegration: (...args: unknown[]) => mockUpsertGitHubIntegration(...args),
-}));
-
 // ---------------------------------------------------------------------------
 // Subject
 // ---------------------------------------------------------------------------
 
-import { handleLoginCallback } from "./github-auth";
+import { getLoginRedirectUrl, handleLoginCallback } from "./github-auth";
 
 // ---------------------------------------------------------------------------
 // Shared fixtures
@@ -96,6 +94,18 @@ const EXISTING_USER = {
 // Tests
 // ---------------------------------------------------------------------------
 
+test("login requests only profile and email access", async () => {
+  mockCreateLoginOAuthState.mockResolvedValue("login-state");
+  const url = new URL(await getLoginRedirectUrl());
+
+  expect(url.searchParams.get("scope")?.split(" ")).toEqual([
+    "read:user",
+    "user:email",
+  ]);
+  expect(url.searchParams.get("client_id")).toBe("client-id");
+  expect(url.searchParams.get("state")).toBe("login-state");
+});
+
 describe("handleLoginCallback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -103,7 +113,6 @@ describe("handleLoginCallback", () => {
     mockExchangeCode.mockResolvedValue("gh-access-token");
     mockGetAuthenticatedUser.mockResolvedValue(GH_USER);
     mockGetPrimaryEmail.mockResolvedValue(PRIMARY_EMAIL);
-    mockUpsertGitHubIntegration.mockResolvedValue(undefined);
     mockSignJWT.mockReturnValue("jwt-token");
   });
 
@@ -143,6 +152,14 @@ describe("handleLoginCallback", () => {
       name: "The Octocat",
     });
     expect(result.userId).toBe("user-1");
+  });
+
+  test("signing in does not create or overwrite a repository connection", async () => {
+    mockUserFindOne.mockResolvedValueOnce(EXISTING_USER);
+
+    await handleLoginCallback("code-123", "state-abc");
+
+    expect(mockWriteIntegration).not.toHaveBeenCalled();
   });
 
   test("existing email/password user linking GitHub — enqueues login email (not signup)", async () => {

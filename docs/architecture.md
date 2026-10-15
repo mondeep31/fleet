@@ -27,7 +27,7 @@ Fleet is a **self-hosted Platform-as-a-Service** built as a Bun monorepo. Users 
 ```mermaid
 graph TD
     Browser[Browser / User]
-    GitHub[GitHub\nOAuth Login · OAuth Connect\nPush Webhooks · Repos API]
+    GitHub[GitHub\nOAuth Login · Repository GitHub App\nPush Webhooks · Repos API]
     Resend[Resend\nEmail API]
 
     subgraph AppLayer [Application Layer]
@@ -87,7 +87,7 @@ The user-facing SPA. All API calls go through a Next.js route handler that proxi
 | Auth | `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/auth/github/callback` |
 | Projects | `/projects`, `/projects/new` (GitHub repo picker), `/projects/[id]` |
 | Deployments | `/deployments/[id]` (log stream via SSE) |
-| Connections | `/connections` (GitHub OAuth connect) |
+| Connections | `/connections` (repository GitHub App installation and access management) |
 | Settings | `/settings` (profile, plan info) |
 
 **Stack:** Next.js 16, React 19, Tailwind 4, shadcn/ui, SWR, Zustand, Framer Motion.
@@ -165,14 +165,22 @@ Routing rule per deployment: ``Host(`{subdomain}.{FLEET_APPS_DOMAIN}`)``
 
 ### GitHub Integration
 
-Fleet uses **two separate GitHub OAuth Apps**:
+Fleet separates login from repository access:
 
 | App | Purpose | Scopes |
 |-----|---------|--------|
-| Login app | Sign in / sign up via GitHub | `read:user`, `user:email` |
-| Connect app | Access repos, register webhooks | `read:user`, `repo`, `admin:repo_hook` |
+| Login OAuth App | Sign in / sign up via GitHub | `read:user`, `user:email` |
+| Repository GitHub App | Read selected repos, receive push webhooks | Contents: read, Metadata: read; app-level Push webhook |
 
-GitHub tokens are stored AES-256-GCM encrypted in the `Integration` collection. Webhooks use `X-Hub-Signature-256` HMAC verification.
+Only repository connection tokens are stored AES-256-GCM encrypted in the
+`Integration` collection. Login uses its token to read identity and verified email,
+then discards it; signing in never creates or replaces a repository connection.
+Webhooks use `X-Hub-Signature-256` HMAC verification.
+The repository App uses encrypted user access/refresh tokens and shared refresh
+logic in `@fleet/github` for both API requests and worker clones. Repository
+selection is verified for repo operations and again before cloning. Existing
+OAuth integrations continue to work until users reconnect. See
+[GitHub setup](GITHUB_SETUP.md) for registration and migration instructions.
 
 ---
 
@@ -232,7 +240,6 @@ sequenceDiagram
     API->>GitHub: exchange code → access token
     API->>GitHub: GET /user (githubId, email)
     API->>MongoDB: User.findOrCreate by githubId/email
-    API->>MongoDB: Integration.upsert (GitHub token, encrypted)
     API-->>Dashboard: 302 → /auth/github/callback?token=&userId=
     Dashboard->>Dashboard: store token in localStorage + cookie
 ```
@@ -357,8 +364,11 @@ sequenceDiagram
     User->>Dashboard: POST /projects/new (repoUrl, branch)
     Dashboard->>API: POST /api/v1/projects (JWT)
     API->>GitHub: validate repo access + Dockerfile check
-    API->>GitHub: register push webhook (admin:repo_hook)
-    GitHub-->>API: 201 webhook created
+    Note over API,GitHub: App connections already receive Push via the app webhook
+    opt Legacy OAuth connection
+        API->>GitHub: register per-repository push webhook
+        GitHub-->>API: 201 webhook created
+    end
     API->>MongoDB: Project.create() { projectId, subdomain, ... }
     API->>MongoDB: Deployment.create({ status: "queued" })
     API->>Redis: enqueueDeploy({ deploymentId, projectId, repoUrl })
@@ -542,7 +552,8 @@ erDiagram
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/integrations/github/connect` | Redirect to GitHub OAuth (connect scope) |
+| GET | `/integrations/github/connect` | Redirect to GitHub App installation and repository selection |
+| GET | `/integrations/github/setup` | Public installation setup; start user authorization |
 | GET | `/integrations/github/status` | Connection status + `needsReconnect` flag |
 | DELETE | `/integrations/github` | Disconnect + revoke token |
 | GET | `/integrations/github/repos` | List repos (paginated, searchable) |
@@ -702,7 +713,9 @@ All variables are loaded from a single root `.env` file.
 | `PORT` | API port (default 3010) |
 | `API_URL` | Public API URL for webhook registration |
 | `GITHUB_WEBHOOK_SECRET` | HMAC key for push webhooks |
-| `GITHUB_CLIENT_ID/SECRET/CALLBACK_URL` | OAuth Connect App |
+| `GITHUB_APP_SLUG`, `GITHUB_APP_CALLBACK_URL` | Repository GitHub App installation and callback |
+| `GITHUB_APP_CLIENT_ID`, `GITHUB_APP_CLIENT_SECRET` | Repository App credentials; also required by worker for refresh |
+| `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET` | Optional legacy OAuth credentials for revocation |
 | `GITHUB_LOGIN_CLIENT_ID/SECRET/CALLBACK_URL` | OAuth Login App |
 
 ### Dashboard
